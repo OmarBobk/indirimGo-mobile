@@ -32,13 +32,16 @@ Future<void> main(List<String> arguments) async {
   final permissions = RegExp(
     r'<uses-permission[^>]*android:name="([^"]+)"',
   ).allMatches(mergedManifest).map((match) => match.group(1)!).toSet();
+  // AndroidX/AGP injects this app-scoped signature permission for
+  // non-exported dynamic receivers; it is not a dangerous capability grant.
   final unexpected = permissions.difference(const {
     'android.permission.INTERNET',
+    'tr.indirimgo.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION',
   });
   _require(
     unexpected.isEmpty,
     'The effective manifest includes unnecessary permission(s): '
-    '${unexpected.toList()..sort()}.',
+    '${(unexpected.toList()..sort()).join(', ')}.',
   );
 
   final debugPolicy = File(
