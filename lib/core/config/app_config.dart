@@ -29,7 +29,9 @@ class AppConfig {
       );
     }
 
-    final segments = parsed.pathSegments.where((part) => part.isNotEmpty).toList();
+    final segments = parsed.pathSegments
+        .where((part) => part.isNotEmpty)
+        .toList();
     while (segments.length >= 4 &&
         segments[segments.length - 4] == 'api' &&
         segments[segments.length - 3] == 'v1' &&
@@ -43,20 +45,20 @@ class AppConfig {
     } else if (segments.length < 2 ||
         segments[segments.length - 2] != 'api' ||
         segments.last != 'v1') {
-      throw const FormatException(
-        'API_BASE_URL path must end with /api/v1.',
-      );
+      throw const FormatException('API_BASE_URL path must end with /api/v1.');
     }
 
     return AppConfig._(
-      parsed.replace(pathSegments: [...segments, ''], query: null, fragment: null),
+      parsed.replace(
+        pathSegments: [...segments, ''],
+        query: null,
+        fragment: null,
+      ),
     );
   }
 
   factory AppConfig.fromEnvironment() {
-    return AppConfig(
-      apiBaseUrl: const String.fromEnvironment('API_BASE_URL'),
-    );
+    return AppConfig(apiBaseUrl: const String.fromEnvironment('API_BASE_URL'));
   }
 
   final Uri apiBaseUri;

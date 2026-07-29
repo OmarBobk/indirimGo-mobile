@@ -10,9 +10,7 @@ void main() {
     });
 
     test('removes trailing and repeated path slashes', () {
-      final config = AppConfig(
-        apiBaseUrl: 'http://10.0.2.2:8000//api//v1//',
-      );
+      final config = AppConfig(apiBaseUrl: 'http://10.0.2.2:8000//api//v1//');
 
       expect(config.apiBaseUrl, 'http://10.0.2.2:8000/api/v1/');
     });
@@ -26,10 +24,7 @@ void main() {
     });
 
     test('rejects missing and unsafe definitions', () {
-      expect(
-        () => AppConfig(apiBaseUrl: ''),
-        throwsA(isA<FormatException>()),
-      );
+      expect(() => AppConfig(apiBaseUrl: ''), throwsA(isA<FormatException>()));
       expect(
         () => AppConfig(apiBaseUrl: 'example.test/api/v1'),
         throwsA(isA<FormatException>()),

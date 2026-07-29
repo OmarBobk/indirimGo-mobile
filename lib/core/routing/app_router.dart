@@ -17,10 +17,7 @@ abstract final class AppRoutes {
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefresh();
   ref.onDispose(refresh.dispose);
-  ref.listen<AuthState>(
-    authControllerProvider,
-    (_, __) => refresh.notify(),
-  );
+  ref.listen<AuthState>(authControllerProvider, (_, _) => refresh.notify());
 
   return GoRouter(
     initialLocation: AppRoutes.startup,
@@ -30,8 +27,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final location = routeState.matchedLocation;
 
       final target = switch (auth.phase) {
-        AuthPhase.initializing || AuthPhase.verificationFailed =>
-          AppRoutes.startup,
+        AuthPhase.initializing ||
+        AuthPhase.verificationFailed => AppRoutes.startup,
         AuthPhase.unauthenticated => AppRoutes.login,
         AuthPhase.submittingLogin when auth.challenge != null =>
           AppRoutes.twoFactor,

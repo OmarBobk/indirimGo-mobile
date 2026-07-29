@@ -45,9 +45,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     if (_mode == _TwoFactorMode.authenticator) {
       await notifier.completeTwoFactorWithAuthenticator(_controller.text);
     } else {
-      await notifier.completeTwoFactorWithRecoveryCode(
-        _controller.text.trim(),
-      );
+      await notifier.completeTwoFactorWithRecoveryCode(_controller.text.trim());
     }
   }
 
@@ -57,8 +55,11 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     final auth = ref.watch(authControllerProvider);
     final isLoading =
         auth.phase == AuthPhase.submittingLogin && auth.challenge != null;
-    final expired = auth.challengeExpired || (auth.challenge?.isExpired ?? true);
-    final field = _mode == _TwoFactorMode.authenticator ? 'code' : 'recovery_code';
+    final expired =
+        auth.challengeExpired || (auth.challenge?.isExpired ?? true);
+    final field = _mode == _TwoFactorMode.authenticator
+        ? 'code'
+        : 'recovery_code';
     final serverError = auth.fieldErrors[field]?.firstOrNull;
 
     return Scaffold(
@@ -231,10 +232,7 @@ class _TwoFactorNotice extends StatelessWidget {
           color: colors.errorContainer,
           borderRadius: BorderRadius.circular(AppRadii.input),
         ),
-        child: Text(
-          message,
-          style: TextStyle(color: colors.onErrorContainer),
-        ),
+        child: Text(message, style: TextStyle(color: colors.onErrorContainer)),
       ),
     );
   }

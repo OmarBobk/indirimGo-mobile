@@ -63,7 +63,7 @@ class ConfigurationErrorApp extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.settings_alert_outlined, size: 56),
+                        const Icon(Icons.settings_outlined, size: 56),
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           l10n.configurationErrorTitle,

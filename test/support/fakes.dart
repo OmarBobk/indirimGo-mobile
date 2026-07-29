@@ -120,7 +120,6 @@ class FakeAuthRepository implements AuthRepository {
   }
 }
 
-ApiException networkFailure() =>
-    const ApiException(kind: ApiErrorKind.network);
+ApiException networkFailure() => const ApiException(kind: ApiErrorKind.network);
 
 Completer<T> pending<T>() => Completer<T>();

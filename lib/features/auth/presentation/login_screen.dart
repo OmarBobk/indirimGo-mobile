@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
 import 'package:indirimgo_mobile/core/localization/locale_controller.dart';
@@ -34,10 +33,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
     FocusManager.instance.primaryFocus?.unfocus();
-    await ref.read(authControllerProvider.notifier).login(
-      username: _usernameController.text,
-      password: _passwordController.text,
-    );
+    await ref
+        .read(authControllerProvider.notifier)
+        .login(
+          username: _usernameController.text,
+          password: _passwordController.text,
+        );
   }
 
   @override
@@ -68,16 +69,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Row(
+                            Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: AppSpacing.sm,
+                              runSpacing: AppSpacing.sm,
                               children: [
                                 const _BrandMark(),
-                                const Spacer(),
                                 TextButton.icon(
                                   key: const Key('language-toggle'),
                                   onPressed: isLoading
                                       ? null
                                       : ref
-                                            .read(localeControllerProvider.notifier)
+                                            .read(
+                                              localeControllerProvider.notifier,
+                                            )
                                             .toggle,
                                   icon: const Icon(Icons.language, size: 19),
                                   label: Text(l10n.languageAction),
@@ -87,11 +93,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const SizedBox(height: AppSpacing.xl),
                             Text(
                               l10n.loginEyebrow,
-                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: BrandColors.warning,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 1.4,
-                              ),
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(
+                                    color: BrandColors.warning,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.4,
+                                  ),
                             ),
                             const SizedBox(height: AppSpacing.sm),
                             Text(
@@ -125,7 +132,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   (value == null || value.trim().isEmpty)
                                   ? l10n.usernameRequired
                                   : null,
-                              onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
+                              onFieldSubmitted: (_) =>
+                                  _passwordFocus.requestFocus(),
                             ),
                             const SizedBox(height: AppSpacing.md),
                             TextFormField(
@@ -165,15 +173,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
                               ),
-                              validator: (value) => (value == null || value.isEmpty)
+                              validator: (value) =>
+                                  (value == null || value.isEmpty)
                                   ? l10n.passwordRequired
                                   : null,
-                              onFieldSubmitted: (_) => isLoading ? null : _submit(),
+                              onFieldSubmitted: (_) =>
+                                  isLoading ? null : _submit(),
                             ),
                             const SizedBox(height: AppSpacing.lg),
                             Semantics(
                               button: true,
-                              label: isLoading ? l10n.loggingIn : l10n.loginAction,
+                              label: isLoading
+                                  ? l10n.loggingIn
+                                  : l10n.loginAction,
                               child: FilledButton(
                                 key: const Key('login-button'),
                                 onPressed: isLoading ? null : _submit,
@@ -197,7 +209,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 Flexible(
                                   child: Text(
                                     l10n.secureLoginNote,
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
                                   ),
                                 ),
                               ],

@@ -18,11 +18,10 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 class ApiClient {
   ApiClient({
     required AppConfig config,
-    required TokenStorage tokenStorage,
+    required this.tokenStorage,
     required String locale,
     Dio? dio,
-  }) : _tokenStorage = tokenStorage,
-       _dio =
+  }) : _dio =
            dio ??
            Dio(
              BaseOptions(
@@ -39,7 +38,7 @@ class ApiClient {
         onRequest: (options, handler) async {
           options.headers[Headers.acceptHeader] = Headers.jsonContentType;
           options.headers['Accept-Language'] = locale;
-          final session = await _tokenStorage.read();
+          final session = await tokenStorage.read();
           if (session != null) {
             options.headers['Authorization'] = 'Bearer ${session.token}';
           } else {
@@ -49,7 +48,7 @@ class ApiClient {
         },
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
-            await _tokenStorage.clear();
+            await tokenStorage.clear();
           }
           handler.next(error);
         },
@@ -58,7 +57,7 @@ class ApiClient {
   }
 
   final Dio _dio;
-  final TokenStorage _tokenStorage;
+  final TokenStorage tokenStorage;
 
   Future<Map<String, Object?>> get(String path) =>
       _request(path, method: 'GET');
@@ -89,7 +88,9 @@ class ApiClient {
     final statusCode = error.response?.statusCode;
     final body = _optionalJsonMap(error.response?.data);
     final code = body?['code'] is String ? body!['code'] as String : null;
-    final message = body?['message'] is String ? body!['message'] as String : null;
+    final message = body?['message'] is String
+        ? body!['message'] as String
+        : null;
     final fieldErrors = _parseFieldErrors(body?['errors']);
 
     if (statusCode == 401) {

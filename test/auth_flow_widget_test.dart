@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:indirimgo_mobile/app.dart';
 import 'package:indirimgo_mobile/core/config/app_config.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
@@ -18,12 +17,13 @@ void main() {
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized()
         .platformDispatcher
-        .localeTestValue = const Locale('ar');
+        .localeTestValue = const Locale(
+      'ar',
+    );
   });
 
   tearDown(() {
-    TestWidgetsFlutterBinding.ensureInitialized()
-        .platformDispatcher
+    TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher
         .clearLocaleTestValue();
   });
 
@@ -33,10 +33,16 @@ void main() {
 
     final title = find.text('أهلاً بعودتك');
     expect(title, findsOneWidget);
-    expect(tester.widget<Directionality>(find.ancestor(
-      of: title,
-      matching: find.byType(Directionality),
-    ).first).textDirection, TextDirection.rtl);
+    expect(
+      tester
+          .widget<Directionality>(
+            find
+                .ancestor(of: title, matching: find.byType(Directionality))
+                .first,
+          )
+          .textDirection,
+      TextDirection.rtl,
+    );
 
     await tester.tap(find.byKey(const Key('language-toggle')));
     await tester.pumpAndSettle();
@@ -58,7 +64,7 @@ void main() {
   testWidgets('loading disables duplicate login submissions', (tester) async {
     final result = Completer<LoginOutcome>();
     final repository = FakeAuthRepository()
-      ..loginHandler = (_, __) => result.future;
+      ..loginHandler = (_, _) => result.future;
     await _pumpApp(tester, repository);
     await _fillLogin(tester);
 
@@ -66,7 +72,9 @@ void main() {
     await tester.pump();
     expect(repository.loginCalls, 1);
     expect(
-      tester.widget<FilledButton>(find.byKey(const Key('login-button'))).onPressed,
+      tester
+          .widget<FilledButton>(find.byKey(const Key('login-button')))
+          .onPressed,
       isNull,
     );
 
@@ -75,9 +83,11 @@ void main() {
     expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
   });
 
-  testWidgets('Laravel field errors and general errors are presented', (tester) async {
+  testWidgets('Laravel field errors and general errors are presented', (
+    tester,
+  ) async {
     final repository = FakeAuthRepository()
-      ..loginHandler = (_, __) async => throw const ApiException(
+      ..loginHandler = (_, _) async => throw const ApiException(
         kind: ApiErrorKind.validation,
         code: 'invalid_credentials',
         fieldErrors: {
@@ -93,30 +103,31 @@ void main() {
     expect(find.text('اسم المستخدم أو كلمة المرور غير صحيحة.'), findsOneWidget);
   });
 
-  testWidgets('two-factor navigation switches authenticator and recovery modes', (
-    tester,
-  ) async {
-    final repository = FakeAuthRepository()
-      ..loginHandler = (_, __) async =>
-          LoginTwoFactorRequired(sampleChallenge);
-    await _pumpApp(tester, repository);
-    await _fillLogin(tester);
-    await tester.tap(find.byKey(const Key('login-button')));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'two-factor navigation switches authenticator and recovery modes',
+    (tester) async {
+      final repository = FakeAuthRepository()
+        ..loginHandler = (_, _) async =>
+            LoginTwoFactorRequired(sampleChallenge);
+      await _pumpApp(tester, repository);
+      await _fillLogin(tester);
+      await tester.tap(find.byKey(const Key('login-button')));
+      await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('authenticator-field')), findsOneWidget);
-    await tester.tap(find.text('رمز الاسترداد'));
-    await tester.pump();
-    expect(find.byKey(const Key('recovery-field')), findsOneWidget);
+      expect(find.byKey(const Key('authenticator-field')), findsOneWidget);
+      await tester.tap(find.text('رمز الاسترداد'));
+      await tester.pump();
+      expect(find.byKey(const Key('recovery-field')), findsOneWidget);
 
-    await tester.enterText(
-      find.byKey(const Key('recovery-field')),
-      'recovery-code',
-    );
-    await tester.tap(find.byKey(const Key('verify-button')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
-  });
+      await tester.enterText(
+        find.byKey(const Key('recovery-field')),
+        'recovery-code',
+      );
+      await tester.tap(find.byKey(const Key('verify-button')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
+    },
+  );
 
   testWidgets('expired challenge shows recovery and returns to login', (
     tester,
@@ -126,13 +137,14 @@ void main() {
       expiresAt: DateTime.now().toUtc().subtract(const Duration(seconds: 1)),
     );
     final repository = FakeAuthRepository()
-      ..loginHandler = (_, __) async => LoginTwoFactorRequired(expired);
+      ..loginHandler = (_, _) async => LoginTwoFactorRequired(expired);
     await _pumpApp(tester, repository);
     await _fillLogin(tester);
     await tester.tap(find.byKey(const Key('login-button')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('challenge-expired')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('return-to-login')));
     await tester.tap(find.byKey(const Key('return-to-login')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('login-button')), findsOneWidget);
@@ -182,22 +194,23 @@ void main() {
     expect(find.byKey(const Key('login-button')), findsOneWidget);
   });
 
-  testWidgets('offline session verification offers retry without clearing login', (
-    tester,
-  ) async {
-    final repository = FakeAuthRepository()..restoreError = networkFailure();
-    await _pumpApp(tester, repository);
+  testWidgets(
+    'offline session verification offers retry without clearing login',
+    (tester) async {
+      final repository = FakeAuthRepository()..restoreError = networkFailure();
+      await _pumpApp(tester, repository);
 
-    expect(find.byKey(const Key('session-retry')), findsOneWidget);
-    expect(repository.clearCalls, 0);
+      expect(find.byKey(const Key('session-retry')), findsOneWidget);
+      expect(repository.clearCalls, 0);
 
-    repository
-      ..restoreError = null
-      ..restoreResult = sampleUser;
-    await tester.tap(find.byKey(const Key('session-retry')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
-  });
+      repository
+        ..restoreError = null
+        ..restoreResult = sampleUser;
+      await tester.tap(find.byKey(const Key('session-retry')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
+    },
+  );
 
   testWidgets('login survives large text scaling without overflow', (
     tester,
@@ -239,12 +252,6 @@ Future<ProviderContainer> _pumpApp(
 }
 
 Future<void> _fillLogin(WidgetTester tester) async {
-  await tester.enterText(
-    find.byKey(const Key('username-field')),
-    'omar',
-  );
-  await tester.enterText(
-    find.byKey(const Key('password-field')),
-    'password',
-  );
+  await tester.enterText(find.byKey(const Key('username-field')), 'omar');
+  await tester.enterText(find.byKey(const Key('password-field')), 'password');
 }

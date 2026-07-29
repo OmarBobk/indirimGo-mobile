@@ -38,8 +38,9 @@ class AuthState {
       phase == AuthPhase.submittingLogin || phase == AuthPhase.loggingOut;
 }
 
-final authControllerProvider =
-    NotifierProvider<AuthController, AuthState>(AuthController.new);
+final authControllerProvider = NotifierProvider<AuthController, AuthState>(
+  AuthController.new,
+);
 
 class AuthController extends Notifier<AuthState> {
   AuthRepository get _repository => ref.read(authRepositoryProvider);
@@ -143,16 +144,10 @@ class AuthController extends Notifier<AuthState> {
       return;
     }
 
-    state = AuthState(
-      phase: AuthPhase.submittingLogin,
-      challenge: challenge,
-    );
+    state = AuthState(phase: AuthPhase.submittingLogin, challenge: challenge);
     try {
       final session = await submit();
-      state = AuthState(
-        phase: AuthPhase.authenticated,
-        user: session.user,
-      );
+      state = AuthState(phase: AuthPhase.authenticated, user: session.user);
     } on ApiException catch (error) {
       final expired = const {
         'invalid_two_factor_challenge',

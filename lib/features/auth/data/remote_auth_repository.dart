@@ -14,20 +14,19 @@ final remoteAuthRepositoryProvider = Provider<AuthRepository>((ref) {
 
 class RemoteAuthRepository implements AuthRepository {
   const RemoteAuthRepository({
-    required ApiClient apiClient,
-    required TokenStorage tokenStorage,
-  }) : _apiClient = apiClient,
-       _tokenStorage = tokenStorage;
+    required this.apiClient,
+    required this.tokenStorage,
+  });
 
-  final ApiClient _apiClient;
-  final TokenStorage _tokenStorage;
+  final ApiClient apiClient;
+  final TokenStorage tokenStorage;
 
   @override
   Future<LoginOutcome> login({
     required String username,
     required String password,
   }) async {
-    final json = await _apiClient.post(
+    final json = await apiClient.post(
       'auth/login',
       data: {'username': username, 'password': password},
     );
@@ -46,10 +45,7 @@ class RemoteAuthRepository implements AuthRepository {
     required TwoFactorChallenge challenge,
     required String code,
   }) async {
-    return _completeTwoFactor(
-      challenge: challenge,
-      credential: {'code': code},
-    );
+    return _completeTwoFactor(challenge: challenge, credential: {'code': code});
   }
 
   @override
@@ -67,7 +63,7 @@ class RemoteAuthRepository implements AuthRepository {
     required TwoFactorChallenge challenge,
     required Map<String, Object?> credential,
   }) async {
-    final json = await _apiClient.post(
+    final json = await apiClient.post(
       'auth/two-factor-challenge',
       data: {'challenge_token': challenge.token, ...credential},
     );
@@ -79,11 +75,11 @@ class RemoteAuthRepository implements AuthRepository {
   @override
   Future<MobileUser> fetchCurrentUser() async {
     try {
-      final json = await _apiClient.get('me');
+      final json = await apiClient.get('me');
       return MobileUser.fromJson(_data(json));
     } on ApiException catch (error) {
       if (error.isAuthoritativeSessionRejection) {
-        await _tokenStorage.clear();
+        await tokenStorage.clear();
       }
       rethrow;
     }
@@ -91,7 +87,7 @@ class RemoteAuthRepository implements AuthRepository {
 
   @override
   Future<MobileUser?> restoreSession() async {
-    if (await _tokenStorage.read() == null) {
+    if (await tokenStorage.read() == null) {
       return null;
     }
     return fetchCurrentUser();
@@ -100,21 +96,21 @@ class RemoteAuthRepository implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      await _apiClient.post('auth/logout');
-      await _tokenStorage.clear();
+      await apiClient.post('auth/logout');
+      await tokenStorage.clear();
     } on ApiException catch (error) {
       if (error.isAuthoritativeSessionRejection) {
-        await _tokenStorage.clear();
+        await tokenStorage.clear();
       }
       rethrow;
     }
   }
 
   @override
-  Future<void> clearSession() => _tokenStorage.clear();
+  Future<void> clearSession() => tokenStorage.clear();
 
   Future<void> _save(AuthSession session) {
-    return _tokenStorage.write(
+    return tokenStorage.write(
       StoredSession(
         token: session.token.accessToken,
         expiresAt: session.token.expiresAt,

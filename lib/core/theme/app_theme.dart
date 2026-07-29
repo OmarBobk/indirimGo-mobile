@@ -46,7 +46,9 @@ abstract final class AppTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor: isDark ? const Color(0xFF141414) : BrandColors.paper,
+      scaffoldBackgroundColor: isDark
+          ? const Color(0xFF141414)
+          : BrandColors.paper,
     );
 
     return base.copyWith(
@@ -68,7 +70,10 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark ? const Color(0xFF292929) : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 18,
+        ),
         border: _border(scheme.onSurface.withValues(alpha: 0.18)),
         enabledBorder: _border(scheme.onSurface.withValues(alpha: 0.18)),
         focusedBorder: _border(BrandColors.yellow, width: 2),

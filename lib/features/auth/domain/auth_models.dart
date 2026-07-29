@@ -107,10 +107,7 @@ class AuthSession {
 }
 
 class TwoFactorChallenge {
-  const TwoFactorChallenge({
-    required this.token,
-    required this.expiresAt,
-  });
+  const TwoFactorChallenge({required this.token, required this.expiresAt});
 
   factory TwoFactorChallenge.fromJson(Map<String, Object?> json) {
     final data = _requiredMap(json, 'data');
@@ -205,7 +202,9 @@ Uri? _nullableUri(Map<String, Object?> json, String key) {
     return null;
   }
   final uri = Uri.tryParse(value);
-  if (uri == null || !uri.isAbsolute || !const {'http', 'https'}.contains(uri.scheme)) {
+  if (uri == null ||
+      !uri.isAbsolute ||
+      !const {'http', 'https'}.contains(uri.scheme)) {
     throw FormatException('$key must be an absolute HTTP(S) URL.');
   }
   return uri;

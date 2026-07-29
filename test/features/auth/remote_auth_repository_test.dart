@@ -27,27 +27,27 @@ void main() {
       locale: 'ar',
       dio: dio,
     );
-    repository = RemoteAuthRepository(
-      apiClient: client,
-      tokenStorage: storage,
-    );
+    repository = RemoteAuthRepository(apiClient: client, tokenStorage: storage);
   });
 
-  test('200 login stores the Sanctum token and sends required headers', () async {
-    adapter.enqueue(200, authenticationJson);
+  test(
+    '200 login stores the Sanctum token and sends required headers',
+    () async {
+      adapter.enqueue(200, authenticationJson);
 
-    final outcome = await repository.login(
-      username: 'omar',
-      password: 'password-value',
-    );
+      final outcome = await repository.login(
+        username: 'omar',
+        password: 'password-value',
+      );
 
-    expect(outcome, isA<LoginAuthenticated>());
-    expect(storage.session?.token, '7|plain-token');
-    expect(adapter.requests.single.path, 'auth/login');
-    expect(adapter.requests.single.headers['Accept'], 'application/json');
-    expect(adapter.requests.single.headers['Accept-Language'], 'ar');
-    expect(adapter.requests.single.headers['Authorization'], isNull);
-  });
+      expect(outcome, isA<LoginAuthenticated>());
+      expect(storage.session?.token, '7|plain-token');
+      expect(adapter.requests.single.path, 'auth/login');
+      expect(adapter.requests.single.headers['Accept'], 'application/json');
+      expect(adapter.requests.single.headers['Accept-Language'], 'ar');
+      expect(adapter.requests.single.headers['Authorization'], isNull);
+    },
+  );
 
   test('202 login returns an in-memory challenge without storing it', () async {
     adapter.enqueue(202, {
@@ -67,38 +67,44 @@ void main() {
     expect(storage.session, isNull);
   });
 
-  test('authenticator and recovery completion use exact contract fields', () async {
-    final challenge = TwoFactorChallenge(
-      token: 'opaque-challenge',
-      expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 5)),
-    );
-    adapter
-      ..enqueue(200, authenticationJson)
-      ..enqueue(200, authenticationJson);
+  test(
+    'authenticator and recovery completion use exact contract fields',
+    () async {
+      final challenge = TwoFactorChallenge(
+        token: 'opaque-challenge',
+        expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 5)),
+      );
+      adapter
+        ..enqueue(200, authenticationJson)
+        ..enqueue(200, authenticationJson);
 
-    await repository.completeTwoFactorWithAuthenticator(
-      challenge: challenge,
-      code: '123456',
-    );
-    await repository.completeTwoFactorWithRecoveryCode(
-      challenge: challenge,
-      recoveryCode: 'recovery-value',
-    );
+      await repository.completeTwoFactorWithAuthenticator(
+        challenge: challenge,
+        code: '123456',
+      );
+      await repository.completeTwoFactorWithRecoveryCode(
+        challenge: challenge,
+        recoveryCode: 'recovery-value',
+      );
 
-    expect(adapter.requests[0].data, {
-      'challenge_token': 'opaque-challenge',
-      'code': '123456',
-    });
-    expect(adapter.requests[1].data, {
-      'challenge_token': 'opaque-challenge',
-      'recovery_code': 'recovery-value',
-    });
-    expect(storage.session?.token, '7|plain-token');
-  });
+      expect(adapter.requests[0].data, {
+        'challenge_token': 'opaque-challenge',
+        'code': '123456',
+      });
+      expect(adapter.requests[1].data, {
+        'challenge_token': 'opaque-challenge',
+        'recovery_code': 'recovery-value',
+      });
+      expect(storage.session?.token, '7|plain-token');
+    },
+  );
 
   test('maps 401 and clears the rejected token', () async {
     storage.session = storedSession;
-    adapter.enqueue(401, {'message': 'Unauthenticated.', 'code': 'unauthenticated'});
+    adapter.enqueue(401, {
+      'message': 'Unauthenticated.',
+      'code': 'unauthenticated',
+    });
 
     await expectLater(
       repository.fetchCurrentUser(),
@@ -115,10 +121,7 @@ void main() {
 
   test('maps 403 422 and 429 with field and retry details', () async {
     adapter
-      ..enqueue(403, {
-        'message': 'Forbidden',
-        'code': 'customer_role_required',
-      })
+      ..enqueue(403, {'message': 'Forbidden', 'code': 'customer_role_required'})
       ..enqueue(422, {
         'message': 'Invalid',
         'errors': {
@@ -172,10 +175,7 @@ void main() {
     ]) {
       storage.session = storedSession;
       adapter.enqueueFailure(failure);
-      await expectLater(
-        client.get('me'),
-        throwsA(isA<ApiException>()),
-      );
+      await expectLater(client.get('me'), throwsA(isA<ApiException>()));
       expect(storage.session?.token, storedSession.token);
     }
 
@@ -185,35 +185,41 @@ void main() {
     expect(storage.session?.token, storedSession.token);
   });
 
-  test('logout clears after confirmation but keeps token when offline', () async {
-    storage.session = storedSession;
-    adapter.enqueue(200, {
-      'data': {'message': 'Logged out successfully.'},
-    });
-    await repository.logout();
-    expect(storage.session, isNull);
+  test(
+    'logout clears after confirmation but keeps token when offline',
+    () async {
+      storage.session = storedSession;
+      adapter.enqueue(200, {
+        'data': {'message': 'Logged out successfully.'},
+      });
+      await repository.logout();
+      expect(storage.session, isNull);
 
-    storage.session = storedSession;
-    adapter.enqueueFailure(DioExceptionType.connectionError);
-    await expectLater(repository.logout(), throwsA(isA<ApiException>()));
-    expect(storage.session?.token, storedSession.token);
-  });
+      storage.session = storedSession;
+      adapter.enqueueFailure(DioExceptionType.connectionError);
+      await expectLater(repository.logout(), throwsA(isA<ApiException>()));
+      expect(storage.session?.token, storedSession.token);
+    },
+  );
 
-  test('exception strings do not expose server messages or bearer tokens', () async {
-    storage.session = storedSession;
-    adapter.enqueue(422, {
-      'message': 'Leaked 7|sensitive-token',
-      'code': 'invalid_credentials',
-    });
+  test(
+    'exception strings do not expose server messages or bearer tokens',
+    () async {
+      storage.session = storedSession;
+      adapter.enqueue(422, {
+        'message': 'Leaked 7|sensitive-token',
+        'code': 'invalid_credentials',
+      });
 
-    try {
-      await client.post('auth/login');
-      fail('Expected request to fail');
-    } on ApiException catch (error) {
-      expect(error.toString(), isNot(contains('sensitive-token')));
-      expect(error.toString(), isNot(contains('Leaked')));
-    }
-  });
+      try {
+        await client.post('auth/login');
+        fail('Expected request to fail');
+      } on ApiException catch (error) {
+        expect(error.toString(), isNot(contains('sensitive-token')));
+        expect(error.toString(), isNot(contains('Leaked')));
+      }
+    },
+  );
 }
 
 final storedSession = StoredSession(
