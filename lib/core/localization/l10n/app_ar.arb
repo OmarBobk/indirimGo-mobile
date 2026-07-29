@@ -1,0 +1,95 @@
+{
+  "@@locale": "ar",
+  "appName": "إندريم غو",
+  "brandLatin": "İndirimGo",
+  "loginEyebrow": "تسوّق بثقة",
+  "loginTitle": "أهلاً بعودتك",
+  "loginSubtitle": "سجّل الدخول إلى حساب العميل للمتابعة.",
+  "usernameLabel": "اسم المستخدم",
+  "usernameHint": "أدخل اسم المستخدم",
+  "passwordLabel": "كلمة المرور",
+  "passwordHint": "أدخل كلمة المرور",
+  "showPassword": "إظهار كلمة المرور",
+  "hidePassword": "إخفاء كلمة المرور",
+  "loginAction": "تسجيل الدخول",
+  "loggingIn": "جارٍ تسجيل الدخول",
+  "usernameRequired": "اسم المستخدم مطلوب.",
+  "passwordRequired": "كلمة المرور مطلوبة.",
+  "languageAction": "English",
+  "secureLoginNote": "اتصال آمن بحساب إندريم غو",
+  "twoFactorTitle": "التحقق بخطوتين",
+  "twoFactorSubtitle": "أدخل رمز تطبيق المصادقة المكوّن من 6 أرقام.",
+  "authenticatorInstructions": "أدخل رمز تطبيق المصادقة المكوّن من 6 أرقام.",
+  "recoveryInstructions": "أدخل أحد رموز الاسترداد المحفوظة لديك.",
+  "authenticatorMode": "رمز المصادقة",
+  "recoveryMode": "رمز الاسترداد",
+  "authenticatorCodeLabel": "رمز المصادقة",
+  "authenticatorCodeHint": "000000",
+  "recoveryCodeLabel": "رمز الاسترداد",
+  "recoveryCodeHint": "أدخل رمز الاسترداد",
+  "codeRequired": "أدخل رمز المصادقة.",
+  "codeSixDigits": "يجب أن يتكوّن الرمز من 6 أرقام.",
+  "recoveryCodeRequired": "أدخل رمز الاسترداد.",
+  "invalidFieldValue": "تحقق من هذه القيمة ثم حاول مجدداً.",
+  "verifyAction": "تحقق",
+  "verifying": "جارٍ التحقق",
+  "backToLogin": "العودة إلى تسجيل الدخول",
+  "challengeExpired": "انتهت صلاحية محاولة التحقق. ارجع وسجّل الدخول مجدداً.",
+  "startupTitle": "جارٍ التحقق من جلستك",
+  "startupSubtitle": "لحظة واحدة من فضلك.",
+  "offlineTitle": "تعذّر التحقق من الجلسة",
+  "offlineSubtitle": "احتفظنا بتسجيل دخولك. تحقق من الاتصال ثم حاول مرة أخرى.",
+  "serverVerificationTitle": "الخدمة غير متاحة مؤقتاً",
+  "serverVerificationSubtitle": "احتفظنا بتسجيل دخولك. حاول مجدداً لاحقاً.",
+  "storageVerificationTitle": "تعذّر الوصول إلى مخزن تسجيل الدخول الآمن",
+  "storageVerificationSubtitle": "أعد تشغيل التطبيق وحاول مجدداً. قد تحتاج إلى تسجيل الدخول مرة أخرى.",
+  "sessionVerificationTitle": "تعذّر التحقق من جلستك",
+  "sessionVerificationSubtitle": "احتفظنا بتسجيل دخولك. حاول مجدداً.",
+  "retryAction": "إعادة المحاولة",
+  "homeTitle": "الرئيسية",
+  "homePlaceholder": "الأساس جاهز",
+  "homePlaceholderBody": "ستُضاف مزايا التسوق في مراحل لاحقة.",
+  "accountTitle": "الحساب",
+  "welcomeUser": "مرحباً، {name}",
+  "@welcomeUser": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "usernameValue": "اسم المستخدم: {username}",
+  "@usernameValue": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "emailValue": "البريد الإلكتروني: {email}",
+  "@emailValue": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "logoutAction": "تسجيل الخروج",
+  "loggingOut": "جارٍ تسجيل الخروج",
+  "sessionFailure": "تعذّر إكمال العملية. حاول مرة أخرى.",
+  "networkError": "تعذّر الاتصال بالخادم. تحقق من الإنترنت.",
+  "serverError": "الخدمة غير متاحة مؤقتاً. حاول لاحقاً.",
+  "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة.",
+  "accountInactive": "الحساب غير نشط. يرجى التواصل مع الدعم.",
+  "accountBlocked": "الحساب محظور. يرجى التواصل مع الدعم.",
+  "customerRoleRequired": "هذا الحساب غير متاح في تطبيق العملاء.",
+  "invalidTwoFactorCode": "رمز المصادقة غير صحيح.",
+  "invalidRecoveryCode": "رمز الاسترداد غير صحيح.",
+  "twoFactorAttemptsExceeded": "تم تجاوز عدد المحاولات. سجّل الدخول مجدداً.",
+  "tooManyRequests": "محاولات كثيرة. انتظر قليلاً ثم حاول مجدداً.",
+  "rateLimitSeconds": "{seconds, plural, zero {يمكنك المحاولة الآن.} one {حاول مجدداً بعد ثانية واحدة.} two {حاول مجدداً بعد ثانيتين.} few {حاول مجدداً بعد {seconds} ثوانٍ.} many {حاول مجدداً بعد {seconds} ثانيةً.} other {حاول مجدداً بعد {seconds} ثانية.}}",
+  "@rateLimitSeconds": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "unauthenticated": "انتهت الجلسة. سجّل الدخول مجدداً.",
+  "configurationErrorTitle": "إعداد التطبيق غير مكتمل",
+  "configurationErrorBody": "يجب تشغيل التطبيق مع API_BASE_URL صالح.",
+  "dismissError": "إغلاق التنبيه",
+  "errorAnnouncement": "خطأ"
+}

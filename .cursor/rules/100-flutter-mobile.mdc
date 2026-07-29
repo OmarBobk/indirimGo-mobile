@@ -1,0 +1,44 @@
+---
+description: "İndirimGo Flutter architecture, API, localization, and security boundaries"
+globs: ["lib/**/*.dart", "test/**/*.dart", "android/**/*", "pubspec.yaml"]
+---
+
+# Flutter mobile rules
+
+## Ownership and PR control
+
+- Only Omar may merge, close, mark ready, auto-merge, change the PR target, or
+  delete the working branch.
+- Keep PRs draft/open unless Omar explicitly instructs otherwise.
+- Do not create a replacement PR for an existing reviewable PR unless Omar
+  explicitly requests that.
+
+## Architecture and API
+
+- Laravel `origin/staging` `docs/api/v1/openapi.yaml` is the API source of truth.
+- Keep code feature-first, testable, and understandable without generic clean
+  architecture boilerplate.
+- Use Riverpod and go_router without code generation.
+- Keep one configured Dio client. Never log auth request/response data.
+- Keep bearer tokens only in the `TokenStorage` secure-storage abstraction.
+- Persist access token and expiry together as one atomic secure-storage value.
+- Never persist username/password, authenticator/recovery codes, or 2FA
+  challenges.
+- Clear local auth on authoritative rejection, not on timeout/offline/5xx.
+- Clear tokens only for the request session that observed unauthorized
+  responses.
+- Do not decide 2FA expiry on the client clock; let the API own challenge
+  validity.
+- Never surface raw API `message` or unknown `code` values in UI.
+- Put all user-facing strings in ARB files and maintain Arabic/English parity.
+- Preserve Android namespace and application ID `tr.indirimgo.app`.
+- Main/release Android must deny cleartext; only debug may allow local HTTP for
+  `10.0.2.2`, `127.0.0.1`, and `localhost`.
+- Keep Android backup disabled while tokens live in app-private secure storage.
+- Pin CI Flutter/Dart versions; do not float on `channel: stable` without an
+  exact version.
+- Flutter must never calculate trusted prices or mutate financial state
+  independently of Laravel.
+- Do not add biometric unlock, refresh tokens, deep links, push, maps, media
+  upload, or other deferred features during M1.2.
+- Do not claim production-signing readiness from debug APK success alone.

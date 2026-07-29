@@ -1,0 +1,84 @@
+name: Flutter CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flutter-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pinned Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+
+      - name: Verify SDK versions
+        run: |
+          flutter --version
+          test "$(flutter --version --machine | jq -r .frameworkVersion)" = "3.44.8"
+          test "$(flutter --version --machine | jq -r .dartSdkVersion)" = "3.12.2"
+
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Verify dependency lockfile
+        run: git diff --exit-code -- pubspec.lock
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build debug APK
+        run: >-
+          flutter build apk --debug
+          --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
+
+      - name: Set up Android SDK command-line tools
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          cmdline-tools-version: '14742923'
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: false
+
+      - name: Verify effective Android security policy
+        run: |
+          set -euo pipefail
+          apk_path='build/app/outputs/flutter-apk/app-debug.apk'
+          if ! command -v apkanalyzer >/dev/null 2>&1; then
+            echo 'CI tooling error: apkanalyzer is not executable on PATH after Android SDK setup.' >&2
+            exit 1
+          fi
+          if [[ ! -f "${apk_path}" ]]; then
+            echo "CI tooling error: missing debug APK at ${apk_path}." >&2
+            exit 1
+          fi
+          manifest_file="$(mktemp)"
+          trap 'rm -f "${manifest_file}"' EXIT
+          apkanalyzer manifest print "${apk_path}" > "${manifest_file}"
+          if [[ ! -s "${manifest_file}" ]]; then
+            echo 'CI tooling error: apkanalyzer produced an empty manifest; refusing verification.' >&2
+            exit 1
+          fi
+          echo 'Effective uses-permission entries:'
+          grep -E 'uses-permission' "${manifest_file}" || true
+          dart run tool/verify_android_security.dart --merged-manifest-stdin < "${manifest_file}"
