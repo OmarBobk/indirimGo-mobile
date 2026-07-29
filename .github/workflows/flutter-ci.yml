@@ -53,9 +53,30 @@ jobs:
           flutter build apk --debug
           --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
 
+      - name: Set up Android SDK command-line tools
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          cmdline-tools-version: '14742923'
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: false
+
       - name: Verify effective Android security policy
-        run: >-
-          apkanalyzer manifest print
-          build/app/outputs/flutter-apk/app-debug.apk
-          | dart run tool/verify_android_security.dart
-          --merged-manifest-stdin
+        run: |
+          set -euo pipefail
+          apk_path='build/app/outputs/flutter-apk/app-debug.apk'
+          if ! command -v apkanalyzer >/dev/null 2>&1; then
+            echo 'CI tooling error: apkanalyzer is not executable on PATH after Android SDK setup.' >&2
+            exit 1
+          fi
+          if [[ ! -f "${apk_path}" ]]; then
+            echo "CI tooling error: missing debug APK at ${apk_path}." >&2
+            exit 1
+          fi
+          manifest_file="$(mktemp)"
+          trap 'rm -f "${manifest_file}"' EXIT
+          apkanalyzer manifest print "${apk_path}" > "${manifest_file}"
+          if [[ ! -s "${manifest_file}" ]]; then
+            echo 'CI tooling error: apkanalyzer produced an empty manifest; refusing verification.' >&2
+            exit 1
+          fi
+          dart run tool/verify_android_security.dart --merged-manifest-stdin < "${manifest_file}"
