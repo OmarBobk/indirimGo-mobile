@@ -1,0 +1,21 @@
+---
+description: "İndirimGo Flutter architecture, API, localization, and security boundaries"
+globs: ["lib/**/*.dart", "test/**/*.dart", "android/**/*", "pubspec.yaml"]
+---
+
+# Flutter mobile rules
+
+- Laravel `origin/staging` `docs/api/v1/openapi.yaml` is the API source of truth.
+- Keep code feature-first, testable, and understandable without generic clean
+  architecture boilerplate.
+- Use Riverpod and go_router without code generation.
+- Keep one configured Dio client. Never log auth request/response data.
+- Keep bearer tokens only in the `TokenStorage` secure-storage abstraction.
+- Never persist username/password, authenticator/recovery codes, or 2FA
+  challenges.
+- Clear local auth on authoritative rejection, not on timeout/offline/5xx.
+- Put all user-facing strings in ARB files and maintain Arabic/English parity.
+- Preserve Android namespace and application ID `tr.indirimgo.app`.
+- Main/release Android must deny cleartext; only debug may allow local HTTP.
+- Flutter must never calculate trusted prices or mutate financial state
+  independently of Laravel.

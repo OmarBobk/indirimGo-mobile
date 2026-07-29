@@ -1,0 +1,86 @@
+{
+  "@@locale": "en",
+  "appName": "İndirimGo",
+  "brandLatin": "İndirimGo",
+  "loginEyebrow": "SHOP WITH CONFIDENCE",
+  "loginTitle": "Welcome back",
+  "loginSubtitle": "Sign in to your customer account to continue.",
+  "usernameLabel": "Username",
+  "usernameHint": "Enter your username",
+  "passwordLabel": "Password",
+  "passwordHint": "Enter your password",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "loginAction": "Sign in",
+  "loggingIn": "Signing in",
+  "usernameRequired": "Username is required.",
+  "passwordRequired": "Password is required.",
+  "languageAction": "العربية",
+  "secureLoginNote": "Secure connection to your İndirimGo account",
+  "twoFactorTitle": "Two-step verification",
+  "twoFactorSubtitle": "Enter the 6-digit code from your authenticator app.",
+  "authenticatorMode": "Authenticator",
+  "recoveryMode": "Recovery code",
+  "authenticatorCodeLabel": "Authenticator code",
+  "authenticatorCodeHint": "000000",
+  "recoveryCodeLabel": "Recovery code",
+  "recoveryCodeHint": "Enter your recovery code",
+  "codeRequired": "Enter your authenticator code.",
+  "codeSixDigits": "The code must contain 6 digits.",
+  "recoveryCodeRequired": "Enter your recovery code.",
+  "verifyAction": "Verify",
+  "verifying": "Verifying",
+  "backToLogin": "Back to sign in",
+  "challengeExpired": "This verification attempt expired. Return and sign in again.",
+  "startupTitle": "Checking your session",
+  "startupSubtitle": "One moment, please.",
+  "offlineTitle": "We could not verify your session",
+  "offlineSubtitle": "Your sign-in is still saved. Check your connection and try again.",
+  "retryAction": "Try again",
+  "homeTitle": "Home",
+  "homePlaceholder": "The foundation is ready",
+  "homePlaceholderBody": "Shopping features will arrive in later milestones.",
+  "accountTitle": "Account",
+  "welcomeUser": "Welcome, {name}",
+  "@welcomeUser": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "usernameValue": "Username: {username}",
+  "@usernameValue": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "emailValue": "Email: {email}",
+  "@emailValue": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "logoutAction": "Sign out",
+  "loggingOut": "Signing out",
+  "sessionFailure": "The operation could not be completed. Try again.",
+  "networkError": "Could not reach the server. Check your connection.",
+  "serverError": "The service is temporarily unavailable. Try again later.",
+  "invalidCredentials": "The username or password is incorrect.",
+  "accountInactive": "This account is inactive. Contact support.",
+  "accountBlocked": "This account is blocked. Contact support.",
+  "customerRoleRequired": "This account cannot use the customer app.",
+  "invalidTwoFactorCode": "The authenticator code is invalid.",
+  "invalidRecoveryCode": "The recovery code is invalid.",
+  "twoFactorAttemptsExceeded": "Too many verification attempts. Sign in again.",
+  "tooManyRequests": "Too many attempts. Wait and try again.",
+  "rateLimitSeconds": "Try again in {seconds} seconds.",
+  "@rateLimitSeconds": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "unauthenticated": "Your session ended. Sign in again.",
+  "configurationErrorTitle": "App configuration is incomplete",
+  "configurationErrorBody": "Run the app with a valid API_BASE_URL.",
+  "dismissError": "Dismiss alert",
+  "errorAnnouncement": "Error"
+}
