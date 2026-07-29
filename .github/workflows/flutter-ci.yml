@@ -79,4 +79,6 @@ jobs:
             echo 'CI tooling error: apkanalyzer produced an empty manifest; refusing verification.' >&2
             exit 1
           fi
+          echo 'Effective uses-permission entries:'
+          grep -E 'uses-permission' "${manifest_file}" || true
           dart run tool/verify_android_security.dart --merged-manifest-stdin < "${manifest_file}"

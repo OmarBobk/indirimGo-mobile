@@ -30,11 +30,15 @@ Future<void> main(List<String> arguments) async {
   );
 
   final permissions = RegExp(
-    r'<uses-permission[^>]+android:name="([^"]+)"',
-  ).allMatches(mergedManifest).map((match) => match.group(1)).toSet();
+    r'<uses-permission[^>]*android:name="([^"]+)"',
+  ).allMatches(mergedManifest).map((match) => match.group(1)!).toSet();
+  final unexpected = permissions.difference(const {
+    'android.permission.INTERNET',
+  });
   _require(
-    permissions.difference(const {'android.permission.INTERNET'}).isEmpty,
-    'The effective manifest includes an unnecessary permission.',
+    unexpected.isEmpty,
+    'The effective manifest includes unnecessary permission(s): '
+    '${unexpected.toList()..sort()}.',
   );
 
   final debugPolicy = File(
