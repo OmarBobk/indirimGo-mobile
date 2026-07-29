@@ -30,6 +30,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     if (_mode == mode) {
       return;
     }
+    ref.read(authControllerProvider.notifier).clearTwoFactorError();
     setState(() {
       _mode = mode;
       _controller.clear();
@@ -55,12 +56,14 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     final auth = ref.watch(authControllerProvider);
     final isLoading =
         auth.phase == AuthPhase.submittingLogin && auth.challenge != null;
-    final expired =
-        auth.challengeExpired || (auth.challenge?.isExpired ?? true);
+    final terminalReason = auth.twoFactorTerminalReason;
+    final isTerminal = terminalReason != null;
     final field = _mode == _TwoFactorMode.authenticator
         ? 'code'
         : 'recovery_code';
-    final serverError = auth.fieldErrors[field]?.firstOrNull;
+    final serverError = auth.fieldErrors.containsKey(field)
+        ? l10n.invalidFieldValue
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -104,35 +107,45 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      l10n.twoFactorSubtitle,
+                      _mode == _TwoFactorMode.authenticator
+                          ? l10n.authenticatorInstructions
+                          : l10n.recoveryInstructions,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    SegmentedButton<_TwoFactorMode>(
-                      key: const Key('two-factor-mode'),
-                      segments: [
-                        ButtonSegment(
-                          value: _TwoFactorMode.authenticator,
-                          icon: const Icon(Icons.password_outlined),
-                          label: Text(l10n.authenticatorMode),
-                        ),
-                        ButtonSegment(
-                          value: _TwoFactorMode.recovery,
-                          icon: const Icon(Icons.key_outlined),
-                          label: Text(l10n.recoveryMode),
-                        ),
-                      ],
-                      selected: {_mode},
-                      onSelectionChanged: isLoading || expired
-                          ? null
-                          : (selection) => _switchMode(selection.single),
-                      showSelectedIcon: false,
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SegmentedButton<_TwoFactorMode>(
+                        key: const Key('two-factor-mode'),
+                        segments: [
+                          ButtonSegment(
+                            value: _TwoFactorMode.authenticator,
+                            icon: const Icon(Icons.password_outlined),
+                            label: Text(l10n.authenticatorMode),
+                          ),
+                          ButtonSegment(
+                            value: _TwoFactorMode.recovery,
+                            icon: const Icon(Icons.key_outlined),
+                            label: Text(l10n.recoveryMode),
+                          ),
+                        ],
+                        selected: {_mode},
+                        onSelectionChanged: isLoading || isTerminal
+                            ? null
+                            : (selection) => _switchMode(selection.single),
+                        showSelectedIcon: false,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    if (expired)
+                    if (terminalReason != null)
                       _TwoFactorNotice(
                         key: const Key('challenge-expired'),
-                        message: l10n.challengeExpired,
+                        message: switch (terminalReason) {
+                          TwoFactorTerminalReason.invalidOrExpired =>
+                            l10n.challengeExpired,
+                          TwoFactorTerminalReason.attemptsExceeded =>
+                            l10n.twoFactorAttemptsExceeded,
+                        },
                       )
                     else if (auth.error != null)
                       _TwoFactorNotice(
@@ -141,10 +154,18 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
                     TextFormField(
                       key: ValueKey('${_mode.name}-field'),
                       controller: _controller,
-                      enabled: !isLoading && !expired,
+                      enabled: !isLoading && !isTerminal,
                       autofocus: true,
                       autocorrect: false,
                       enableSuggestions: false,
+                      enableIMEPersonalizedLearning: false,
+                      smartDashesType: SmartDashesType.disabled,
+                      smartQuotesType: SmartQuotesType.disabled,
+                      textCapitalization: TextCapitalization.none,
+                      textDirection: TextDirection.ltr,
+                      autofillHints: _mode == _TwoFactorMode.authenticator
+                          ? const [AutofillHints.oneTimeCode]
+                          : null,
                       textInputAction: TextInputAction.done,
                       keyboardType: _mode == _TwoFactorMode.authenticator
                           ? TextInputType.number
@@ -178,21 +199,26 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
                         return null;
                       },
                       onFieldSubmitted: (_) =>
-                          isLoading || expired ? null : _submit(),
+                          isLoading || isTerminal ? null : _submit(),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    FilledButton(
-                      key: const Key('verify-button'),
-                      onPressed: isLoading || expired ? null : _submit,
-                      child: isLoading
-                          ? const SizedBox.square(
-                              dimension: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: BrandColors.ink,
-                              ),
-                            )
-                          : Text(l10n.verifyAction),
+                    Semantics(
+                      button: true,
+                      liveRegion: isLoading,
+                      label: isLoading ? l10n.verifying : l10n.verifyAction,
+                      child: FilledButton(
+                        key: const Key('verify-button'),
+                        onPressed: isLoading || isTerminal ? null : _submit,
+                        child: isLoading
+                            ? const SizedBox.square(
+                                dimension: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: BrandColors.ink,
+                                ),
+                              )
+                            : Text(l10n.verifyAction),
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     TextButton(

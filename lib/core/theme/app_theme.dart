@@ -31,12 +31,17 @@ abstract final class AppTheme {
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
+    final accessibleAccent = isDark
+        ? BrandColors.yellowSoft
+        : BrandColors.warning;
     final scheme = ColorScheme(
       brightness: brightness,
       primary: BrandColors.yellow,
       onPrimary: BrandColors.ink,
       secondary: isDark ? BrandColors.yellowSoft : BrandColors.ink,
       onSecondary: isDark ? BrandColors.ink : Colors.white,
+      tertiary: accessibleAccent,
+      onTertiary: isDark ? BrandColors.ink : Colors.white,
       error: isDark ? const Color(0xFFFFB4AB) : BrandColors.error,
       onError: isDark ? const Color(0xFF690005) : Colors.white,
       surface: isDark ? BrandColors.darkSurface : BrandColors.paper,
@@ -76,7 +81,7 @@ abstract final class AppTheme {
         ),
         border: _border(scheme.onSurface.withValues(alpha: 0.18)),
         enabledBorder: _border(scheme.onSurface.withValues(alpha: 0.18)),
-        focusedBorder: _border(BrandColors.yellow, width: 2),
+        focusedBorder: _border(scheme.tertiary, width: 2),
         errorBorder: _border(scheme.error),
         focusedErrorBorder: _border(scheme.error, width: 2),
       ),

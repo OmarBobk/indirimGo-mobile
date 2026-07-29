@@ -100,25 +100,32 @@ class ShellScreen extends ConsumerWidget {
                             ),
                           ],
                           const SizedBox(height: AppSpacing.lg),
-                          OutlinedButton.icon(
-                            key: const Key('logout-button'),
-                            onPressed: isLoggingOut
-                                ? null
-                                : ref
-                                      .read(authControllerProvider.notifier)
-                                      .logout,
-                            icon: isLoggingOut
-                                ? const SizedBox.square(
-                                    dimension: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.logout),
-                            label: Text(
-                              isLoggingOut
-                                  ? l10n.loggingOut
-                                  : l10n.logoutAction,
+                          Semantics(
+                            button: true,
+                            liveRegion: isLoggingOut,
+                            label: isLoggingOut
+                                ? l10n.loggingOut
+                                : l10n.logoutAction,
+                            child: OutlinedButton.icon(
+                              key: const Key('logout-button'),
+                              onPressed: isLoggingOut
+                                  ? null
+                                  : ref
+                                        .read(authControllerProvider.notifier)
+                                        .logout,
+                              icon: isLoggingOut
+                                  ? const SizedBox.square(
+                                      dimension: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.logout),
+                              label: Text(
+                                isLoggingOut
+                                    ? l10n.loggingOut
+                                    : l10n.logoutAction,
+                              ),
                             ),
                           ),
                         ],

@@ -17,14 +17,14 @@ void main() {
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized()
         .platformDispatcher
-        .localeTestValue = const Locale(
-      'ar',
-    );
+        .localesTestValue = const [
+      Locale('ar'),
+    ];
   });
 
   tearDown(() {
     TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher
-        .clearLocaleTestValue();
+        .clearLocalesTestValue();
   });
 
   testWidgets('Arabic is RTL and English can be selected', (tester) async {
@@ -46,7 +46,21 @@ void main() {
 
     await tester.tap(find.byKey(const Key('language-toggle')));
     await tester.pumpAndSettle();
-    expect(find.text('Welcome back'), findsOneWidget);
+    final englishTitle = find.text('Welcome back');
+    expect(englishTitle, findsOneWidget);
+    expect(
+      tester
+          .widget<Directionality>(
+            find
+                .ancestor(
+                  of: englishTitle,
+                  matching: find.byType(Directionality),
+                )
+                .first,
+          )
+          .textDirection,
+      TextDirection.ltr,
+    );
   });
 
   testWidgets('required fields validate locally', (tester) async {
@@ -99,7 +113,7 @@ void main() {
     await tester.tap(find.byKey(const Key('login-button')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Server username error'), findsOneWidget);
+    expect(find.text('تحقق من هذه القيمة ثم حاول مجدداً.'), findsOneWidget);
     expect(find.text('اسم المستخدم أو كلمة المرور غير صحيحة.'), findsOneWidget);
   });
 
@@ -129,7 +143,44 @@ void main() {
     },
   );
 
-  testWidgets('expired challenge shows recovery and returns to login', (
+  testWidgets('switching 2FA mode clears stale errors and instructions', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository()
+      ..loginHandler = (_, _) async {
+        return LoginTwoFactorRequired(sampleChallenge);
+      }
+      ..authenticatorHandler = (_, _) async {
+        throw const ApiException(
+          kind: ApiErrorKind.validation,
+          code: 'invalid_two_factor_code',
+          fieldErrors: {
+            'code': ['invalid'],
+          },
+        );
+      };
+    await _pumpApp(tester, repository);
+    await _fillLogin(tester);
+    await tester.tap(find.byKey(const Key('login-button')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('authenticator-field')),
+      '123456',
+    );
+    await tester.tap(find.byKey(const Key('verify-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('رمز المصادقة غير صحيح.'), findsOneWidget);
+    expect(find.text('تحقق من هذه القيمة ثم حاول مجدداً.'), findsOneWidget);
+
+    await tester.tap(find.text('رمز الاسترداد'));
+    await tester.pump();
+    expect(find.text('رمز المصادقة غير صحيح.'), findsNothing);
+    expect(find.text('تحقق من هذه القيمة ثم حاول مجدداً.'), findsNothing);
+    expect(find.text('أدخل أحد رموز الاسترداد المحفوظة لديك.'), findsOneWidget);
+  });
+
+  testWidgets('server-expired challenge shows recovery and returns to login', (
     tester,
   ) async {
     final expired = TwoFactorChallenge(
@@ -137,17 +188,62 @@ void main() {
       expiresAt: DateTime.now().toUtc().subtract(const Duration(seconds: 1)),
     );
     final repository = FakeAuthRepository()
-      ..loginHandler = (_, _) async => LoginTwoFactorRequired(expired);
+      ..loginHandler = (_, _) async {
+        return LoginTwoFactorRequired(expired);
+      }
+      ..authenticatorHandler = (_, _) async {
+        throw const ApiException(
+          kind: ApiErrorKind.validation,
+          code: 'invalid_two_factor_challenge',
+        );
+      };
     await _pumpApp(tester, repository);
     await _fillLogin(tester);
     await tester.tap(find.byKey(const Key('login-button')));
     await tester.pumpAndSettle();
 
+    await tester.enterText(
+      find.byKey(const Key('authenticator-field')),
+      '123456',
+    );
+    await tester.tap(find.byKey(const Key('verify-button')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('challenge-expired')), findsOneWidget);
     await tester.ensureVisible(find.byKey(const Key('return-to-login')));
     await tester.tap(find.byKey(const Key('return-to-login')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('login-button')), findsOneWidget);
+  });
+
+  testWidgets('attempts exhausted keeps its documented terminal message', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository()
+      ..loginHandler = (_, _) async {
+        return LoginTwoFactorRequired(sampleChallenge);
+      }
+      ..authenticatorHandler = (_, _) async {
+        throw const ApiException(
+          kind: ApiErrorKind.validation,
+          code: 'two_factor_attempts_exceeded',
+        );
+      };
+    await _pumpApp(tester, repository);
+    await _fillLogin(tester);
+    await tester.tap(find.byKey(const Key('login-button')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('authenticator-field')),
+      '123456',
+    );
+    await tester.tap(find.byKey(const Key('verify-button')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('تم تجاوز عدد المحاولات. سجّل الدخول مجدداً.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('انتهت صلاحية محاولة التحقق'), findsNothing);
   });
 
   testWidgets('startup restoration never flashes the login screen', (
@@ -176,6 +272,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('login-button')), findsOneWidget);
     expect(find.byKey(const Key('authenticated-shell')), findsNothing);
+
+    container.read(routerProvider).go(AppRoutes.twoFactor);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('login-button')), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('authenticated users redirect away from login and can logout', (
@@ -222,6 +323,70 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byKey(const Key('login-button')), findsOneWidget);
   });
+
+  testWidgets('two-factor survives narrow large-text layout', (tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 3;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+      tester.platformDispatcher.clearTextScaleFactorTestValue();
+    });
+    final repository = FakeAuthRepository()
+      ..loginHandler = (_, _) async => LoginTwoFactorRequired(sampleChallenge);
+
+    await _pumpApp(tester, repository);
+    await _fillLogin(tester);
+    await tester.ensureVisible(find.byKey(const Key('login-button')));
+    await tester.tap(find.byKey(const Key('login-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('verify-button')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('verify-button')));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('two-factor progress has a localized semantic label', (
+    tester,
+  ) async {
+    final completion = Completer<AuthSession>();
+    final repository = FakeAuthRepository()
+      ..loginHandler = (_, _) async {
+        return LoginTwoFactorRequired(sampleChallenge);
+      }
+      ..authenticatorHandler = (_, _) => completion.future;
+    await _pumpApp(tester, repository);
+    await _fillLogin(tester);
+    await tester.tap(find.byKey(const Key('login-button')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('authenticator-field')),
+      '123456',
+    );
+
+    await tester.tap(find.byKey(const Key('verify-button')));
+    await tester.pump();
+    expect(find.bySemanticsLabel('جارٍ التحقق'), findsOneWidget);
+    expect(repository.authenticatorCalls, 1);
+
+    completion.complete(sampleSession);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('unknown errors render only generic localized copy', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository()
+      ..loginHandler = (_, _) async =>
+          throw const ApiException(kind: ApiErrorKind.unknown);
+    await _pumpApp(tester, repository);
+    await _fillLogin(tester);
+    await tester.tap(find.byKey(const Key('login-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('تعذّر إكمال العملية. حاول مرة أخرى.'), findsOneWidget);
+  });
 }
 
 Future<ProviderContainer> _pumpApp(
@@ -232,7 +397,10 @@ Future<ProviderContainer> _pumpApp(
   final container = ProviderContainer(
     overrides: [
       appConfigProvider.overrideWithValue(
-        AppConfig(apiBaseUrl: 'https://api.example.test/api/v1'),
+        AppConfig(
+          apiBaseUrl: 'https://api.example.test/api/v1',
+          buildMode: AppBuildMode.release,
+        ),
       ),
       tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
       authRepositoryProvider.overrideWithValue(repository),

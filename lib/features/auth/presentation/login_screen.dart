@@ -46,8 +46,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final l10n = AppLocalizations.of(context);
     final auth = ref.watch(authControllerProvider);
     final isLoading = auth.phase == AuthPhase.submittingLogin;
-    final usernameServerError = auth.fieldErrors['username']?.firstOrNull;
-    final passwordServerError = auth.fieldErrors['password']?.firstOrNull;
+    final usernameServerError = auth.fieldErrors.containsKey('username')
+        ? l10n.invalidFieldValue
+        : null;
+    final passwordServerError = auth.fieldErrors.containsKey('password')
+        ? l10n.invalidFieldValue
+        : null;
 
     return Scaffold(
       body: SafeArea(
@@ -95,7 +99,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               l10n.loginEyebrow,
                               style: Theme.of(context).textTheme.labelLarge
                                   ?.copyWith(
-                                    color: BrandColors.warning,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.tertiary,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 1.4,
                                   ),
@@ -119,6 +125,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               key: const Key('username-field'),
                               controller: _usernameController,
                               enabled: !isLoading,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              enableIMEPersonalizedLearning: false,
+                              textCapitalization: TextCapitalization.none,
                               autofillHints: const [AutofillHints.username],
                               textInputAction: TextInputAction.next,
                               keyboardType: TextInputType.text,
@@ -142,6 +152,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               focusNode: _passwordFocus,
                               enabled: !isLoading,
                               obscureText: _obscurePassword,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              enableIMEPersonalizedLearning: false,
+                              smartDashesType: SmartDashesType.disabled,
+                              smartQuotesType: SmartQuotesType.disabled,
                               autofillHints: const [AutofillHints.password],
                               textInputAction: TextInputAction.done,
                               decoration: InputDecoration(
@@ -183,6 +198,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const SizedBox(height: AppSpacing.lg),
                             Semantics(
                               button: true,
+                              liveRegion: isLoading,
                               label: isLoading
                                   ? l10n.loggingIn
                                   : l10n.loginAction,

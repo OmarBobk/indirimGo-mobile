@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indirimgo_mobile/app.dart';
@@ -10,7 +11,12 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    final config = AppConfig.fromEnvironment();
+    const buildMode = kDebugMode
+        ? AppBuildMode.debug
+        : kProfileMode
+        ? AppBuildMode.profile
+        : AppBuildMode.release;
+    final config = AppConfig.fromEnvironment(buildMode: buildMode);
     final storage = SecureTokenStorage();
     runApp(
       ProviderScope(

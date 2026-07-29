@@ -8,12 +8,26 @@ import 'package:indirimgo_mobile/core/localization/locale_controller.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient(
+  final client = ApiClient(
     config: ref.watch(appConfigProvider),
     tokenStorage: ref.watch(tokenStorageProvider),
     locale: ref.watch(localeControllerProvider).languageCode,
   );
+  ref.onDispose(client.close);
+  return client;
 });
+
+final class ApiResponse {
+  const ApiResponse({
+    required this.statusCode,
+    required this.data,
+    this.requestSession,
+  });
+
+  final int statusCode;
+  final Map<String, Object?> data;
+  final SessionReference? requestSession;
+}
 
 class ApiClient {
   ApiClient({
@@ -33,6 +47,7 @@ class ApiClient {
              ),
            ) {
     _dio.options.baseUrl = config.apiBaseUrl;
+    _dio.options.followRedirects = false;
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -41,16 +56,26 @@ class ApiClient {
           final session = await tokenStorage.read();
           if (session != null) {
             options.headers['Authorization'] = 'Bearer ${session.token}';
+            options.extra[_requestSessionKey] = session.reference;
           } else {
             options.headers.remove('Authorization');
+            options.extra.remove(_requestSessionKey);
           }
           handler.next(options);
         },
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
-            await tokenStorage.clear();
+          try {
+            if (error.response?.statusCode == 401) {
+              final session = _requestSession(error.requestOptions);
+              if (session != null) {
+                await tokenStorage.clearIfCurrent(session);
+              }
+            }
+          } on Object {
+            // The authoritative HTTP response must remain the reported error.
+          } finally {
+            handler.next(error);
           }
-          handler.next(error);
         },
       ),
     );
@@ -59,15 +84,12 @@ class ApiClient {
   final Dio _dio;
   final TokenStorage tokenStorage;
 
-  Future<Map<String, Object?>> get(String path) =>
-      _request(path, method: 'GET');
+  Future<ApiResponse> get(String path) => _request(path, method: 'GET');
 
-  Future<Map<String, Object?>> post(
-    String path, {
-    Map<String, Object?>? data,
-  }) => _request(path, method: 'POST', data: data);
+  Future<ApiResponse> post(String path, {Map<String, Object?>? data}) =>
+      _request(path, method: 'POST', data: data);
 
-  Future<Map<String, Object?>> _request(
+  Future<ApiResponse> _request(
     String path, {
     required String method,
     Map<String, Object?>? data,
@@ -78,7 +100,15 @@ class ApiClient {
         data: data,
         options: Options(method: method),
       );
-      return _asJsonMap(response.data);
+      final statusCode = response.statusCode;
+      if (statusCode == null) {
+        throw const FormatException('The API response status is missing.');
+      }
+      return ApiResponse(
+        statusCode: statusCode,
+        data: _asJsonMap(response.data),
+        requestSession: _requestSession(response.requestOptions),
+      );
     } on DioException catch (error) {
       throw _mapDioException(error);
     }
@@ -87,46 +117,47 @@ class ApiClient {
   ApiException _mapDioException(DioException error) {
     final statusCode = error.response?.statusCode;
     final body = _optionalJsonMap(error.response?.data);
-    final code = body?['code'] is String ? body!['code'] as String : null;
-    final message = body?['message'] is String
-        ? body!['message'] as String
+    final rawCode = body?['code'];
+    final code = rawCode is String && stableApiErrorCodes.contains(rawCode)
+        ? rawCode
         : null;
     final fieldErrors = _parseFieldErrors(body?['errors']);
+    final requestSession = _requestSession(error.requestOptions);
 
     if (statusCode == 401) {
       return ApiException(
         kind: ApiErrorKind.unauthorized,
         code: code,
-        message: message,
         statusCode: statusCode,
+        requestSession: requestSession,
       );
     }
     if (statusCode == 403) {
       return ApiException(
         kind: ApiErrorKind.forbidden,
         code: code,
-        message: message,
         statusCode: statusCode,
+        requestSession: requestSession,
       );
     }
     if (statusCode == 422) {
       return ApiException(
         kind: ApiErrorKind.validation,
         code: code,
-        message: message,
         fieldErrors: fieldErrors,
         statusCode: statusCode,
+        requestSession: requestSession,
       );
     }
     if (statusCode == 429) {
       return ApiException(
         kind: ApiErrorKind.rateLimited,
         code: code ?? 'too_many_requests',
-        message: message,
         statusCode: statusCode,
         retryAfterSeconds: int.tryParse(
           error.response?.headers.value('retry-after') ?? '',
         ),
+        requestSession: requestSession,
       );
     }
     if (statusCode != null && statusCode >= 500) {
@@ -134,6 +165,7 @@ class ApiClient {
         kind: ApiErrorKind.server,
         code: code,
         statusCode: statusCode,
+        requestSession: requestSession,
       );
     }
     if (error.type == DioExceptionType.connectionError ||
@@ -141,14 +173,27 @@ class ApiClient {
         error.type == DioExceptionType.receiveTimeout ||
         error.type == DioExceptionType.sendTimeout ||
         error.error is SocketException) {
-      return const ApiException(kind: ApiErrorKind.network);
+      return ApiException(
+        kind: ApiErrorKind.network,
+        requestSession: requestSession,
+      );
     }
     return ApiException(
       kind: ApiErrorKind.unknown,
       code: code,
       statusCode: statusCode,
+      requestSession: requestSession,
     );
   }
+
+  void close() => _dio.close(force: true);
+}
+
+const _requestSessionKey = 'auth.request_session';
+
+SessionReference? _requestSession(RequestOptions options) {
+  final value = options.extra[_requestSessionKey];
+  return value is SessionReference ? value : null;
 }
 
 Map<String, Object?> _asJsonMap(Object? value) {
@@ -177,10 +222,18 @@ Map<String, List<String>> _parseFieldErrors(Object? value) {
 
   return {
     for (final entry in errors.entries)
-      if (entry.value is List)
-        entry.key: [
-          for (final message in entry.value! as List)
-            if (message is String) message,
-        ],
+      if (_validationFields.contains(entry.key) &&
+          entry.value is List &&
+          (entry.value! as List).isNotEmpty)
+        entry.key: const ['invalid'],
   };
 }
+
+const _validationFields = {
+  'username',
+  'password',
+  'device_name',
+  'challenge_token',
+  'code',
+  'recovery_code',
+};

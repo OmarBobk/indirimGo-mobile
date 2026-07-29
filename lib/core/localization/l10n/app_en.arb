@@ -19,6 +19,8 @@
   "secureLoginNote": "Secure connection to your İndirimGo account",
   "twoFactorTitle": "Two-step verification",
   "twoFactorSubtitle": "Enter the 6-digit code from your authenticator app.",
+  "authenticatorInstructions": "Enter the 6-digit code from your authenticator app.",
+  "recoveryInstructions": "Enter one of your saved recovery codes.",
   "authenticatorMode": "Authenticator",
   "recoveryMode": "Recovery code",
   "authenticatorCodeLabel": "Authenticator code",
@@ -28,6 +30,7 @@
   "codeRequired": "Enter your authenticator code.",
   "codeSixDigits": "The code must contain 6 digits.",
   "recoveryCodeRequired": "Enter your recovery code.",
+  "invalidFieldValue": "Check this value and try again.",
   "verifyAction": "Verify",
   "verifying": "Verifying",
   "backToLogin": "Back to sign in",
@@ -36,6 +39,12 @@
   "startupSubtitle": "One moment, please.",
   "offlineTitle": "We could not verify your session",
   "offlineSubtitle": "Your sign-in is still saved. Check your connection and try again.",
+  "serverVerificationTitle": "The service is temporarily unavailable",
+  "serverVerificationSubtitle": "Your sign-in is still saved. Try again later.",
+  "storageVerificationTitle": "Secure sign-in storage is unavailable",
+  "storageVerificationSubtitle": "Restart the app and try again. You may need to sign in again.",
+  "sessionVerificationTitle": "We could not verify your session",
+  "sessionVerificationSubtitle": "Your sign-in is still saved. Try again.",
   "retryAction": "Try again",
   "homeTitle": "Home",
   "homePlaceholder": "The foundation is ready",
@@ -72,7 +81,7 @@
   "invalidRecoveryCode": "The recovery code is invalid.",
   "twoFactorAttemptsExceeded": "Too many verification attempts. Sign in again.",
   "tooManyRequests": "Too many attempts. Wait and try again.",
-  "rateLimitSeconds": "Try again in {seconds} seconds.",
+  "rateLimitSeconds": "{seconds, plural, =0 {Try again now.} =1 {Try again in 1 second.} other {Try again in {seconds} seconds.}}",
   "@rateLimitSeconds": {
     "placeholders": {
       "seconds": {"type": "int"}

@@ -20,14 +20,24 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Set up stable Flutter
+      - name: Set up pinned Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.44.8'
           channel: stable
           cache: true
 
-      - name: Resolve dependencies
-        run: flutter pub get
+      - name: Verify SDK versions
+        run: |
+          flutter --version
+          test "$(flutter --version --machine | jq -r .frameworkVersion)" = "3.44.8"
+          test "$(flutter --version --machine | jq -r .dartSdkVersion)" = "3.12.2"
+
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Verify dependency lockfile
+        run: git diff --exit-code -- pubspec.lock
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
@@ -42,3 +52,10 @@ jobs:
         run: >-
           flutter build apk --debug
           --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
+
+      - name: Verify effective Android security policy
+        run: >-
+          apkanalyzer manifest print
+          build/app/outputs/flutter-apk/app-debug.apk
+          | dart run tool/verify_android_security.dart
+          --merged-manifest-stdin

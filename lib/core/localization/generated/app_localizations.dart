@@ -212,6 +212,18 @@ abstract class AppLocalizations {
   /// **'أدخل رمز تطبيق المصادقة المكوّن من 6 أرقام.'**
   String get twoFactorSubtitle;
 
+  /// No description provided for @authenticatorInstructions.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رمز تطبيق المصادقة المكوّن من 6 أرقام.'**
+  String get authenticatorInstructions;
+
+  /// No description provided for @recoveryInstructions.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل أحد رموز الاسترداد المحفوظة لديك.'**
+  String get recoveryInstructions;
+
   /// No description provided for @authenticatorMode.
   ///
   /// In ar, this message translates to:
@@ -266,6 +278,12 @@ abstract class AppLocalizations {
   /// **'أدخل رمز الاسترداد.'**
   String get recoveryCodeRequired;
 
+  /// No description provided for @invalidFieldValue.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقق من هذه القيمة ثم حاول مجدداً.'**
+  String get invalidFieldValue;
+
   /// No description provided for @verifyAction.
   ///
   /// In ar, this message translates to:
@@ -313,6 +331,42 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'احتفظنا بتسجيل دخولك. تحقق من الاتصال ثم حاول مرة أخرى.'**
   String get offlineSubtitle;
+
+  /// No description provided for @serverVerificationTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخدمة غير متاحة مؤقتاً'**
+  String get serverVerificationTitle;
+
+  /// No description provided for @serverVerificationSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'احتفظنا بتسجيل دخولك. حاول مجدداً لاحقاً.'**
+  String get serverVerificationSubtitle;
+
+  /// No description provided for @storageVerificationTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الوصول إلى مخزن تسجيل الدخول الآمن'**
+  String get storageVerificationTitle;
+
+  /// No description provided for @storageVerificationSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أعد تشغيل التطبيق وحاول مجدداً. قد تحتاج إلى تسجيل الدخول مرة أخرى.'**
+  String get storageVerificationSubtitle;
+
+  /// No description provided for @sessionVerificationTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التحقق من جلستك'**
+  String get sessionVerificationTitle;
+
+  /// No description provided for @sessionVerificationSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'احتفظنا بتسجيل دخولك. حاول مجدداً.'**
+  String get sessionVerificationSubtitle;
 
   /// No description provided for @retryAction.
   ///
@@ -443,7 +497,7 @@ abstract class AppLocalizations {
   /// No description provided for @rateLimitSeconds.
   ///
   /// In ar, this message translates to:
-  /// **'حاول مجدداً بعد {seconds} ثانية.'**
+  /// **'{seconds, plural, zero {يمكنك المحاولة الآن.} one {حاول مجدداً بعد ثانية واحدة.} two {حاول مجدداً بعد ثانيتين.} few {حاول مجدداً بعد {seconds} ثوانٍ.} many {حاول مجدداً بعد {seconds} ثانيةً.} other {حاول مجدداً بعد {seconds} ثانية.}}'**
   String rateLimitSeconds(int seconds);
 
   /// No description provided for @unauthenticated.

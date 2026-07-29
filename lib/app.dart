@@ -40,8 +40,9 @@ class ConfigurationErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      locale: const Locale('ar'),
       supportedLocales: AppLocalizations.supportedLocales,
+      localeListResolutionCallback: (locales, _) =>
+          resolveSupportedLocale(locales),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -55,27 +56,34 @@ class ConfigurationErrorApp extends StatelessWidget {
           final l10n = AppLocalizations.of(context);
           return Scaffold(
             body: SafeArea(
-              child: Center(
-                child: Padding(
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.settings_outlined, size: 56),
-                        const SizedBox(height: AppSpacing.md),
-                        Text(
-                          l10n.configurationErrorTitle,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineMedium,
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight - AppSpacing.lg * 2,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.settings_outlined, size: 56),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              l10n.configurationErrorTitle,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              l10n.configurationErrorBody,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          l10n.configurationErrorBody,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

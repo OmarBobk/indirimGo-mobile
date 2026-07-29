@@ -122,8 +122,6 @@ class TwoFactorChallenge {
 
   final String token;
   final DateTime expiresAt;
-
-  bool get isExpired => !expiresAt.isAfter(DateTime.now().toUtc());
 }
 
 sealed class LoginOutcome {

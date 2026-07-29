@@ -26,18 +26,19 @@ class RemoteAuthRepository implements AuthRepository {
     required String username,
     required String password,
   }) async {
-    final json = await apiClient.post(
+    final response = await apiClient.post(
       'auth/login',
       data: {'username': username, 'password': password},
     );
-    final data = _data(json);
-    if (data['two_factor_required'] == true) {
-      return LoginTwoFactorRequired(TwoFactorChallenge.fromJson(json));
+    if (response.statusCode == 200) {
+      return _authenticatedLogin(response.data);
     }
-
-    final session = AuthSession.fromJson(json);
-    await _save(session);
-    return LoginAuthenticated(session);
+    if (response.statusCode == 202) {
+      return LoginTwoFactorRequired(TwoFactorChallenge.fromJson(response.data));
+    }
+    throw const FormatException(
+      'The login response used an unsupported status.',
+    );
   }
 
   @override
@@ -63,11 +64,12 @@ class RemoteAuthRepository implements AuthRepository {
     required TwoFactorChallenge challenge,
     required Map<String, Object?> credential,
   }) async {
-    final json = await apiClient.post(
+    final response = await apiClient.post(
       'auth/two-factor-challenge',
       data: {'challenge_token': challenge.token, ...credential},
     );
-    final session = AuthSession.fromJson(json);
+    _requireStatus(response, 200, 'two-factor');
+    final session = AuthSession.fromJson(response.data);
     await _save(session);
     return session;
   }
@@ -75,11 +77,12 @@ class RemoteAuthRepository implements AuthRepository {
   @override
   Future<MobileUser> fetchCurrentUser() async {
     try {
-      final json = await apiClient.get('me');
-      return MobileUser.fromJson(_data(json));
+      final response = await apiClient.get('me');
+      _requireStatus(response, 200, 'current-user');
+      return MobileUser.fromJson(_data(response.data));
     } on ApiException catch (error) {
       if (error.isAuthoritativeSessionRejection) {
-        await tokenStorage.clear();
+        await _clearRejectedSession(error);
       }
       rethrow;
     }
@@ -96,11 +99,14 @@ class RemoteAuthRepository implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      await apiClient.post('auth/logout');
-      await tokenStorage.clear();
+      final response = await apiClient.post('auth/logout');
+      _requireStatus(response, 200, 'logout');
+      if (response.requestSession case final session?) {
+        await tokenStorage.clearIfCurrent(session);
+      }
     } on ApiException catch (error) {
       if (error.isAuthoritativeSessionRejection) {
-        await tokenStorage.clear();
+        await _clearRejectedSession(error);
       }
       rethrow;
     }
@@ -115,6 +121,32 @@ class RemoteAuthRepository implements AuthRepository {
         token: session.token.accessToken,
         expiresAt: session.token.expiresAt,
       ),
+    );
+  }
+
+  Future<LoginOutcome> _authenticatedLogin(Map<String, Object?> json) async {
+    final session = AuthSession.fromJson(json);
+    await _save(session);
+    return LoginAuthenticated(session);
+  }
+
+  Future<void> _clearRejectedSession(ApiException error) async {
+    final requestSession = error.requestSession;
+    if (requestSession == null) {
+      return;
+    }
+    try {
+      await tokenStorage.clearIfCurrent(requestSession);
+    } on Object {
+      // Preserve the authoritative API error when secure storage is unavailable.
+    }
+  }
+}
+
+void _requireStatus(ApiResponse response, int expected, String operation) {
+  if (response.statusCode != expected) {
+    throw FormatException(
+      'The $operation response used an unsupported status.',
     );
   }
 }

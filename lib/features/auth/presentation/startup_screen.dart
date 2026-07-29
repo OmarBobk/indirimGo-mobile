@@ -12,6 +12,28 @@ class StartupScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final auth = ref.watch(authControllerProvider);
     final failed = auth.phase == AuthPhase.verificationFailed;
+    final failureCopy = switch (auth.restorationFailure) {
+      SessionRestorationFailure.network => (
+        icon: Icons.cloud_off_outlined,
+        title: l10n.offlineTitle,
+        subtitle: l10n.offlineSubtitle,
+      ),
+      SessionRestorationFailure.server => (
+        icon: Icons.dns_outlined,
+        title: l10n.serverVerificationTitle,
+        subtitle: l10n.serverVerificationSubtitle,
+      ),
+      SessionRestorationFailure.storage => (
+        icon: Icons.phonelink_erase_outlined,
+        title: l10n.storageVerificationTitle,
+        subtitle: l10n.storageVerificationSubtitle,
+      ),
+      SessionRestorationFailure.unexpected || null => (
+        icon: Icons.error_outline,
+        title: l10n.sessionVerificationTitle,
+        subtitle: l10n.sessionVerificationSubtitle,
+      ),
+    };
 
     return Scaffold(
       body: SafeArea(
@@ -54,21 +76,19 @@ class StartupScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: AppSpacing.xl),
                           Icon(
-                            failed
-                                ? Icons.cloud_off_outlined
-                                : Icons.shield_outlined,
+                            failed ? failureCopy.icon : Icons.shield_outlined,
                             size: 52,
                           ),
                           const SizedBox(height: AppSpacing.md),
                           Text(
-                            failed ? l10n.offlineTitle : l10n.startupTitle,
+                            failed ? failureCopy.title : l10n.startupTitle,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
                           const SizedBox(height: AppSpacing.sm),
                           Text(
                             failed
-                                ? l10n.offlineSubtitle
+                                ? failureCopy.subtitle
                                 : l10n.startupSubtitle,
                             textAlign: TextAlign.center,
                           ),
@@ -83,8 +103,9 @@ class StartupScreen extends ConsumerWidget {
                               label: Text(l10n.retryAction),
                             )
                           else
-                            const CircularProgressIndicator(
-                              color: BrandColors.yellow,
+                            CircularProgressIndicator(
+                              color: Theme.of(context).colorScheme.tertiary,
+                              semanticsLabel: l10n.startupTitle,
                             ),
                         ],
                       ),

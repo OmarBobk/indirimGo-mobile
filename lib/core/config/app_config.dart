@@ -4,10 +4,15 @@ final appConfigProvider = Provider<AppConfig>((ref) {
   throw StateError('AppConfig must be provided at the application boundary.');
 });
 
-class AppConfig {
-  const AppConfig._(this.apiBaseUri);
+enum AppBuildMode { debug, profile, release }
 
-  factory AppConfig({required String apiBaseUrl}) {
+class AppConfig {
+  const AppConfig._(this.apiBaseUri, this.buildMode);
+
+  factory AppConfig({
+    required String apiBaseUrl,
+    required AppBuildMode buildMode,
+  }) {
     final value = apiBaseUrl.trim();
     if (value.isEmpty) {
       throw const FormatException(
@@ -26,6 +31,15 @@ class AppConfig {
       throw const FormatException(
         'API_BASE_URL must be an absolute HTTP(S) URL without credentials, '
         'query parameters, or fragments.',
+      );
+    }
+
+    if (parsed.scheme == 'http' &&
+        (buildMode != AppBuildMode.debug ||
+            !_debugHttpHosts.contains(parsed.host.toLowerCase()))) {
+      throw const FormatException(
+        'HTTP API_BASE_URL is allowed only in debug builds for an approved '
+        'local emulator or loopback host.',
       );
     }
 
@@ -54,14 +68,21 @@ class AppConfig {
         query: null,
         fragment: null,
       ),
+      buildMode,
     );
   }
 
-  factory AppConfig.fromEnvironment() {
-    return AppConfig(apiBaseUrl: const String.fromEnvironment('API_BASE_URL'));
+  factory AppConfig.fromEnvironment({required AppBuildMode buildMode}) {
+    return AppConfig(
+      apiBaseUrl: const String.fromEnvironment('API_BASE_URL'),
+      buildMode: buildMode,
+    );
   }
 
   final Uri apiBaseUri;
+  final AppBuildMode buildMode;
 
   String get apiBaseUrl => apiBaseUri.toString();
 }
+
+const _debugHttpHosts = {'10.0.2.2', '127.0.0.1', 'localhost'};

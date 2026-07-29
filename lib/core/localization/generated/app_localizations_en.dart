@@ -67,6 +67,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter the 6-digit code from your authenticator app.';
 
   @override
+  String get authenticatorInstructions =>
+      'Enter the 6-digit code from your authenticator app.';
+
+  @override
+  String get recoveryInstructions => 'Enter one of your saved recovery codes.';
+
+  @override
   String get authenticatorMode => 'Authenticator';
 
   @override
@@ -94,6 +101,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recoveryCodeRequired => 'Enter your recovery code.';
 
   @override
+  String get invalidFieldValue => 'Check this value and try again.';
+
+  @override
   String get verifyAction => 'Verify';
 
   @override
@@ -118,6 +128,29 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get offlineSubtitle =>
       'Your sign-in is still saved. Check your connection and try again.';
+
+  @override
+  String get serverVerificationTitle =>
+      'The service is temporarily unavailable';
+
+  @override
+  String get serverVerificationSubtitle =>
+      'Your sign-in is still saved. Try again later.';
+
+  @override
+  String get storageVerificationTitle =>
+      'Secure sign-in storage is unavailable';
+
+  @override
+  String get storageVerificationSubtitle =>
+      'Restart the app and try again. You may need to sign in again.';
+
+  @override
+  String get sessionVerificationTitle => 'We could not verify your session';
+
+  @override
+  String get sessionVerificationSubtitle =>
+      'Your sign-in is still saved. Try again.';
 
   @override
   String get retryAction => 'Try again';
@@ -196,7 +229,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String rateLimitSeconds(int seconds) {
-    return 'Try again in $seconds seconds.';
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'Try again in $seconds seconds.',
+      one: 'Try again in 1 second.',
+      zero: 'Try again now.',
+    );
+    return '$_temp0';
   }
 
   @override

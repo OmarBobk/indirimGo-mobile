@@ -55,6 +55,8 @@ class FakeAuthRepository implements AuthRepository {
   int restoreCalls = 0;
   int logoutCalls = 0;
   int clearCalls = 0;
+  int authenticatorCalls = 0;
+  int recoveryCalls = 0;
   String? lastUsername;
   String? lastPassword;
 
@@ -75,6 +77,7 @@ class FakeAuthRepository implements AuthRepository {
     required TwoFactorChallenge challenge,
     required String code,
   }) {
+    authenticatorCalls += 1;
     return authenticatorHandler?.call(challenge, code) ??
         Future.value(sampleSession);
   }
@@ -84,6 +87,7 @@ class FakeAuthRepository implements AuthRepository {
     required TwoFactorChallenge challenge,
     required String recoveryCode,
   }) {
+    recoveryCalls += 1;
     return recoveryHandler?.call(challenge, recoveryCode) ??
         Future.value(sampleSession);
   }

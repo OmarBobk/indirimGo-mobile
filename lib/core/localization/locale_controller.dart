@@ -5,15 +5,25 @@ final localeControllerProvider = NotifierProvider<LocaleController, Locale>(
   LocaleController.new,
 );
 
+Locale resolveSupportedLocale(Iterable<Locale>? preferredLocales) {
+  for (final locale in preferredLocales ?? const <Locale>[]) {
+    if (locale.languageCode == 'ar' || locale.languageCode == 'en') {
+      return Locale(locale.languageCode);
+    }
+  }
+  return const Locale('ar');
+}
+
 class LocaleController extends Notifier<Locale> {
   @override
   Locale build() {
-    final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
-    return Locale(deviceLocale.languageCode == 'en' ? 'en' : 'ar');
+    return resolveSupportedLocale(
+      WidgetsBinding.instance.platformDispatcher.locales,
+    );
   }
 
   void setLocale(Locale locale) {
-    state = Locale(locale.languageCode == 'en' ? 'en' : 'ar');
+    state = resolveSupportedLocale([locale]);
   }
 
   void toggle() {

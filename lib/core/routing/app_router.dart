@@ -19,7 +19,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(refresh.dispose);
   ref.listen<AuthState>(authControllerProvider, (_, _) => refresh.notify());
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: AppRoutes.startup,
     refreshListenable: refresh,
     redirect: (context, routeState) {
@@ -33,7 +33,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         AuthPhase.submittingLogin when auth.challenge != null =>
           AppRoutes.twoFactor,
         AuthPhase.submittingLogin => AppRoutes.login,
-        AuthPhase.twoFactorRequired => AppRoutes.twoFactor,
+        AuthPhase.twoFactorRequired when auth.challenge != null =>
+          AppRoutes.twoFactor,
+        AuthPhase.twoFactorRequired => AppRoutes.login,
         AuthPhase.authenticated || AuthPhase.loggingOut => AppRoutes.shell,
       };
 
@@ -58,6 +60,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+  ref.onDispose(router.dispose);
+  return router;
 });
 
 class _RouterRefresh extends ChangeNotifier {

@@ -29,6 +29,6 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
     'two_factor_attempts_exceeded' => l10n.twoFactorAttemptsExceeded,
     'too_many_requests' => l10n.tooManyRequests,
     'unauthenticated' || 'missing_mobile_ability' => l10n.unauthenticated,
-    _ => error.message ?? l10n.sessionFailure,
+    _ => l10n.sessionFailure,
   };
 }

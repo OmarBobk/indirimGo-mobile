@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
+import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_models.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
 
@@ -15,6 +16,10 @@ enum AuthPhase {
   loggingOut,
 }
 
+enum TwoFactorTerminalReason { invalidOrExpired, attemptsExceeded }
+
+enum SessionRestorationFailure { network, server, storage, unexpected }
+
 class AuthState {
   const AuthState({
     required this.phase,
@@ -22,7 +27,8 @@ class AuthState {
     this.challenge,
     this.error,
     this.fieldErrors = const {},
-    this.challengeExpired = false,
+    this.twoFactorTerminalReason,
+    this.restorationFailure,
   });
 
   const AuthState.initializing() : this(phase: AuthPhase.initializing);
@@ -32,7 +38,8 @@ class AuthState {
   final TwoFactorChallenge? challenge;
   final ApiException? error;
   final Map<String, List<String>> fieldErrors;
-  final bool challengeExpired;
+  final TwoFactorTerminalReason? twoFactorTerminalReason;
+  final SessionRestorationFailure? restorationFailure;
 
   bool get isBusy =>
       phase == AuthPhase.submittingLogin || phase == AuthPhase.loggingOut;
@@ -45,27 +52,70 @@ final authControllerProvider = NotifierProvider<AuthController, AuthState>(
 class AuthController extends Notifier<AuthState> {
   AuthRepository get _repository => ref.read(authRepositoryProvider);
 
+  int _operationEpoch = 0;
+  bool _disposed = false;
+
   @override
   AuthState build() {
-    scheduleMicrotask(restoreSession);
+    ref.onDispose(() {
+      _disposed = true;
+      _operationEpoch += 1;
+    });
+    scheduleMicrotask(() {
+      if (!_disposed) {
+        restoreSession();
+      }
+    });
     return const AuthState.initializing();
   }
 
   Future<void> restoreSession() async {
-    state = const AuthState.initializing();
+    final operation = _beginOperation();
+    _commit(operation, const AuthState.initializing());
     try {
       final user = await _repository.restoreSession();
-      state = user == null
-          ? const AuthState(phase: AuthPhase.unauthenticated)
-          : AuthState(phase: AuthPhase.authenticated, user: user);
+      _commit(
+        operation,
+        user == null
+            ? const AuthState(phase: AuthPhase.unauthenticated)
+            : AuthState(phase: AuthPhase.authenticated, user: user),
+      );
     } on ApiException catch (error) {
       if (error.isAuthoritativeSessionRejection) {
-        state = AuthState(phase: AuthPhase.unauthenticated, error: error);
+        _commit(
+          operation,
+          AuthState(phase: AuthPhase.unauthenticated, error: error),
+        );
       } else {
-        state = AuthState(phase: AuthPhase.verificationFailed, error: error);
+        _commit(
+          operation,
+          AuthState(
+            phase: AuthPhase.verificationFailed,
+            error: error,
+            restorationFailure: switch (error.kind) {
+              ApiErrorKind.network => SessionRestorationFailure.network,
+              ApiErrorKind.server => SessionRestorationFailure.server,
+              _ => SessionRestorationFailure.unexpected,
+            },
+          ),
+        );
       }
+    } on TokenStorageException {
+      _commit(
+        operation,
+        const AuthState(
+          phase: AuthPhase.verificationFailed,
+          restorationFailure: SessionRestorationFailure.storage,
+        ),
+      );
     } on Object {
-      state = const AuthState(phase: AuthPhase.verificationFailed);
+      _commit(
+        operation,
+        const AuthState(
+          phase: AuthPhase.verificationFailed,
+          restorationFailure: SessionRestorationFailure.unexpected,
+        ),
+      );
     }
   }
 
@@ -73,16 +123,17 @@ class AuthController extends Notifier<AuthState> {
     required String username,
     required String password,
   }) async {
-    if (state.phase == AuthPhase.submittingLogin) {
+    if (state.phase != AuthPhase.unauthenticated) {
       return;
     }
-    state = const AuthState(phase: AuthPhase.submittingLogin);
+    final operation = _beginOperation();
+    _commit(operation, const AuthState(phase: AuthPhase.submittingLogin));
     try {
       final result = await _repository.login(
         username: username.trim(),
         password: password,
       );
-      state = switch (result) {
+      _commit(operation, switch (result) {
         LoginAuthenticated(:final session) => AuthState(
           phase: AuthPhase.authenticated,
           user: session.user,
@@ -91,21 +142,24 @@ class AuthController extends Notifier<AuthState> {
           phase: AuthPhase.twoFactorRequired,
           challenge: challenge,
         ),
-      };
+      });
     } on ApiException catch (error) {
-      state = AuthState(
-        phase: AuthPhase.unauthenticated,
-        error: error,
-        fieldErrors: error.fieldErrors,
+      _commit(
+        operation,
+        AuthState(
+          phase: AuthPhase.unauthenticated,
+          error: error,
+          fieldErrors: error.fieldErrors,
+        ),
       );
     } on Object {
-      state = const AuthState(phase: AuthPhase.unauthenticated);
+      _commit(operation, const AuthState(phase: AuthPhase.unauthenticated));
     }
   }
 
   Future<void> completeTwoFactorWithAuthenticator(String code) async {
     final challenge = state.challenge;
-    if (challenge == null || state.isBusy) {
+    if (challenge == null || state.phase != AuthPhase.twoFactorRequired) {
       return;
     }
     await _completeTwoFactor(
@@ -119,7 +173,7 @@ class AuthController extends Notifier<AuthState> {
 
   Future<void> completeTwoFactorWithRecoveryCode(String recoveryCode) async {
     final challenge = state.challenge;
-    if (challenge == null || state.isBusy) {
+    if (challenge == null || state.phase != AuthPhase.twoFactorRequired) {
       return;
     }
     await _completeTwoFactor(
@@ -135,40 +189,58 @@ class AuthController extends Notifier<AuthState> {
     TwoFactorChallenge challenge,
     Future<AuthSession> Function() submit,
   ) async {
-    if (challenge.isExpired) {
-      state = AuthState(
-        phase: AuthPhase.twoFactorRequired,
-        challenge: challenge,
-        challengeExpired: true,
-      );
-      return;
-    }
-
-    state = AuthState(phase: AuthPhase.submittingLogin, challenge: challenge);
+    final operation = _beginOperation();
+    _commit(
+      operation,
+      AuthState(phase: AuthPhase.submittingLogin, challenge: challenge),
+    );
     try {
       final session = await submit();
-      state = AuthState(phase: AuthPhase.authenticated, user: session.user);
+      _commit(
+        operation,
+        AuthState(phase: AuthPhase.authenticated, user: session.user),
+      );
     } on ApiException catch (error) {
-      final expired = const {
-        'invalid_two_factor_challenge',
-        'two_factor_attempts_exceeded',
-      }.contains(error.code);
-      state = AuthState(
-        phase: AuthPhase.twoFactorRequired,
-        challenge: challenge,
-        error: error,
-        fieldErrors: error.fieldErrors,
-        challengeExpired: expired,
+      final terminalReason = switch (error.code) {
+        'invalid_two_factor_challenge' =>
+          TwoFactorTerminalReason.invalidOrExpired,
+        'two_factor_attempts_exceeded' =>
+          TwoFactorTerminalReason.attemptsExceeded,
+        _ => null,
+      };
+      _commit(
+        operation,
+        AuthState(
+          phase: AuthPhase.twoFactorRequired,
+          challenge: challenge,
+          error: error,
+          fieldErrors: error.fieldErrors,
+          twoFactorTerminalReason: terminalReason,
+        ),
       );
     } on Object {
-      state = AuthState(
-        phase: AuthPhase.twoFactorRequired,
-        challenge: challenge,
+      _commit(
+        operation,
+        AuthState(phase: AuthPhase.twoFactorRequired, challenge: challenge),
       );
     }
   }
 
+  void clearTwoFactorError() {
+    final current = state;
+    if (current.phase != AuthPhase.twoFactorRequired ||
+        current.challenge == null ||
+        current.twoFactorTerminalReason != null) {
+      return;
+    }
+    state = AuthState(
+      phase: AuthPhase.twoFactorRequired,
+      challenge: current.challenge,
+    );
+  }
+
   void returnToLogin() {
+    _operationEpoch += 1;
     state = const AuthState(phase: AuthPhase.unauthenticated);
   }
 
@@ -177,22 +249,33 @@ class AuthController extends Notifier<AuthState> {
     if (user == null || state.phase == AuthPhase.loggingOut) {
       return;
     }
-    state = AuthState(phase: AuthPhase.loggingOut, user: user);
+    final operation = _beginOperation();
+    _commit(operation, AuthState(phase: AuthPhase.loggingOut, user: user));
     try {
       await _repository.logout();
-      state = const AuthState(phase: AuthPhase.unauthenticated);
+      _commit(operation, const AuthState(phase: AuthPhase.unauthenticated));
     } on ApiException catch (error) {
       if (error.isAuthoritativeSessionRejection) {
-        state = AuthState(phase: AuthPhase.unauthenticated, error: error);
+        _commit(
+          operation,
+          AuthState(phase: AuthPhase.unauthenticated, error: error),
+        );
       } else {
-        state = AuthState(
-          phase: AuthPhase.authenticated,
-          user: user,
-          error: error,
+        _commit(
+          operation,
+          AuthState(phase: AuthPhase.authenticated, user: user, error: error),
         );
       }
     } on Object {
-      state = AuthState(phase: AuthPhase.authenticated, user: user);
+      _commit(operation, AuthState(phase: AuthPhase.authenticated, user: user));
+    }
+  }
+
+  int _beginOperation() => ++_operationEpoch;
+
+  void _commit(int operation, AuthState next) {
+    if (!_disposed && operation == _operationEpoch) {
+      state = next;
     }
   }
 }

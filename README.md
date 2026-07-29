@@ -6,7 +6,7 @@ features are intentionally not implemented yet.
 
 ## Requirements
 
-- Current stable Flutter (M1.2 was developed with Flutter 3.44.8 / Dart 3.12.2)
+- Flutter **3.44.8** / Dart **3.12.2** (pinned; CI enforces the same versions)
 - Android Studio or an Android SDK and emulator
 - The Laravel repository running locally with its `staging` configuration and
   migrations
@@ -20,28 +20,33 @@ Start Laravel on port 8000. Android emulators reach the host machine at
 `10.0.2.2`, so run the Flutter app with:
 
 ```powershell
-flutter pub get
+flutter pub get --enforce-lockfile
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
 ```
 
 `API_BASE_URL` is required, validated at startup, and normalized to one
-`/api/v1/` suffix. Use HTTPS outside local debug development. Do not pass
+`/api/v1/` suffix. Debug builds may use HTTP only for `10.0.2.2`, `127.0.0.1`,
+or `localhost`. Profile and release builds require HTTPS. Do not pass
 credentials, tokens, 2FA values, or other secrets through `--dart-define`.
 There is deliberately no `.env` file and no staging URL yet.
 
-Cleartext HTTP is permitted only by the Android debug manifest for emulator
-development. The main/release manifest explicitly disables cleartext traffic.
+Android cleartext is denied by default. The debug network-security config
+allows only those local hosts. Main/release keep cleartext disabled. App backup
+is disabled so secure session storage cannot restore into an incompatible
+Keystore state.
 
 ## Authentication behavior
 
 - Username/password authentication against Laravel
 - Fortify authenticator and recovery-code 2FA
-- Sanctum bearer token stored with `flutter_secure_storage`
+- Sanctum bearer token stored atomically with `flutter_secure_storage`
 - 30-day server-controlled token expiry and no refresh-token flow
 - Startup restoration through `GET /me`
-- Authoritative 401/403 session rejection clears local credentials
-- Connectivity and server failures preserve the token and show retry UI
+- Authoritative 401/403 session rejection clears only the matching session
+- Connectivity, timeout, server, and storage failures preserve the token for
+  retry where appropriate
 - 2FA challenges and codes remain only in memory and are never logged
+- Laravel remains authoritative for challenge expiry and attempt limits
 
 The authoritative contract is Laravel
 `docs/api/v1/openapi.yaml` on `origin/staging`. The Flutter client must not
@@ -50,11 +55,11 @@ Laravel.
 
 ## Localization and accessibility
 
-Arabic and English use Flutter ARB localization. Arabic is the fallback;
-supported device locales are respected. Active locale is sent in
-`Accept-Language`. The UI supports RTL, light/dark themes, semantic labels,
-keyboard traversal, large text, minimum touch targets, and non-animated status
-feedback.
+Arabic and English use Flutter ARB localization. Arabic is the fallback when no
+supported preferred locale exists; a preference list such as Turkish then
+English selects English. Active locale is sent in `Accept-Language`. The UI
+supports RTL/LTR, light/dark themes with contrast-checked accents, semantic
+labels, keyboard traversal, large text, and minimum touch targets.
 
 ## Verify
 
@@ -63,10 +68,18 @@ dart format --output=none --set-exit-if-changed .
 flutter analyze
 flutter test
 flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
+apkanalyzer manifest print build/app/outputs/flutter-apk/app-debug.apk |
+  dart run tool/verify_android_security.dart --merged-manifest-stdin
 ```
 
 Tests use fake repositories, fake secure storage, and an in-memory Dio adapter;
 they do not need a live Laravel server.
+
+## Release blocker
+
+Release builds still use the debug signing configuration so local
+`flutter run --release` works. Production signing must be configured before any
+distribution or publishing workflow. No Play upload or deploy step exists in CI.
 
 ## M1.2 exclusions
 

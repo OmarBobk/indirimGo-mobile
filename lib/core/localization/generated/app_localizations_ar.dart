@@ -66,6 +66,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get twoFactorSubtitle => 'أدخل رمز تطبيق المصادقة المكوّن من 6 أرقام.';
 
   @override
+  String get authenticatorInstructions =>
+      'أدخل رمز تطبيق المصادقة المكوّن من 6 أرقام.';
+
+  @override
+  String get recoveryInstructions => 'أدخل أحد رموز الاسترداد المحفوظة لديك.';
+
+  @override
   String get authenticatorMode => 'رمز المصادقة';
 
   @override
@@ -93,6 +100,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get recoveryCodeRequired => 'أدخل رمز الاسترداد.';
 
   @override
+  String get invalidFieldValue => 'تحقق من هذه القيمة ثم حاول مجدداً.';
+
+  @override
   String get verifyAction => 'تحقق';
 
   @override
@@ -117,6 +127,28 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get offlineSubtitle =>
       'احتفظنا بتسجيل دخولك. تحقق من الاتصال ثم حاول مرة أخرى.';
+
+  @override
+  String get serverVerificationTitle => 'الخدمة غير متاحة مؤقتاً';
+
+  @override
+  String get serverVerificationSubtitle =>
+      'احتفظنا بتسجيل دخولك. حاول مجدداً لاحقاً.';
+
+  @override
+  String get storageVerificationTitle =>
+      'تعذّر الوصول إلى مخزن تسجيل الدخول الآمن';
+
+  @override
+  String get storageVerificationSubtitle =>
+      'أعد تشغيل التطبيق وحاول مجدداً. قد تحتاج إلى تسجيل الدخول مرة أخرى.';
+
+  @override
+  String get sessionVerificationTitle => 'تعذّر التحقق من جلستك';
+
+  @override
+  String get sessionVerificationSubtitle =>
+      'احتفظنا بتسجيل دخولك. حاول مجدداً.';
 
   @override
   String get retryAction => 'إعادة المحاولة';
@@ -190,7 +222,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String rateLimitSeconds(int seconds) {
-    return 'حاول مجدداً بعد $seconds ثانية.';
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'حاول مجدداً بعد $seconds ثانية.',
+      many: 'حاول مجدداً بعد $seconds ثانيةً.',
+      few: 'حاول مجدداً بعد $seconds ثوانٍ.',
+      two: 'حاول مجدداً بعد ثانيتين.',
+      one: 'حاول مجدداً بعد ثانية واحدة.',
+      zero: 'يمكنك المحاولة الآن.',
+    );
+    return '$_temp0';
   }
 
   @override
