@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'الرئيسية'**
   String get homeTitle;
 
+  /// No description provided for @homeBrowseSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'استكشف الباقات وخيارات المنتجات والأسعار.'**
+  String get homeBrowseSubtitle;
+
   /// No description provided for @homePlaceholder.
   ///
   /// In ar, this message translates to:
@@ -397,6 +403,240 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الحساب'**
   String get accountTitle;
+
+  /// No description provided for @catalogLoading.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحميل الكتالوج'**
+  String get catalogLoading;
+
+  /// No description provided for @catalogUnavailableTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل الكتالوج'**
+  String get catalogUnavailableTitle;
+
+  /// No description provided for @catalogUnavailableBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقق من الاتصال ثم حاول مجدداً. ما زلت مسجّل الدخول.'**
+  String get catalogUnavailableBody;
+
+  /// No description provided for @searchPackagesLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'البحث في الباقات'**
+  String get searchPackagesLabel;
+
+  /// No description provided for @searchPackagesHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث عن باقة'**
+  String get searchPackagesHint;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح البحث'**
+  String get clearSearch;
+
+  /// No description provided for @browseAllPackages.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفح كل الباقات'**
+  String get browseAllPackages;
+
+  /// No description provided for @frequentlyOrderedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبتها كثيراً'**
+  String get frequentlyOrderedTitle;
+
+  /// No description provided for @featuredPackagesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'باقات مميزة'**
+  String get featuredPackagesTitle;
+
+  /// No description provided for @featuredPackagesEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد باقات مميزة حالياً.'**
+  String get featuredPackagesEmpty;
+
+  /// No description provided for @categoriesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'التصنيفات'**
+  String get categoriesTitle;
+
+  /// No description provided for @packagesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الباقات'**
+  String get packagesTitle;
+
+  /// No description provided for @packagesEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد باقات'**
+  String get packagesEmptyTitle;
+
+  /// No description provided for @packagesEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب بحثاً أو تصنيفاً مختلفاً.'**
+  String get packagesEmptyBody;
+
+  /// No description provided for @loadMorePackages.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحميل المزيد'**
+  String get loadMorePackages;
+
+  /// No description provided for @categoryFilterActive.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفية حسب التصنيف'**
+  String get categoryFilterActive;
+
+  /// No description provided for @clearCategoryFilter.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة التصنيف'**
+  String get clearCategoryFilter;
+
+  /// No description provided for @categoryFilterInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'التصنيف غير صالح. اختر تصنيفاً آخر.'**
+  String get categoryFilterInvalid;
+
+  /// No description provided for @searchQueryInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'استعلام البحث غير صالح. استخدم حرفين على الأقل.'**
+  String get searchQueryInvalid;
+
+  /// No description provided for @packageDetailTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل الباقة'**
+  String get packageDetailTitle;
+
+  /// No description provided for @packageNotFoundTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الباقة غير موجودة'**
+  String get packageNotFoundTitle;
+
+  /// No description provided for @packageNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذه الباقة غير متاحة.'**
+  String get packageNotFound;
+
+  /// No description provided for @backToPackages.
+  ///
+  /// In ar, this message translates to:
+  /// **'العودة إلى الباقات'**
+  String get backToPackages;
+
+  /// No description provided for @productOptionsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'خيارات المنتجات'**
+  String get productOptionsTitle;
+
+  /// No description provided for @productOptionsEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد منتجات نشطة في هذه الباقة.'**
+  String get productOptionsEmpty;
+
+  /// No description provided for @fixedAmountMode.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر ثابت'**
+  String get fixedAmountMode;
+
+  /// No description provided for @customAmountMode.
+  ///
+  /// In ar, this message translates to:
+  /// **'مبلغ مخصص'**
+  String get customAmountMode;
+
+  /// No description provided for @fromPriceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'من'**
+  String get fromPriceLabel;
+
+  /// No description provided for @minimumPriceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأدنى'**
+  String get minimumPriceLabel;
+
+  /// No description provided for @priceHidden.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر غير ظاهر'**
+  String get priceHidden;
+
+  /// No description provided for @priceUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر غير متاح'**
+  String get priceUnavailable;
+
+  /// No description provided for @priceFrom.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {price}'**
+  String priceFrom(String price);
+
+  /// No description provided for @customPriceCalculatedLater.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُحسب السعر النهائي لاحقاً بعد إدخال المبلغ.'**
+  String get customPriceCalculatedLater;
+
+  /// No description provided for @customAmountConfigUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعداد المبلغ المخصص غير مكتمل.'**
+  String get customAmountConfigUnavailable;
+
+  /// No description provided for @customAmountMin.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأدنى: {value}'**
+  String customAmountMin(int value);
+
+  /// No description provided for @customAmountMax.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأقصى: {value}'**
+  String customAmountMax(int value);
+
+  /// No description provided for @customAmountStep.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخطوة: {value}'**
+  String customAmountStep(int value);
+
+  /// No description provided for @customAmountUnit.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوحدة: {label}'**
+  String customAmountUnit(String label);
+
+  /// No description provided for @timesOrdered.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, zero {لم تُطلب} one {طُلبت مرة واحدة} two {طُلبت مرتين} few {طُلبت {count} مرات} many {طُلبت {count} مرة} other {طُلبت {count} مرة}}'**
+  String timesOrdered(int count);
 
   /// No description provided for @welcomeUser.
   ///

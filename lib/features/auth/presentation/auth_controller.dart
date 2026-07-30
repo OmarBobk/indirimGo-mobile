@@ -51,15 +51,23 @@ final authControllerProvider = NotifierProvider<AuthController, AuthState>(
 
 class AuthController extends Notifier<AuthState> {
   AuthRepository get _repository => ref.read(authRepositoryProvider);
+  TokenStorage get _tokenStorage => ref.read(tokenStorageProvider);
 
   int _operationEpoch = 0;
   bool _disposed = false;
+
+  /// Opaque identity of the currently authenticated session generation.
+  ///
+  /// Compared to [ApiException.requestSession] so a delayed rejection from an
+  /// older PAT cannot tear down a newer login. Never logged or exposed.
+  SessionReference? _activeSession;
 
   @override
   AuthState build() {
     ref.onDispose(() {
       _disposed = true;
       _operationEpoch += 1;
+      _activeSession = null;
     });
     scheduleMicrotask(() {
       if (!_disposed) {
@@ -74,14 +82,17 @@ class AuthController extends Notifier<AuthState> {
     _commit(operation, const AuthState.initializing());
     try {
       final user = await _repository.restoreSession();
-      _commit(
-        operation,
-        user == null
-            ? const AuthState(phase: AuthPhase.unauthenticated)
-            : AuthState(phase: AuthPhase.authenticated, user: user),
-      );
+      if (user == null) {
+        _activeSession = null;
+        _commit(operation, const AuthState(phase: AuthPhase.unauthenticated));
+        return;
+      }
+      await _syncActiveSessionFromStorage();
+      _commit(operation, AuthState(phase: AuthPhase.authenticated, user: user));
     } on ApiException catch (error) {
       if (error.isAuthoritativeSessionRejection) {
+        await _clearRejectedStorage(error);
+        _activeSession = null;
         _commit(
           operation,
           AuthState(phase: AuthPhase.unauthenticated, error: error),
@@ -133,17 +144,22 @@ class AuthController extends Notifier<AuthState> {
         username: username.trim(),
         password: password,
       );
-      _commit(operation, switch (result) {
-        LoginAuthenticated(:final session) => AuthState(
-          phase: AuthPhase.authenticated,
-          user: session.user,
-        ),
-        LoginTwoFactorRequired(:final challenge) => AuthState(
-          phase: AuthPhase.twoFactorRequired,
-          challenge: challenge,
-        ),
-      });
+      switch (result) {
+        case LoginAuthenticated(:final session):
+          _bindSession(session.token);
+          _commit(
+            operation,
+            AuthState(phase: AuthPhase.authenticated, user: session.user),
+          );
+        case LoginTwoFactorRequired(:final challenge):
+          _activeSession = null;
+          _commit(
+            operation,
+            AuthState(phase: AuthPhase.twoFactorRequired, challenge: challenge),
+          );
+      }
     } on ApiException catch (error) {
+      _activeSession = null;
       _commit(
         operation,
         AuthState(
@@ -153,6 +169,7 @@ class AuthController extends Notifier<AuthState> {
         ),
       );
     } on Object {
+      _activeSession = null;
       _commit(operation, const AuthState(phase: AuthPhase.unauthenticated));
     }
   }
@@ -196,6 +213,7 @@ class AuthController extends Notifier<AuthState> {
     );
     try {
       final session = await submit();
+      _bindSession(session.token);
       _commit(
         operation,
         AuthState(phase: AuthPhase.authenticated, user: session.user),
@@ -241,6 +259,7 @@ class AuthController extends Notifier<AuthState> {
 
   void returnToLogin() {
     _operationEpoch += 1;
+    _activeSession = null;
     state = const AuthState(phase: AuthPhase.unauthenticated);
   }
 
@@ -253,9 +272,12 @@ class AuthController extends Notifier<AuthState> {
     _commit(operation, AuthState(phase: AuthPhase.loggingOut, user: user));
     try {
       await _repository.logout();
+      _activeSession = null;
       _commit(operation, const AuthState(phase: AuthPhase.unauthenticated));
     } on ApiException catch (error) {
       if (error.isAuthoritativeSessionRejection) {
+        await _clearRejectedStorage(error);
+        _activeSession = null;
         _commit(
           operation,
           AuthState(phase: AuthPhase.unauthenticated, error: error),
@@ -269,6 +291,81 @@ class AuthController extends Notifier<AuthState> {
     } on Object {
       _commit(operation, AuthState(phase: AuthPhase.authenticated, user: user));
     }
+  }
+
+  /// Application-owned boundary for catalog/API authoritative session rejection.
+  ///
+  /// Clears matching secure storage (token-scoped), transitions auth to
+  /// unauthenticated when the rejection still belongs to [_activeSession], and
+  /// is safe to call concurrently. Returns whether the current UI session ended.
+  Future<bool> applyAuthoritativeRejection(ApiException error) async {
+    if (!error.isAuthoritativeSessionRejection) {
+      return false;
+    }
+
+    final rejected = error.requestSession;
+    final active = _activeSession;
+
+    if (rejected == null) {
+      // Without a request generation we cannot safely correlate.
+      return false;
+    }
+    if (active != null && rejected != active) {
+      // Delayed rejection from a prior session/token generation.
+      return false;
+    }
+    if (active == null) {
+      // No bound UI session — still attempt token-scoped storage clear only.
+      await _clearRejectedStorage(error);
+      return false;
+    }
+
+    await _clearRejectedStorage(error);
+    if (_activeSession != null && rejected != _activeSession) {
+      // Another login won while we awaited storage.
+      return false;
+    }
+    return _finishCurrentSessionRejection(error);
+  }
+
+  bool _finishCurrentSessionRejection(ApiException error) {
+    _activeSession = null;
+    _operationEpoch += 1;
+    if (_disposed) {
+      return true;
+    }
+    state = AuthState(phase: AuthPhase.unauthenticated, error: error);
+    return true;
+  }
+
+  Future<bool> _clearRejectedStorage(ApiException error) async {
+    final rejected = error.requestSession;
+    if (rejected == null) {
+      return false;
+    }
+    try {
+      return await _tokenStorage.clearIfCurrent(rejected);
+    } on Object {
+      // Preserve the original API rejection; UI still tears down when matched.
+      return false;
+    }
+  }
+
+  Future<void> _syncActiveSessionFromStorage() async {
+    try {
+      final stored = await _tokenStorage.read();
+      _activeSession = stored?.reference;
+    } on Object {
+      // Leave prior binding unchanged only if restore already failed elsewhere.
+      _activeSession = null;
+    }
+  }
+
+  void _bindSession(AuthToken token) {
+    _activeSession = StoredSession(
+      token: token.accessToken,
+      expiresAt: token.expiresAt,
+    ).reference;
   }
 
   int _beginOperation() => ++_operationEpoch;

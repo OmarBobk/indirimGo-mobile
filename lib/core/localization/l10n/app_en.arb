@@ -47,9 +47,79 @@
   "sessionVerificationSubtitle": "Your sign-in is still saved. Try again.",
   "retryAction": "Try again",
   "homeTitle": "Home",
+  "homeBrowseSubtitle": "Browse packages, product options, and prices.",
   "homePlaceholder": "The foundation is ready",
   "homePlaceholderBody": "Shopping features will arrive in later milestones.",
   "accountTitle": "Account",
+  "catalogLoading": "Loading catalog",
+  "catalogUnavailableTitle": "Catalog unavailable",
+  "catalogUnavailableBody": "Check your connection and try again. You are still signed in.",
+  "searchPackagesLabel": "Search packages",
+  "searchPackagesHint": "Search for a package",
+  "clearSearch": "Clear search",
+  "browseAllPackages": "Browse all packages",
+  "frequentlyOrderedTitle": "Frequently ordered",
+  "featuredPackagesTitle": "Featured packages",
+  "featuredPackagesEmpty": "No featured packages right now.",
+  "categoriesTitle": "Categories",
+  "packagesTitle": "Packages",
+  "packagesEmptyTitle": "No packages found",
+  "packagesEmptyBody": "Try a different search or category.",
+  "loadMorePackages": "Load more",
+  "categoryFilterActive": "Category filter",
+  "clearCategoryFilter": "Clear category",
+  "categoryFilterInvalid": "That category is not valid. Choose another.",
+  "searchQueryInvalid": "That search is not valid. Use at least two characters.",
+  "packageDetailTitle": "Package details",
+  "packageNotFoundTitle": "Package not found",
+  "packageNotFound": "This package is not available.",
+  "backToPackages": "Back to packages",
+  "productOptionsTitle": "Product options",
+  "productOptionsEmpty": "This package has no active products.",
+  "fixedAmountMode": "Fixed price",
+  "customAmountMode": "Custom amount",
+  "fromPriceLabel": "From",
+  "minimumPriceLabel": "Minimum",
+  "priceHidden": "Price hidden",
+  "priceUnavailable": "Price unavailable",
+  "priceFrom": "From {price}",
+  "@priceFrom": {
+    "placeholders": {
+      "price": {"type": "String"}
+    }
+  },
+  "customPriceCalculatedLater": "The exact price is calculated later after you enter an amount.",
+  "customAmountConfigUnavailable": "Custom amount settings are incomplete.",
+  "customAmountMin": "Min: {value}",
+  "@customAmountMin": {
+    "placeholders": {
+      "value": {"type": "int"}
+    }
+  },
+  "customAmountMax": "Max: {value}",
+  "@customAmountMax": {
+    "placeholders": {
+      "value": {"type": "int"}
+    }
+  },
+  "customAmountStep": "Step: {value}",
+  "@customAmountStep": {
+    "placeholders": {
+      "value": {"type": "int"}
+    }
+  },
+  "customAmountUnit": "Unit: {label}",
+  "@customAmountUnit": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "timesOrdered": "{count, plural, =0 {Not ordered yet} =1 {Ordered once} other {Ordered {count} times}}",
+  "@timesOrdered": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "welcomeUser": "Welcome, {name}",
   "@welcomeUser": {
     "placeholders": {

@@ -10,7 +10,9 @@ import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_models.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
+import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
 
+import 'support/fake_catalog_repository.dart';
 import 'support/fakes.dart';
 
 void main() {
@@ -289,6 +291,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
 
+    await tester.tap(find.byKey(const Key('account-button')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('logout-button')));
     await tester.pumpAndSettle();
     expect(repository.logoutCalls, 1);
@@ -404,6 +408,7 @@ Future<ProviderContainer> _pumpApp(
       ),
       tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
       authRepositoryProvider.overrideWithValue(repository),
+      catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
     ],
   );
   addTearDown(container.dispose);

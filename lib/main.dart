@@ -6,6 +6,8 @@ import 'package:indirimgo_mobile/core/config/app_config.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/data/remote_auth_repository.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
+import 'package:indirimgo_mobile/features/catalog/data/remote_catalog_repository.dart';
+import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +27,9 @@ void main() {
           tokenStorageProvider.overrideWithValue(storage),
           authRepositoryProvider.overrideWith(
             (ref) => ref.watch(remoteAuthRepositoryProvider),
+          ),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => ref.watch(remoteCatalogRepositoryProvider),
           ),
         ],
         child: const IndirimGoApp(),

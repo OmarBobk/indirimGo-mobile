@@ -1,8 +1,8 @@
 # İndirimGo Mobile
 
-Customer-only Android application for İndirimGo. Milestone M1.2 establishes the
-Flutter foundation and Laravel-backed authentication; shopping and financial
-features are intentionally not implemented yet.
+Customer-only Android application for İndirimGo. Milestone **M2.2** adds the
+authenticated Commerce Shell (catalog home, package browse/search, and package
+detail). Purchasing, wallet, and orders remain out of scope.
 
 ## Requirements
 
@@ -16,12 +16,26 @@ package name is `indirimgo_mobile`.
 
 ## Run locally
 
-Start Laravel on port 8000. Android emulators reach the host machine at
-`10.0.2.2`, so run the Flutter app with:
+Start Laravel so the emulator can reach it:
+
+```powershell
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Set Laravel `APP_URL` correctly so package image URLs resolve. Android emulators
+reach the host machine at `10.0.2.2`:
 
 ```powershell
 flutter pub get --enforce-lockfile
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
+```
+
+For a physical Android device, prefer `adb reverse` with loopback rather than
+broadening debug cleartext:
+
+```powershell
+adb reverse tcp:8000 tcp:8000
+flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000/api/v1
 ```
 
 `API_BASE_URL` is required, validated at startup, and normalized to one
@@ -48,6 +62,26 @@ Keystore state.
 - 2FA challenges and codes remain only in memory and are never logged
 - Laravel remains authoritative for challenge expiry and attempt limits
 
+## Commerce shell (M2.2)
+
+Authenticated routes:
+
+- `/app` — catalog home (frequently ordered, featured, categories)
+- `/app/packages` — browse/search with `category_id` and `q`
+- `/app/packages/:id` — package detail with fixed/custom product options
+- `/app/account` — account details and logout
+
+Consumed endpoints only:
+
+- `GET /api/v1/catalog/home`
+- `GET /api/v1/packages`
+- `GET /api/v1/packages/{id}`
+
+Prices are displayed from Laravel `display.formatted` only. Flutter never
+parses authoritative USD amounts into `double`, never converts currency, and
+never shows purchase CTAs. `meta.prices_visible=false` is distinct from an
+individual unavailable price.
+
 The authoritative contract is Laravel
 `docs/api/v1/openapi.yaml` on `origin/staging`. The Flutter client must not
 invent API fields, calculate trusted prices, or mutate financial state without
@@ -59,7 +93,8 @@ Arabic and English use Flutter ARB localization. Arabic is the fallback when no
 supported preferred locale exists; a preference list such as Turkish then
 English selects English. Active locale is sent in `Accept-Language`. The UI
 supports RTL/LTR, light/dark themes with contrast-checked accents, semantic
-labels, keyboard traversal, large text, and minimum touch targets.
+labels, keyboard traversal, large text, and minimum touch targets. Catalog
+names/descriptions remain exactly as returned by Laravel.
 
 ## Verify
 
@@ -67,7 +102,7 @@ labels, keyboard traversal, large text, and minimum touch targets.
 dart format --output=none --set-exit-if-changed .
 flutter analyze
 flutter test
-flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
+flutter build apk --debug --dart-define=API_BASE_URL=https://example.invalid/api/v1
 apkanalyzer manifest print build/app/outputs/flutter-apk/app-debug.apk |
   dart run tool/verify_android_security.dart --merged-manifest-stdin
 ```
@@ -81,12 +116,14 @@ Release builds still use the debug signing configuration so local
 `flutter run --release` works. Production signing must be configured before any
 distribution or publishing workflow. No Play upload or deploy step exists in CI.
 
-## M1.2 exclusions
+## M2.2 exclusions
 
-No registration, password reset, social login, catalog, categories, search,
-cart, checkout, wallet, top-ups, orders, fulfillments, refunds, activity,
-notifications, deep links, analytics, push, biometrics, or deployment is part
-of this milestone.
+No cart, buy now, checkout, wallet, top-ups, orders, fulfillments, refunds,
+activity, notifications, registration, password reset, deep links, analytics,
+push, biometrics, recommendations, client-side pricing, bottom navigation,
+Firebase, or deployment is part of this milestone.
 
-See [`docs/architecture/m1.2-auth-foundation.md`](docs/architecture/m1.2-auth-foundation.md)
-for architecture, dependency, and security decisions.
+See [`docs/architecture/m2.2-commerce-shell.md`](docs/architecture/m2.2-commerce-shell.md)
+for architecture details and
+[`docs/architecture/m1.2-auth-foundation.md`](docs/architecture/m1.2-auth-foundation.md)
+for authentication foundations.

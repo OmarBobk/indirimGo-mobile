@@ -65,11 +65,13 @@ class ApiClient {
         },
         onError: (error, handler) async {
           try {
-            if (error.response?.statusCode == 401) {
-              final session = _requestSession(error.requestOptions);
-              if (session != null) {
-                await tokenStorage.clearIfCurrent(session);
-              }
+            final session = _requestSession(error.requestOptions);
+            if (session != null &&
+                _isAuthoritativeHttpRejection(
+                  error.response?.statusCode,
+                  error.response?.data,
+                )) {
+              await tokenStorage.clearIfCurrent(session);
             }
           } on Object {
             // The authoritative HTTP response must remain the reported error.
@@ -84,7 +86,16 @@ class ApiClient {
   final Dio _dio;
   final TokenStorage tokenStorage;
 
-  Future<ApiResponse> get(String path) => _request(path, method: 'GET');
+  Future<ApiResponse> get(
+    String path, {
+    Map<String, Object?>? queryParameters,
+    CancelToken? cancelToken,
+  }) => _request(
+    path,
+    method: 'GET',
+    queryParameters: queryParameters,
+    cancelToken: cancelToken,
+  );
 
   Future<ApiResponse> post(String path, {Map<String, Object?>? data}) =>
       _request(path, method: 'POST', data: data);
@@ -93,11 +104,15 @@ class ApiClient {
     String path, {
     required String method,
     Map<String, Object?>? data,
+    Map<String, Object?>? queryParameters,
+    CancelToken? cancelToken,
   }) async {
     try {
       final response = await _dio.request<Object?>(
         path,
         data: data,
+        queryParameters: queryParameters,
+        cancelToken: cancelToken,
         options: Options(method: method),
       );
       final statusCode = response.statusCode;
@@ -124,6 +139,12 @@ class ApiClient {
     final fieldErrors = _parseFieldErrors(body?['errors']);
     final requestSession = _requestSession(error.requestOptions);
 
+    if (error.type == DioExceptionType.cancel) {
+      return ApiException(
+        kind: ApiErrorKind.cancelled,
+        requestSession: requestSession,
+      );
+    }
     if (statusCode == 401) {
       return ApiException(
         kind: ApiErrorKind.unauthorized,
@@ -135,6 +156,14 @@ class ApiClient {
     if (statusCode == 403) {
       return ApiException(
         kind: ApiErrorKind.forbidden,
+        code: code,
+        statusCode: statusCode,
+        requestSession: requestSession,
+      );
+    }
+    if (statusCode == 404) {
+      return ApiException(
+        kind: ApiErrorKind.notFound,
         code: code,
         statusCode: statusCode,
         requestSession: requestSession,
@@ -196,6 +225,19 @@ SessionReference? _requestSession(RequestOptions options) {
   return value is SessionReference ? value : null;
 }
 
+bool _isAuthoritativeHttpRejection(int? statusCode, Object? body) {
+  if (statusCode == 401) {
+    return true;
+  }
+  if (statusCode != 403) {
+    return false;
+  }
+  final map = _optionalJsonMap(body);
+  final rawCode = map?['code'];
+  return rawCode is String &&
+      authoritativeSessionRejectionCodes.contains(rawCode);
+}
+
 Map<String, Object?> _asJsonMap(Object? value) {
   final mapped = _optionalJsonMap(value);
   if (mapped == null) {
@@ -236,4 +278,8 @@ const _validationFields = {
   'challenge_token',
   'code',
   'recovery_code',
+  'category_id',
+  'q',
+  'page',
+  'per_page',
 };

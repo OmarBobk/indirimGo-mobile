@@ -157,6 +157,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeTitle => 'الرئيسية';
 
   @override
+  String get homeBrowseSubtitle => 'استكشف الباقات وخيارات المنتجات والأسعار.';
+
+  @override
   String get homePlaceholder => 'الأساس جاهز';
 
   @override
@@ -164,6 +167,148 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get accountTitle => 'الحساب';
+
+  @override
+  String get catalogLoading => 'جارٍ تحميل الكتالوج';
+
+  @override
+  String get catalogUnavailableTitle => 'تعذّر تحميل الكتالوج';
+
+  @override
+  String get catalogUnavailableBody =>
+      'تحقق من الاتصال ثم حاول مجدداً. ما زلت مسجّل الدخول.';
+
+  @override
+  String get searchPackagesLabel => 'البحث في الباقات';
+
+  @override
+  String get searchPackagesHint => 'ابحث عن باقة';
+
+  @override
+  String get clearSearch => 'مسح البحث';
+
+  @override
+  String get browseAllPackages => 'تصفح كل الباقات';
+
+  @override
+  String get frequentlyOrderedTitle => 'طلبتها كثيراً';
+
+  @override
+  String get featuredPackagesTitle => 'باقات مميزة';
+
+  @override
+  String get featuredPackagesEmpty => 'لا توجد باقات مميزة حالياً.';
+
+  @override
+  String get categoriesTitle => 'التصنيفات';
+
+  @override
+  String get packagesTitle => 'الباقات';
+
+  @override
+  String get packagesEmptyTitle => 'لا توجد باقات';
+
+  @override
+  String get packagesEmptyBody => 'جرّب بحثاً أو تصنيفاً مختلفاً.';
+
+  @override
+  String get loadMorePackages => 'تحميل المزيد';
+
+  @override
+  String get categoryFilterActive => 'تصفية حسب التصنيف';
+
+  @override
+  String get clearCategoryFilter => 'إزالة التصنيف';
+
+  @override
+  String get categoryFilterInvalid => 'التصنيف غير صالح. اختر تصنيفاً آخر.';
+
+  @override
+  String get searchQueryInvalid =>
+      'استعلام البحث غير صالح. استخدم حرفين على الأقل.';
+
+  @override
+  String get packageDetailTitle => 'تفاصيل الباقة';
+
+  @override
+  String get packageNotFoundTitle => 'الباقة غير موجودة';
+
+  @override
+  String get packageNotFound => 'هذه الباقة غير متاحة.';
+
+  @override
+  String get backToPackages => 'العودة إلى الباقات';
+
+  @override
+  String get productOptionsTitle => 'خيارات المنتجات';
+
+  @override
+  String get productOptionsEmpty => 'لا توجد منتجات نشطة في هذه الباقة.';
+
+  @override
+  String get fixedAmountMode => 'سعر ثابت';
+
+  @override
+  String get customAmountMode => 'مبلغ مخصص';
+
+  @override
+  String get fromPriceLabel => 'من';
+
+  @override
+  String get minimumPriceLabel => 'الحد الأدنى';
+
+  @override
+  String get priceHidden => 'السعر غير ظاهر';
+
+  @override
+  String get priceUnavailable => 'السعر غير متاح';
+
+  @override
+  String priceFrom(String price) {
+    return 'من $price';
+  }
+
+  @override
+  String get customPriceCalculatedLater =>
+      'يُحسب السعر النهائي لاحقاً بعد إدخال المبلغ.';
+
+  @override
+  String get customAmountConfigUnavailable => 'إعداد المبلغ المخصص غير مكتمل.';
+
+  @override
+  String customAmountMin(int value) {
+    return 'الحد الأدنى: $value';
+  }
+
+  @override
+  String customAmountMax(int value) {
+    return 'الحد الأقصى: $value';
+  }
+
+  @override
+  String customAmountStep(int value) {
+    return 'الخطوة: $value';
+  }
+
+  @override
+  String customAmountUnit(String label) {
+    return 'الوحدة: $label';
+  }
+
+  @override
+  String timesOrdered(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'طُلبت $count مرة',
+      many: 'طُلبت $count مرة',
+      few: 'طُلبت $count مرات',
+      two: 'طُلبت مرتين',
+      one: 'طُلبت مرة واحدة',
+      zero: 'لم تُطلب',
+    );
+    return '$_temp0';
+  }
 
   @override
   String welcomeUser(String name) {

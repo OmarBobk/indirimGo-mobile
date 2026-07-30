@@ -16,6 +16,14 @@ final class SessionReference {
   final String _token;
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SessionReference && other._token == _token);
+
+  @override
+  int get hashCode => Object.hash(runtimeType, _token);
+
+  @override
   String toString() => 'SessionReference';
 }
 
