@@ -65,11 +65,13 @@ class ApiClient {
         },
         onError: (error, handler) async {
           try {
-            if (error.response?.statusCode == 401) {
-              final session = _requestSession(error.requestOptions);
-              if (session != null) {
-                await tokenStorage.clearIfCurrent(session);
-              }
+            final session = _requestSession(error.requestOptions);
+            if (session != null &&
+                _isAuthoritativeHttpRejection(
+                  error.response?.statusCode,
+                  error.response?.data,
+                )) {
+              await tokenStorage.clearIfCurrent(session);
             }
           } on Object {
             // The authoritative HTTP response must remain the reported error.
@@ -221,6 +223,19 @@ const _requestSessionKey = 'auth.request_session';
 SessionReference? _requestSession(RequestOptions options) {
   final value = options.extra[_requestSessionKey];
   return value is SessionReference ? value : null;
+}
+
+bool _isAuthoritativeHttpRejection(int? statusCode, Object? body) {
+  if (statusCode == 401) {
+    return true;
+  }
+  if (statusCode != 403) {
+    return false;
+  }
+  final map = _optionalJsonMap(body);
+  final rawCode = map?['code'];
+  return rawCode is String &&
+      authoritativeSessionRejectionCodes.contains(rawCode);
 }
 
 Map<String, Object?> _asJsonMap(Object? value) {

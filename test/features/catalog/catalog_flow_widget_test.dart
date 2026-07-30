@@ -9,8 +9,10 @@ import 'package:indirimgo_mobile/core/errors/api_exception.dart';
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
+import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
+import 'package:indirimgo_mobile/features/catalog/presentation/catalog_controllers.dart';
 
 import '../../support/catalog_fixtures.dart';
 import '../../support/fake_catalog_repository.dart';
@@ -67,13 +69,94 @@ void main() {
 
   testWidgets('category chip opens filtered package list', (tester) async {
     await _pumpAuthenticated(tester);
-    final chip = find.byKey(const Key('category-chip-3'), skipOffstage: false);
-    await tester.ensureVisible(chip);
+    final chip = find.byKey(const Key('category-chip-3'));
+    await tester.scrollUntilVisible(chip, 200);
     await tester.pumpAndSettle();
     await tester.tap(chip);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('package-list')), findsOneWidget);
     expect(find.byKey(const Key('active-category-chip')), findsOneWidget);
+    expect(find.text('Games'), findsWidgets);
+  });
+
+  testWidgets('frequently ordered count is visible for 1 and plurals', (
+    tester,
+  ) async {
+    await _pumpAuthenticated(
+      tester,
+      catalog: FakeCatalogRepository(
+        home: CatalogHome.fromJson(
+          catalogHomeJson(
+            frequentlyOrdered: [
+              frequentlyOrderedJson(timesOrdered: 1),
+              {
+                ...packageSummaryJson(id: 44, name: 'Twice Pack'),
+                'times_ordered': 2,
+              },
+              {
+                ...packageSummaryJson(id: 45, name: 'Many Pack'),
+                'times_ordered': 5,
+              },
+            ],
+          ),
+        ),
+      ),
+    );
+    expect(find.byKey(const Key('times-ordered-42')), findsOneWidget);
+    expect(find.text('طُلبت مرة واحدة'), findsOneWidget);
+    expect(find.text('طُلبت مرتين'), findsOneWidget);
+    final many = find.byKey(const Key('times-ordered-45'));
+    await tester.scrollUntilVisible(many, 200);
+    await tester.pumpAndSettle();
+    expect(many, findsOneWidget);
+    expect(find.textContaining('5'), findsWidgets);
+  });
+
+  testWidgets('package card chevron mirrors for Arabic RTL and English LTR', (
+    tester,
+  ) async {
+    await _pumpAuthenticated(tester);
+    final rtlMirror = tester.widget<Transform>(
+      find.byKey(const Key('package-card-chevron-mirror')).first,
+    );
+    expect(rtlMirror.transform.entry(0, 0), -1.0);
+
+    TestWidgetsFlutterBinding.ensureInitialized()
+        .platformDispatcher
+        .localesTestValue = const [
+      Locale('en'),
+    ];
+    await _pumpAuthenticated(tester);
+    final ltrMirror = tester.widget<Transform>(
+      find.byKey(const Key('package-card-chevron-mirror')).first,
+    );
+    expect(ltrMirror.transform.entry(0, 0), 1.0);
+  });
+
+  testWidgets('home refresh 401 exits /app and clears prices', (tester) async {
+    final storage = InMemoryTokenStorage(sampleStoredSession());
+    final catalog = FakeCatalogRepository();
+    final container = await _pumpApp(
+      tester,
+      auth: FakeAuthRepository(tokenStorage: storage)
+        ..restoreResult = sampleUser,
+      catalog: catalog,
+      storage: storage,
+    );
+    expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
+    expect(find.textContaining(r'$'), findsWidgets);
+
+    catalog.homeError = unauthorizedRejection(storage.session!.reference);
+    await container.read(catalogHomeControllerProvider.notifier).refresh();
+    await tester.pumpAndSettle();
+
+    expect(
+      container.read(authControllerProvider).phase,
+      AuthPhase.unauthenticated,
+    );
+    expect(find.byKey(const Key('authenticated-shell')), findsNothing);
+    expect(find.byKey(const Key('login-button')), findsOneWidget);
+    expect(find.textContaining(r'$5.00'), findsNothing);
   });
 
   testWidgets('package detail renders fixed and custom options', (
@@ -275,10 +358,12 @@ Future<ProviderContainer> _pumpAuthenticated(
   FakeCatalogRepository? catalog,
   bool dark = false,
 }) {
+  final storage = InMemoryTokenStorage(sampleStoredSession());
   return _pumpApp(
     tester,
-    auth: FakeAuthRepository()..restoreResult = sampleUser,
+    auth: FakeAuthRepository(tokenStorage: storage)..restoreResult = sampleUser,
     catalog: catalog ?? FakeCatalogRepository(),
+    storage: storage,
     dark: dark,
   );
 }
@@ -287,6 +372,7 @@ Future<ProviderContainer> _pumpApp(
   WidgetTester tester, {
   required FakeAuthRepository auth,
   required FakeCatalogRepository catalog,
+  InMemoryTokenStorage? storage,
   bool settle = true,
   bool dark = false,
 }) async {
@@ -294,6 +380,7 @@ Future<ProviderContainer> _pumpApp(
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
   }
+  final tokenStorage = storage ?? InMemoryTokenStorage(sampleStoredSession());
   final container = ProviderContainer(
     overrides: [
       appConfigProvider.overrideWithValue(
@@ -302,7 +389,7 @@ Future<ProviderContainer> _pumpApp(
           buildMode: AppBuildMode.release,
         ),
       ),
-      tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
+      tokenStorageProvider.overrideWithValue(tokenStorage),
       authRepositoryProvider.overrideWithValue(auth),
       catalogRepositoryProvider.overrideWithValue(catalog),
     ],

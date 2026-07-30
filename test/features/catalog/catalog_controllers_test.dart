@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
+import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_models.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
@@ -24,13 +25,17 @@ void main() {
     FakeAuthRepository? auth,
     FakeCatalogRepository? catalog,
     MobileUser? restoreUser,
+    InMemoryTokenStorage? storage,
   }) async {
+    final tokenStorage = storage ?? InMemoryTokenStorage(sampleStoredSession());
     final authRepo =
         auth ??
-        (FakeAuthRepository()..restoreResult = restoreUser ?? sampleUser);
+        (FakeAuthRepository(tokenStorage: tokenStorage)
+          ..restoreResult = restoreUser ?? sampleUser);
     final catalogRepo = catalog ?? FakeCatalogRepository();
     final container = ProviderContainer(
       overrides: [
+        tokenStorageProvider.overrideWithValue(tokenStorage),
         authRepositoryProvider.overrideWithValue(authRepo),
         catalogRepositoryProvider.overrideWithValue(catalogRepo),
       ],
@@ -183,7 +188,11 @@ void main() {
   test('detail success, not-found, and offline retry', () async {
     final catalog = FakeCatalogRepository();
     final container = await createContainer(catalog: catalog);
-    container.read(packageDetailControllerProvider(42));
+    final sub42 = container.listen(
+      packageDetailControllerProvider(42),
+      (_, _) {},
+    );
+    addTearDown(sub42.close);
     for (var i = 0; i < 20; i++) {
       await pump();
       if (container.read(packageDetailControllerProvider(42)).phase ==
@@ -209,7 +218,11 @@ void main() {
     );
 
     catalog.detailError = networkFailure();
-    container.read(packageDetailControllerProvider(7));
+    final sub7 = container.listen(
+      packageDetailControllerProvider(7),
+      (_, _) {},
+    );
+    addTearDown(sub7.close);
     await container.read(packageDetailControllerProvider(7).notifier).load();
     await pump();
     expect(
@@ -224,8 +237,14 @@ void main() {
 
   test('logout and customer switch clear personalized catalog state', () async {
     final catalog = FakeCatalogRepository();
-    final auth = FakeAuthRepository()..restoreResult = sampleUser;
-    final container = await createContainer(auth: auth, catalog: catalog);
+    final storage = InMemoryTokenStorage(sampleStoredSession());
+    final auth = FakeAuthRepository(tokenStorage: storage)
+      ..restoreResult = sampleUser;
+    final container = await createContainer(
+      auth: auth,
+      catalog: catalog,
+      storage: storage,
+    );
     await waitHomeReady(container);
     expect(container.read(catalogHomeControllerProvider).hasContent, isTrue);
 
@@ -272,8 +291,14 @@ void main() {
   test('stale home response after customer switch is ignored', () async {
     final slow = FakeCatalogRepository()
       ..homeDelay = const Duration(milliseconds: 100);
-    final auth = FakeAuthRepository()..restoreResult = sampleUser;
-    final container = await createContainer(auth: auth, catalog: slow);
+    final storage = InMemoryTokenStorage(sampleStoredSession());
+    final auth = FakeAuthRepository(tokenStorage: storage)
+      ..restoreResult = sampleUser;
+    final container = await createContainer(
+      auth: auth,
+      catalog: slow,
+      storage: storage,
+    );
     await waitHomeReady(container);
     final homeCallsAtStart = slow.homeCalls;
 

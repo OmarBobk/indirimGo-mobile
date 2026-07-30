@@ -133,6 +133,13 @@ void main() {
         ),
       ),
     );
+    expect(storage.session, isNull);
+    await storage.write(
+      StoredSession(
+        token: '7|catalog-token',
+        expiresAt: DateTime.utc(2026, 8, 28),
+      ),
+    );
     await expectLater(
       repository.fetchPackage(99),
       throwsA(

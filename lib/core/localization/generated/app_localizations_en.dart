@@ -219,7 +219,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadMorePackages => 'Load more';
 
   @override
-  String get categoryFilterActive => 'Category selected';
+  String get categoryFilterActive => 'Category filter';
 
   @override
   String get clearCategoryFilter => 'Clear category';

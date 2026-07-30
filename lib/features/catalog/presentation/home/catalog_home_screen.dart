@@ -198,7 +198,10 @@ class _HomeBody extends ConsumerWidget {
                       key: Key('category-chip-${category.id}'),
                       label: Text(category.name),
                       onPressed: () => context.push(
-                        AppRoutes.packagesWithCategory(category.id),
+                        AppRoutes.packagesWithCategory(
+                          category.id,
+                          name: category.name,
+                        ),
                       ),
                     ),
                   ),

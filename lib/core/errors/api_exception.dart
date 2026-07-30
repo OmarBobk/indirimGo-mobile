@@ -27,6 +27,18 @@ const stableApiErrorCodes = {
   'package_not_found',
 };
 
+/// Stable API codes that prove the current mobile session cannot continue.
+///
+/// Used for HTTP 403 classification only. HTTP 401 is always session-ending.
+/// Generic/resource 403 responses must not appear here.
+const authoritativeSessionRejectionCodes = {
+  'account_inactive',
+  'account_blocked',
+  'customer_role_required',
+  'missing_mobile_ability',
+  'unauthenticated',
+};
+
 class ApiException implements Exception {
   const ApiException({
     required this.kind,
@@ -44,8 +56,20 @@ class ApiException implements Exception {
   final int? retryAfterSeconds;
   final SessionReference? requestSession;
 
-  bool get isAuthoritativeSessionRejection =>
-      kind == ApiErrorKind.unauthorized || kind == ApiErrorKind.forbidden;
+  /// Whether this error ends the mobile session for the request's generation.
+  ///
+  /// Classification uses HTTP status plus allowlisted stable codes only —
+  /// never localized or raw server messages.
+  bool get isAuthoritativeSessionRejection {
+    if (kind == ApiErrorKind.unauthorized || statusCode == 401) {
+      return true;
+    }
+    if (kind == ApiErrorKind.forbidden || statusCode == 403) {
+      final code = this.code;
+      return code != null && authoritativeSessionRejectionCodes.contains(code);
+    }
+    return false;
+  }
 
   bool get isRecoverableSessionFailure =>
       kind == ApiErrorKind.network || kind == ApiErrorKind.server;

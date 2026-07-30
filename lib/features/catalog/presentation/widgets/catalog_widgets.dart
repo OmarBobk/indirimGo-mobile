@@ -207,6 +207,20 @@ class PackageCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
+                      if (timesOrdered != null) ...[
+                        const SizedBox(height: 4),
+                        ExcludeSemantics(
+                          child: Text(
+                            l10n.timesOrdered(timesOrdered!),
+                            key: Key('times-ordered-${package.id}'),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.75,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.xs),
                       CatalogPriceText(
                         pricesVisible: pricesVisible,
@@ -218,7 +232,16 @@ class PackageCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right),
+                Transform.scale(
+                  key: const Key('package-card-chevron-mirror'),
+                  scaleX: Directionality.of(context) == TextDirection.rtl
+                      ? -1.0
+                      : 1.0,
+                  child: const Icon(
+                    Icons.chevron_right,
+                    key: Key('package-card-chevron'),
+                  ),
+                ),
               ],
             ),
           ),

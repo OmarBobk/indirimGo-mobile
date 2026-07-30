@@ -497,7 +497,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryFilterActive.
   ///
   /// In ar, this message translates to:
-  /// **'تصنيف محدّد'**
+  /// **'تصفية حسب التصنيف'**
   String get categoryFilterActive;
 
   /// No description provided for @clearCategoryFilter.

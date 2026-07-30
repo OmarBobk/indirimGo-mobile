@@ -317,9 +317,15 @@ void main() {
   });
 }
 
-ProviderContainer _container(FakeAuthRepository repository) {
+ProviderContainer _container(
+  FakeAuthRepository repository, {
+  TokenStorage? storage,
+}) {
   return ProviderContainer(
-    overrides: [authRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      authRepositoryProvider.overrideWithValue(repository),
+      tokenStorageProvider.overrideWithValue(storage ?? InMemoryTokenStorage()),
+    ],
   );
 }
 

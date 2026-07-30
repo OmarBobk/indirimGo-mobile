@@ -215,7 +215,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loadMorePackages => 'تحميل المزيد';
 
   @override
-  String get categoryFilterActive => 'تصنيف محدّد';
+  String get categoryFilterActive => 'تصفية حسب التصنيف';
 
   @override
   String get clearCategoryFilter => 'إزالة التصنيف';

@@ -7,9 +7,31 @@ import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
 
+/// OpenAPI `q` maximum length (Unicode code points).
+const catalogSearchQueryMaxLength = 100;
+
+/// Clamps user or programmatic search input to the OpenAPI maximum.
+///
+/// Typed input is also bounded by [LengthLimitingTextInputFormatter] /
+/// `TextField.maxLength`, which enforce grapheme clusters in the UI layer.
+String clampCatalogSearchInput(String value) {
+  final runes = value.runes;
+  if (runes.length <= catalogSearchQueryMaxLength) {
+    return value;
+  }
+  return String.fromCharCodes(runes.take(catalogSearchQueryMaxLength));
+}
+
 /// Customer id currently owning personalized catalog state, or null.
+///
+/// Null whenever auth is not fully [AuthPhase.authenticated] so logout,
+/// session rejection, and customer switches clear catalog immediately.
 final catalogCustomerIdProvider = Provider<int?>((ref) {
-  return ref.watch(authControllerProvider.select((state) => state.user?.id));
+  final auth = ref.watch(authControllerProvider);
+  if (auth.phase != AuthPhase.authenticated) {
+    return null;
+  }
+  return auth.user?.id;
 });
 
 enum CatalogLoadPhase { idle, loading, refreshing, ready, empty, error }
@@ -124,6 +146,13 @@ class CatalogHomeController extends Notifier<CatalogHomeState> {
       if (error.kind == ApiErrorKind.cancelled) {
         return;
       }
+      if (await _applyAuthoritativeRejection(error)) {
+        if (_isCurrent(operation, customerId) ||
+            ref.read(catalogCustomerIdProvider) == null) {
+          state = const CatalogHomeState.initial();
+        }
+        return;
+      }
       if (!_isCurrent(operation, customerId)) {
         return;
       }
@@ -153,6 +182,15 @@ class CatalogHomeController extends Notifier<CatalogHomeState> {
   Future<void> refresh() => load(refresh: true);
 
   Future<void> retry() => load();
+
+  Future<bool> _applyAuthoritativeRejection(ApiException error) async {
+    if (!error.isAuthoritativeSessionRejection) {
+      return false;
+    }
+    return ref
+        .read(authControllerProvider.notifier)
+        .applyAuthoritativeRejection(error);
+  }
 
   bool _isCurrent(int operation, int customerId) {
     return !_disposed &&
@@ -188,13 +226,15 @@ class PackageListState {
     this.loadMoreError,
     this.customerId,
     this.searchInput = '',
+    this.categoryName,
   });
 
-  PackageListState.initial({int? categoryId, String? q})
+  PackageListState.initial({int? categoryId, String? q, String? categoryName})
     : this(
         phase: PackageListPhase.idle,
         query: PackageListQuery(categoryId: categoryId, q: q),
         searchInput: q ?? '',
+        categoryName: categoryId != null ? categoryName : null,
       );
 
   final PackageListPhase phase;
@@ -206,6 +246,9 @@ class PackageListState {
   final ApiException? loadMoreError;
   final int? customerId;
   final String searchInput;
+
+  /// Server category name for the active filter chip, when known.
+  final String? categoryName;
 
   bool get canLoadMore =>
       pagination != null &&
@@ -255,6 +298,7 @@ class PackageListController extends Notifier<PackageListState> {
         phase: PackageListPhase.loading,
         query: state.query.copyWith(page: 1),
         searchInput: state.searchInput,
+        categoryName: state.categoryName,
         customerId: next,
       );
       unawaited(_fetch(reset: true));
@@ -264,17 +308,19 @@ class PackageListController extends Notifier<PackageListState> {
   }
 
   /// Applies route/query bootstrap once (category + optional search).
-  void bootstrap({int? categoryId, String? q}) {
+  void bootstrap({int? categoryId, String? q, String? categoryName}) {
     final customerId = ref.read(catalogCustomerIdProvider);
-    final trimmed = q?.trim();
+    final trimmed = q == null ? null : clampCatalogSearchInput(q).trim();
     final nextQuery = PackageListQuery(
       categoryId: categoryId,
       q: (trimmed != null && trimmed.length >= 2) ? trimmed : null,
     );
+    final resolvedName = categoryId != null ? categoryName : null;
     final sameFilters =
         state.query.categoryId == nextQuery.categoryId &&
         state.query.q == nextQuery.q &&
         state.customerId == customerId &&
+        state.categoryName == resolvedName &&
         state.hasContent;
     if (sameFilters) {
       return;
@@ -283,12 +329,14 @@ class PackageListController extends Notifier<PackageListState> {
       phase: PackageListPhase.loading,
       query: nextQuery,
       searchInput: trimmed ?? '',
+      categoryName: resolvedName,
       customerId: customerId,
     );
     unawaited(_fetch(reset: true));
   }
 
   void onSearchChanged(String value) {
+    final clamped = clampCatalogSearchInput(value);
     state = PackageListState(
       phase: state.phase,
       query: state.query,
@@ -298,11 +346,12 @@ class PackageListController extends Notifier<PackageListState> {
       error: state.error,
       loadMoreError: state.loadMoreError,
       customerId: state.customerId,
-      searchInput: value,
+      searchInput: clamped,
+      categoryName: state.categoryName,
     );
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
-      submitSearch(value, fromDebounce: true);
+      submitSearch(clamped, fromDebounce: true);
     });
   }
 
@@ -310,7 +359,8 @@ class PackageListController extends Notifier<PackageListState> {
     if (!fromDebounce) {
       _debounce?.cancel();
     }
-    final trimmed = value.trim();
+    final clamped = clampCatalogSearchInput(value);
+    final trimmed = clamped.trim();
     if (trimmed.length == 1) {
       // Do not request for a single character; keep current query/results.
       state = PackageListState(
@@ -322,7 +372,8 @@ class PackageListController extends Notifier<PackageListState> {
         error: state.error,
         loadMoreError: state.loadMoreError,
         customerId: state.customerId,
-        searchInput: value,
+        searchInput: clamped,
+        categoryName: state.categoryName,
       );
       return;
     }
@@ -333,13 +384,14 @@ class PackageListController extends Notifier<PackageListState> {
     state = PackageListState(
       phase: PackageListPhase.loading,
       query: state.query.copyWith(q: nextQ, clearQ: nextQ == null, page: 1),
-      searchInput: value,
+      searchInput: clamped,
+      categoryName: state.categoryName,
       customerId: ref.read(catalogCustomerIdProvider),
     );
     unawaited(_fetch(reset: true));
   }
 
-  void setCategory(int? categoryId) {
+  void setCategory(int? categoryId, {String? categoryName}) {
     if (state.query.categoryId == categoryId && state.hasContent) {
       return;
     }
@@ -351,6 +403,7 @@ class PackageListController extends Notifier<PackageListState> {
         page: 1,
       ),
       searchInput: state.searchInput,
+      categoryName: categoryId != null ? categoryName : null,
       customerId: ref.read(catalogCustomerIdProvider),
     );
     unawaited(_fetch(reset: true));
@@ -372,6 +425,7 @@ class PackageListController extends Notifier<PackageListState> {
       pricesVisible: state.pricesVisible,
       pagination: state.pagination,
       searchInput: state.searchInput,
+      categoryName: state.categoryName,
       customerId: ref.read(catalogCustomerIdProvider),
     );
     await _fetch(reset: true, preserveOnError: true);
@@ -382,6 +436,7 @@ class PackageListController extends Notifier<PackageListState> {
       phase: PackageListPhase.loading,
       query: state.query.copyWith(page: 1),
       searchInput: state.searchInput,
+      categoryName: state.categoryName,
       customerId: ref.read(catalogCustomerIdProvider),
     );
     await _fetch(reset: true);
@@ -410,6 +465,7 @@ class PackageListController extends Notifier<PackageListState> {
       pricesVisible: state.pricesVisible,
       pagination: state.pagination,
       searchInput: state.searchInput,
+      categoryName: state.categoryName,
       customerId: customerId,
     );
 
@@ -436,10 +492,22 @@ class PackageListController extends Notifier<PackageListState> {
         pricesVisible: page.pricesVisible,
         pagination: page.pagination,
         searchInput: state.searchInput,
+        categoryName: state.categoryName,
         customerId: customerId,
       );
     } on ApiException catch (error) {
       if (error.kind == ApiErrorKind.cancelled) {
+        return;
+      }
+      if (await _applyAuthoritativeRejection(error)) {
+        if (_isCurrent(operation, customerId) ||
+            ref.read(catalogCustomerIdProvider) == null) {
+          state = PackageListState.initial(
+            categoryId: state.query.categoryId,
+            q: state.query.q,
+            categoryName: state.categoryName,
+          );
+        }
         return;
       }
       if (!_isCurrent(operation, customerId)) {
@@ -453,6 +521,7 @@ class PackageListController extends Notifier<PackageListState> {
         pagination: pagination,
         loadMoreError: error,
         searchInput: state.searchInput,
+        categoryName: state.categoryName,
         customerId: customerId,
       );
     } on Object {
@@ -467,6 +536,7 @@ class PackageListController extends Notifier<PackageListState> {
         pagination: pagination,
         loadMoreError: const ApiException(kind: ApiErrorKind.unknown),
         searchInput: state.searchInput,
+        categoryName: state.categoryName,
         customerId: customerId,
       );
     } finally {
@@ -488,6 +558,7 @@ class PackageListController extends Notifier<PackageListState> {
       state = PackageListState.initial(
         categoryId: state.query.categoryId,
         q: state.query.q,
+        categoryName: state.categoryName,
       );
       return;
     }
@@ -519,10 +590,22 @@ class PackageListController extends Notifier<PackageListState> {
         pricesVisible: page.pricesVisible,
         pagination: page.pagination,
         searchInput: state.searchInput,
+        categoryName: state.categoryName,
         customerId: customerId,
       );
     } on ApiException catch (error) {
       if (error.kind == ApiErrorKind.cancelled) {
+        return;
+      }
+      if (await _applyAuthoritativeRejection(error)) {
+        if (_isCurrent(operation, customerId) ||
+            ref.read(catalogCustomerIdProvider) == null) {
+          state = PackageListState.initial(
+            categoryId: state.query.categoryId,
+            q: state.query.q,
+            categoryName: state.categoryName,
+          );
+        }
         return;
       }
       if (!_isCurrent(operation, customerId)) {
@@ -536,6 +619,7 @@ class PackageListController extends Notifier<PackageListState> {
         pagination: preservedPagination,
         error: error,
         searchInput: state.searchInput,
+        categoryName: state.categoryName,
         customerId: customerId,
       );
     } on Object {
@@ -550,6 +634,7 @@ class PackageListController extends Notifier<PackageListState> {
         pagination: preservedPagination,
         error: const ApiException(kind: ApiErrorKind.unknown),
         searchInput: state.searchInput,
+        categoryName: state.categoryName,
         customerId: customerId,
       );
     } finally {
@@ -557,6 +642,15 @@ class PackageListController extends Notifier<PackageListState> {
         _cancelToken = null;
       }
     }
+  }
+
+  Future<bool> _applyAuthoritativeRejection(ApiException error) async {
+    if (!error.isAuthoritativeSessionRejection) {
+      return false;
+    }
+    return ref
+        .read(authControllerProvider.notifier)
+        .applyAuthoritativeRejection(error);
   }
 
   bool _isCurrent(int operation, int? customerId) {
@@ -592,8 +686,8 @@ class PackageDetailState {
   final int? customerId;
 }
 
-final packageDetailControllerProvider =
-    NotifierProvider.family<PackageDetailController, PackageDetailState, int>(
+final packageDetailControllerProvider = NotifierProvider.autoDispose
+    .family<PackageDetailController, PackageDetailState, int>(
       PackageDetailController.new,
     );
 
@@ -696,6 +790,16 @@ class PackageDetailController extends Notifier<PackageDetailState> {
       if (error.kind == ApiErrorKind.cancelled) {
         return;
       }
+      if (await _applyAuthoritativeRejection(error)) {
+        if (_isCurrent(operation, customerId) ||
+            ref.read(catalogCustomerIdProvider) == null) {
+          state = PackageDetailState(
+            phase: PackageDetailPhase.idle,
+            packageId: packageId,
+          );
+        }
+        return;
+      }
       if (!_isCurrent(operation, customerId)) {
         return;
       }
@@ -728,6 +832,15 @@ class PackageDetailController extends Notifier<PackageDetailState> {
   }
 
   Future<void> retry() => load();
+
+  Future<bool> _applyAuthoritativeRejection(ApiException error) async {
+    if (!error.isAuthoritativeSessionRejection) {
+      return false;
+    }
+    return ref
+        .read(authControllerProvider.notifier)
+        .applyAuthoritativeRejection(error);
+  }
 
   bool _isCurrent(int operation, int customerId) {
     return !_disposed &&

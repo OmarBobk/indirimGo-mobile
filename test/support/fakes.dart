@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
+import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_models.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
 
@@ -27,6 +28,11 @@ final sampleSession = AuthSession(
   user: sampleUser,
 );
 
+StoredSession sampleStoredSession() => StoredSession(
+  token: sampleSession.token.accessToken,
+  expiresAt: sampleSession.token.expiresAt,
+);
+
 final sampleChallenge = TwoFactorChallenge(
   token: 'challenge-token-kept-only-in-memory-1234567890123',
   expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 5)),
@@ -43,6 +49,10 @@ typedef RecoveryHandler =
     );
 
 class FakeAuthRepository implements AuthRepository {
+  FakeAuthRepository({this.tokenStorage});
+
+  final TokenStorage? tokenStorage;
+
   MobileUser? restoreResult;
   Object? restoreError;
   Future<MobileUser?> Function()? restoreHandler;
@@ -68,28 +78,39 @@ class FakeAuthRepository implements AuthRepository {
     loginCalls += 1;
     lastUsername = username;
     lastPassword = password;
-    return loginHandler?.call(username, password) ??
-        LoginAuthenticated(sampleSession);
+    final outcome =
+        await (loginHandler?.call(username, password) ??
+            Future.value(LoginAuthenticated(sampleSession)));
+    if (outcome case LoginAuthenticated(:final session)) {
+      await _persist(session);
+    }
+    return outcome;
   }
 
   @override
   Future<AuthSession> completeTwoFactorWithAuthenticator({
     required TwoFactorChallenge challenge,
     required String code,
-  }) {
+  }) async {
     authenticatorCalls += 1;
-    return authenticatorHandler?.call(challenge, code) ??
-        Future.value(sampleSession);
+    final session =
+        await (authenticatorHandler?.call(challenge, code) ??
+            Future.value(sampleSession));
+    await _persist(session);
+    return session;
   }
 
   @override
   Future<AuthSession> completeTwoFactorWithRecoveryCode({
     required TwoFactorChallenge challenge,
     required String recoveryCode,
-  }) {
+  }) async {
     recoveryCalls += 1;
-    return recoveryHandler?.call(challenge, recoveryCode) ??
-        Future.value(sampleSession);
+    final session =
+        await (recoveryHandler?.call(challenge, recoveryCode) ??
+            Future.value(sampleSession));
+    await _persist(session);
+    return session;
   }
 
   @override
@@ -116,14 +137,47 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> logout() async {
     logoutCalls += 1;
     await logoutHandler?.call();
+    await tokenStorage?.clear();
   }
 
   @override
   Future<void> clearSession() async {
     clearCalls += 1;
+    await tokenStorage?.clear();
+  }
+
+  Future<void> _persist(AuthSession session) async {
+    final storage = tokenStorage;
+    if (storage == null) {
+      return;
+    }
+    await storage.write(
+      StoredSession(
+        token: session.token.accessToken,
+        expiresAt: session.token.expiresAt,
+      ),
+    );
   }
 }
 
 ApiException networkFailure() => const ApiException(kind: ApiErrorKind.network);
+
+ApiException serverFailure() =>
+    const ApiException(kind: ApiErrorKind.server, statusCode: 503);
+
+ApiException unauthorizedRejection(SessionReference session) => ApiException(
+  kind: ApiErrorKind.unauthorized,
+  code: 'unauthenticated',
+  statusCode: 401,
+  requestSession: session,
+);
+
+ApiException forbiddenRejection(String code, SessionReference session) =>
+    ApiException(
+      kind: ApiErrorKind.forbidden,
+      code: code,
+      statusCode: 403,
+      requestSession: session,
+    );
 
 Completer<T> pending<T>() => Completer<T>();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
@@ -9,9 +10,15 @@ import 'package:indirimgo_mobile/features/catalog/presentation/catalog_controlle
 import 'package:indirimgo_mobile/features/catalog/presentation/widgets/catalog_widgets.dart';
 
 class PackageListScreen extends ConsumerStatefulWidget {
-  const PackageListScreen({super.key, this.categoryId, this.initialQuery});
+  const PackageListScreen({
+    super.key,
+    this.categoryId,
+    this.categoryName,
+    this.initialQuery,
+  });
 
   final int? categoryId;
+  final String? categoryName;
   final String? initialQuery;
 
   @override
@@ -29,7 +36,11 @@ class _PackageListScreenState extends ConsumerState<PackageListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(packageListControllerProvider.notifier)
-          .bootstrap(categoryId: widget.categoryId, q: widget.initialQuery);
+          .bootstrap(
+            categoryId: widget.categoryId,
+            categoryName: widget.categoryName,
+            q: widget.initialQuery,
+          );
     });
   }
 
@@ -37,10 +48,15 @@ class _PackageListScreenState extends ConsumerState<PackageListScreen> {
   void didUpdateWidget(covariant PackageListScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.categoryId != widget.categoryId ||
+        oldWidget.categoryName != widget.categoryName ||
         oldWidget.initialQuery != widget.initialQuery) {
       ref
           .read(packageListControllerProvider.notifier)
-          .bootstrap(categoryId: widget.categoryId, q: widget.initialQuery);
+          .bootstrap(
+            categoryId: widget.categoryId,
+            categoryName: widget.categoryName,
+            q: widget.initialQuery,
+          );
       if (widget.initialQuery != null &&
           widget.initialQuery != _searchController.text) {
         _searchController.text = widget.initialQuery!;
@@ -82,6 +98,18 @@ class _PackageListScreenState extends ConsumerState<PackageListScreen> {
                 controller: _searchController,
                 focusNode: _searchFocus,
                 textInputAction: TextInputAction.search,
+                maxLength: catalogSearchQueryMaxLength,
+                maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                buildCounter:
+                    (
+                      context, {
+                      required currentLength,
+                      required isFocused,
+                      required maxLength,
+                    }) => null,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(catalogSearchQueryMaxLength),
+                ],
                 decoration: InputDecoration(
                   labelText: l10n.searchPackagesLabel,
                   hintText: l10n.searchPackagesHint,
@@ -109,7 +137,11 @@ class _PackageListScreenState extends ConsumerState<PackageListScreen> {
                   alignment: AlignmentDirectional.centerStart,
                   child: InputChip(
                     key: const Key('active-category-chip'),
-                    label: Text(l10n.categoryFilterActive),
+                    label: Text(
+                      state.categoryName?.trim().isNotEmpty == true
+                          ? state.categoryName!.trim()
+                          : l10n.categoryFilterActive,
+                    ),
                     onDeleted: controller.clearCategory,
                     deleteButtonTooltipMessage: l10n.clearCategoryFilter,
                   ),

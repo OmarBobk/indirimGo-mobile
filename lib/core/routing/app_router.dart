@@ -20,8 +20,14 @@ abstract final class AppRoutes {
 
   static String packageDetail(int id) => '/app/packages/$id';
 
-  static String packagesWithCategory(int categoryId) =>
-      '/app/packages?category_id=$categoryId';
+  static String packagesWithCategory(int categoryId, {String? name}) {
+    final params = <String, String>{'category_id': '$categoryId'};
+    final trimmed = name?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      params['category_name'] = trimmed;
+    }
+    return Uri(path: '/app/packages', queryParameters: params).toString();
+  }
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -83,10 +89,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               final categoryRaw = state.uri.queryParameters['category_id'];
               final categoryId = int.tryParse(categoryRaw ?? '');
               final q = state.uri.queryParameters['q'];
+              final categoryName = state.uri.queryParameters['category_name'];
               return PackageListScreen(
                 categoryId: (categoryId != null && categoryId >= 1)
                     ? categoryId
                     : null,
+                categoryName: categoryName,
                 initialQuery: q,
               );
             },
