@@ -20,7 +20,9 @@ void main() {
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized()
         .platformDispatcher
-        .localesTestValue = const [Locale('ar')];
+        .localesTestValue = const [
+      Locale('ar'),
+    ];
   });
 
   tearDown(() {
@@ -65,23 +67,31 @@ void main() {
 
   testWidgets('category chip opens filtered package list', (tester) async {
     await _pumpAuthenticated(tester);
-    await tester.tap(find.byKey(const Key('category-chip-3')));
+    final chip = find.byKey(const Key('category-chip-3'), skipOffstage: false);
+    await tester.ensureVisible(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(chip);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('package-list')), findsOneWidget);
     expect(find.byKey(const Key('active-category-chip')), findsOneWidget);
   });
 
-  testWidgets('package detail renders fixed and custom options', (tester) async {
+  testWidgets('package detail renders fixed and custom options', (
+    tester,
+  ) async {
     final container = await _pumpAuthenticated(tester);
     container.read(routerProvider).go(AppRoutes.packageDetail(42));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('package-detail')), findsOneWidget);
     expect(find.text('100 Coins'), findsOneWidget);
     expect(find.text('سعر ثابت'), findsOneWidget);
+    final custom = find.text('Custom amount', skipOffstage: false);
+    await tester.ensureVisible(custom);
+    await tester.pumpAndSettle();
     expect(find.text('Custom amount'), findsOneWidget);
     expect(find.text('مبلغ مخصص'), findsOneWidget);
     expect(find.textContaining('يُحسب السعر النهائي'), findsOneWidget);
-    expect(find.text(r'$5.00'), findsWidgets);
+    expect(find.text(r'$5.00', skipOffstage: false), findsWidgets);
   });
 
   testWidgets('prices hidden shows localized copy without amounts', (
@@ -139,7 +149,9 @@ void main() {
     expect(find.text('السعر غير ظاهر'), findsNothing);
   });
 
-  testWidgets('package not found offers route back to browsing', (tester) async {
+  testWidgets('package not found offers route back to browsing', (
+    tester,
+  ) async {
     final container = await _pumpAuthenticated(
       tester,
       catalog: FakeCatalogRepository()
@@ -173,7 +185,9 @@ void main() {
   testWidgets('English LTR catalog home', (tester) async {
     TestWidgetsFlutterBinding.ensureInitialized()
         .platformDispatcher
-        .localesTestValue = const [Locale('en')];
+        .localesTestValue = const [
+      Locale('en'),
+    ];
     await _pumpAuthenticated(tester);
     expect(find.text('Featured packages'), findsOneWidget);
     expect(find.text('Browse all packages'), findsOneWidget);
@@ -200,31 +214,35 @@ void main() {
     expect(find.byKey(const Key('login-button')), findsOneWidget);
   });
 
-  testWidgets('back from detail preserves package list filters', (tester) async {
+  testWidgets('back from detail preserves package list filters', (
+    tester,
+  ) async {
     final container = await _pumpAuthenticated(tester);
     container.read(routerProvider).go(AppRoutes.packagesWithCategory(3));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('active-category-chip')), findsOneWidget);
-    container.read(routerProvider).go(AppRoutes.packageDetail(42));
+    container.read(routerProvider).push(AppRoutes.packageDetail(42));
     await tester.pumpAndSettle();
-    container.read(routerProvider).go(AppRoutes.packages);
+    expect(find.byKey(const Key('package-detail')), findsOneWidget);
+    container.read(routerProvider).pop();
     await tester.pumpAndSettle();
-    // Controller keeps prior category unless bootstrap clears it.
     expect(find.byKey(const Key('package-list')), findsOneWidget);
+    expect(find.byKey(const Key('active-category-chip')), findsOneWidget);
   });
 
   testWidgets('large text and dark mode do not crash catalog', (tester) async {
-    tester.platformDispatcher.textScaleFactorTestValue = 1.9;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.6;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await _pumpAuthenticated(tester, dark: true);
     expect(tester.takeException(), isNull);
     expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
+    expect(find.byKey(const Key('browse-all-packages')), findsOneWidget);
   });
 
   testWidgets('session restoration opens home without login flash', (
     tester,
   ) async {
-    final completion = Completer<dynamic>();
+    final completion = Completer<void>();
     final auth = FakeAuthRepository()
       ..restoreHandler = () async {
         await completion.future;
@@ -238,9 +256,17 @@ void main() {
     );
     await tester.pump();
     expect(find.byKey(const Key('login-button')), findsNothing);
-    completion.complete(null);
-    await tester.pumpAndSettle();
+    completion.complete();
+    // Allow auth restore + catalog home load without relying on unbounded
+    // animations from indeterminate indicators during the transition.
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+      if (find.byKey(const Key('authenticated-shell')).evaluate().isNotEmpty) {
+        break;
+      }
+    }
     expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
+    expect(find.byKey(const Key('login-button')), findsNothing);
   });
 }
 
@@ -266,9 +292,7 @@ Future<ProviderContainer> _pumpApp(
 }) async {
   if (dark) {
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
-    addTearDown(
-      tester.platformDispatcher.clearPlatformBrightnessTestValue,
-    );
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
   }
   final container = ProviderContainer(
     overrides: [

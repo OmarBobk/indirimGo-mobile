@@ -92,11 +92,8 @@ class CatalogHomeController extends Notifier<CatalogHomeState> {
       state = const CatalogHomeState.initial();
       return;
     }
-    if (state.phase == CatalogLoadPhase.loading ||
-        state.phase == CatalogLoadPhase.refreshing) {
-      if (!refresh) {
-        return;
-      }
+    if (!refresh && _cancelToken != null && !_cancelToken!.isCancelled) {
+      return;
     }
 
     final operation = ++_epoch;
@@ -146,6 +143,10 @@ class CatalogHomeController extends Notifier<CatalogHomeState> {
         error: const ApiException(kind: ApiErrorKind.unknown),
         customerId: customerId,
       );
+    } finally {
+      if (identical(_cancelToken, token)) {
+        _cancelToken = null;
+      }
     }
   }
 
@@ -331,11 +332,7 @@ class PackageListController extends Notifier<PackageListState> {
     }
     state = PackageListState(
       phase: PackageListPhase.loading,
-      query: state.query.copyWith(
-        q: nextQ,
-        clearQ: nextQ == null,
-        page: 1,
-      ),
+      query: state.query.copyWith(q: nextQ, clearQ: nextQ == null, page: 1),
       searchInput: value,
       customerId: ref.read(catalogCustomerIdProvider),
     );
@@ -474,6 +471,9 @@ class PackageListController extends Notifier<PackageListState> {
       );
     } finally {
       _loadMoreInFlight = false;
+      if (identical(_cancelToken, token)) {
+        _cancelToken = null;
+      }
     }
   }
 
@@ -496,7 +496,9 @@ class PackageListController extends Notifier<PackageListState> {
     _cancelToken?.cancel('superseded');
     final token = CancelToken();
     _cancelToken = token;
-    final preserved = preserveOnError ? state.packages : const <PackageSummary>[];
+    final preserved = preserveOnError
+        ? state.packages
+        : const <PackageSummary>[];
     final preservedPrices = preserveOnError ? state.pricesVisible : true;
     final preservedPagination = preserveOnError ? state.pagination : null;
 
@@ -550,6 +552,10 @@ class PackageListController extends Notifier<PackageListState> {
         searchInput: state.searchInput,
         customerId: customerId,
       );
+    } finally {
+      if (identical(_cancelToken, token)) {
+        _cancelToken = null;
+      }
     }
   }
 
@@ -586,11 +592,10 @@ class PackageDetailState {
   final int? customerId;
 }
 
-final packageDetailControllerProvider = NotifierProvider.family<
-  PackageDetailController,
-  PackageDetailState,
-  int
->(PackageDetailController.new);
+final packageDetailControllerProvider =
+    NotifierProvider.family<PackageDetailController, PackageDetailState, int>(
+      PackageDetailController.new,
+    );
 
 class PackageDetailController extends Notifier<PackageDetailState> {
   PackageDetailController(this.packageId);
@@ -715,6 +720,10 @@ class PackageDetailController extends Notifier<PackageDetailState> {
         error: const ApiException(kind: ApiErrorKind.unknown),
         customerId: customerId,
       );
+    } finally {
+      if (identical(_cancelToken, token)) {
+        _cancelToken = null;
+      }
     }
   }
 

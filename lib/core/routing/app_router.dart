@@ -35,7 +35,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, routeState) {
       final auth = ref.read(authControllerProvider);
       final location = routeState.matchedLocation;
-      final isAppRoute = location == AppRoutes.shell ||
+      final isAppRoute =
+          location == AppRoutes.shell ||
           location.startsWith('${AppRoutes.shell}/');
 
       return switch (auth.phase) {
@@ -51,8 +52,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           location == AppRoutes.twoFactor ? null : AppRoutes.twoFactor,
         AuthPhase.twoFactorRequired =>
           location == AppRoutes.login ? null : AppRoutes.login,
-        AuthPhase.authenticated || AuthPhase.loggingOut =>
-          isAppRoute ? null : AppRoutes.shell,
+        AuthPhase.authenticated ||
+        AuthPhase.loggingOut => isAppRoute ? null : AppRoutes.shell,
       };
     },
     routes: [

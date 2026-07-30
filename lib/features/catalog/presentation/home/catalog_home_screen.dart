@@ -143,6 +143,17 @@ class _HomeBody extends ConsumerWidget {
               ),
             ),
           ),
+          const SizedBox(height: AppSpacing.md),
+          Semantics(
+            button: true,
+            label: l10n.browseAllPackages,
+            child: FilledButton.icon(
+              key: const Key('browse-all-packages'),
+              onPressed: () => context.push(AppRoutes.packages),
+              icon: const Icon(Icons.grid_view_rounded),
+              label: Text(l10n.browseAllPackages),
+            ),
+          ),
           if (home.frequentlyOrdered.isNotEmpty) ...[
             CatalogSectionHeader(l10n.frequentlyOrderedTitle),
             ...home.frequentlyOrdered.map(
@@ -161,9 +172,9 @@ class _HomeBody extends ConsumerWidget {
           CatalogSectionHeader(l10n.featuredPackagesTitle),
           if (home.featuredPackages.isEmpty)
             Text(l10n.featuredPackagesEmpty)
-          else
-            ...home.featuredPackages.map(
-              (package) => Padding(
+          else ...[
+            for (final package in home.featuredPackages)
+              Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: PackageCard(
                   package: package,
@@ -172,7 +183,7 @@ class _HomeBody extends ConsumerWidget {
                       context.push(AppRoutes.packageDetail(package.id)),
                 ),
               ),
-            ),
+          ],
           if (home.categories.isNotEmpty) ...[
             CatalogSectionHeader(l10n.categoriesTitle),
             Wrap(
@@ -194,17 +205,6 @@ class _HomeBody extends ConsumerWidget {
               ],
             ),
           ],
-          const SizedBox(height: AppSpacing.lg),
-          Semantics(
-            button: true,
-            label: l10n.browseAllPackages,
-            child: FilledButton.icon(
-              key: const Key('browse-all-packages'),
-              onPressed: () => context.push(AppRoutes.packages),
-              icon: const Icon(Icons.grid_view_rounded),
-              label: Text(l10n.browseAllPackages),
-            ),
-          ),
           if (state.phase == CatalogLoadPhase.error && state.hasContent) ...[
             const SizedBox(height: AppSpacing.md),
             Text(

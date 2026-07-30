@@ -1,5 +1,7 @@
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
 
+const Object _unset = Object();
+
 /// Fictional fixture values derived from OpenAPI catalog examples.
 Map<String, Object?> moneyJson({
   String amount = '5.00',
@@ -26,10 +28,10 @@ Map<String, Object?> packageSummaryJson({
   int id = 42,
   String name = 'Example Game Top-up',
   String slug = 'example-game-top-up',
-  Object? imageUrl = 'https://example.test/images/packages/abc.webp',
+  Object? imageUrl,
   int productsCount = 2,
-  Object? fromPrice,
-  Object? category,
+  Object? fromPrice = _unset,
+  Object? category = _unset,
 }) {
   return {
     'id': id,
@@ -37,14 +39,12 @@ Map<String, Object?> packageSummaryJson({
     'slug': slug,
     'image_url': imageUrl,
     'products_count': productsCount,
-    'from_price': fromPrice ?? moneyJson(),
-    'category': category ?? categorySummaryJson(),
+    'from_price': identical(fromPrice, _unset) ? moneyJson() : fromPrice,
+    'category': identical(category, _unset) ? categorySummaryJson() : category,
   };
 }
 
-Map<String, Object?> frequentlyOrderedJson({
-  int timesOrdered = 4,
-}) {
+Map<String, Object?> frequentlyOrderedJson({int timesOrdered = 4}) {
   return {...packageSummaryJson(), 'times_ordered': timesOrdered};
 }
 
@@ -68,14 +68,9 @@ Map<String, Object?> categoryChipJson({
   int id = 3,
   String name = 'Games',
   String slug = 'games',
-  Object? imageUrl = 'https://example.test/images/categories/games.webp',
+  Object? imageUrl,
 }) {
-  return {
-    'id': id,
-    'name': name,
-    'slug': slug,
-    'image_url': imageUrl,
-  };
+  return {'id': id, 'name': name, 'slug': slug, 'image_url': imageUrl};
 }
 
 Map<String, Object?> fixedProductJson() {
@@ -96,7 +91,7 @@ Map<String, Object?> customProductJson({
     'step': 100,
     'unit_label': 'Coins',
   },
-  Object? minimumPrice,
+  Object? minimumPrice = _unset,
 }) {
   return {
     'id': 902,
@@ -106,7 +101,9 @@ Map<String, Object?> customProductJson({
     'custom_amount': customAmount is Map
         ? Map<String, Object?>.from(customAmount)
         : customAmount,
-    'minimum_price': minimumPrice ?? moneyJson(),
+    'minimum_price': identical(minimumPrice, _unset)
+        ? moneyJson()
+        : minimumPrice,
   };
 }
 

@@ -180,11 +180,7 @@ class PackageCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                PackageImage(
-                  imageUrl: package.imageUrl,
-                  width: 72,
-                  height: 72,
-                ),
+                PackageImage(imageUrl: package.imageUrl, width: 72, height: 72),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(

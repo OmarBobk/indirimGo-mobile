@@ -29,7 +29,6 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
     if (error.fieldErrors.containsKey('category_id')) {
       return l10n.categoryFilterInvalid;
     }
-    return l10n.invalidFieldValue;
   }
 
   return switch (error.code) {

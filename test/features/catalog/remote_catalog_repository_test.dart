@@ -62,12 +62,7 @@ void main() {
     adapter.enqueue(200, packageListJson());
 
     await repository.fetchPackages(
-      const PackageListQuery(
-        categoryId: 3,
-        q: 'game',
-        page: 2,
-        perPage: 10,
-      ),
+      const PackageListQuery(categoryId: 3, q: 'game', page: 2, perPage: 10),
     );
 
     expect(adapter.requests.single.path, 'packages');
@@ -89,10 +84,7 @@ void main() {
   test('maps 401/403/404/422/429 and offline failures', () async {
     adapter
       ..enqueue(401, {'message': 'Unauthenticated.', 'code': 'unauthenticated'})
-      ..enqueue(403, {
-        'message': 'nope',
-        'code': 'missing_mobile_ability',
-      })
+      ..enqueue(403, {'message': 'nope', 'code': 'missing_mobile_ability'})
       ..enqueue(404, {
         'message': 'Package not found.',
         'code': 'package_not_found',
@@ -104,12 +96,13 @@ void main() {
           'secret': ['leak'],
         },
       })
-      ..enqueue(429, {
-        'message': 'slow',
-        'code': 'too_many_requests',
-      }, headers: {
-        'retry-after': ['12'],
-      })
+      ..enqueue(
+        429,
+        {'message': 'slow', 'code': 'too_many_requests'},
+        headers: {
+          'retry-after': ['12'],
+        },
+      )
       ..enqueueFailure(DioExceptionType.connectionError)
       ..enqueue(500, {'message': 'boom'});
 
@@ -121,6 +114,13 @@ void main() {
           'kind',
           ApiErrorKind.unauthorized,
         ),
+      ),
+    );
+    expect(storage.session, isNull);
+    await storage.write(
+      StoredSession(
+        token: '7|catalog-token',
+        expiresAt: DateTime.utc(2026, 8, 28),
       ),
     );
     await expectLater(
@@ -162,11 +162,7 @@ void main() {
     await expectLater(
       repository.fetchHome(),
       throwsA(
-        isA<ApiException>().having(
-          (e) => e.kind,
-          'kind',
-          ApiErrorKind.network,
-        ),
+        isA<ApiException>().having((e) => e.kind, 'kind', ApiErrorKind.network),
       ),
     );
     await expectLater(
@@ -218,7 +214,9 @@ class _QueueAdapter implements HttpClientAdapter {
     Map<String, List<String>> headers = const {},
   }) {
     _responses.add(
-      Future.value(_Queued(statusCode: statusCode, body: body, headers: headers)),
+      Future.value(
+        _Queued(statusCode: statusCode, body: body, headers: headers),
+      ),
     );
   }
 

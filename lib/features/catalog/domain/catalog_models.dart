@@ -397,9 +397,7 @@ class PackageListPage {
           PackageSummary.fromJson(_asObjectMap(item, 'package')),
       ],
       pricesVisible: _requiredBool(meta, 'prices_visible'),
-      pagination: OffsetPagination.fromJson(
-        _requiredMap(meta, 'pagination'),
-      ),
+      pagination: OffsetPagination.fromJson(_requiredMap(meta, 'pagination')),
     );
   }
 
@@ -458,10 +456,7 @@ class PackageListQuery {
   }
 
   Map<String, Object?> toQueryParameters() {
-    final params = <String, Object?>{
-      'page': page,
-      'per_page': perPage,
-    };
+    final params = <String, Object?>{'page': page, 'per_page': perPage};
     if (categoryId != null) {
       params['category_id'] = categoryId;
     }
@@ -610,7 +605,5 @@ List<T> _mapList<T>(
   if (value is! List) {
     throw FormatException('$label must be an array.');
   }
-  return [
-    for (final item in value) map(_asObjectMap(item, '$label item')),
-  ];
+  return [for (final item in value) map(_asObjectMap(item, '$label item'))];
 }

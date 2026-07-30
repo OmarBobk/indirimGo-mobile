@@ -44,7 +44,9 @@ class PackageDetailScreen extends ConsumerWidget {
         return Semantics(
           label: l10n.catalogLoading,
           child: const Center(
-            child: CircularProgressIndicator(key: Key('package-detail-loading')),
+            child: CircularProgressIndicator(
+              key: Key('package-detail-loading'),
+            ),
           ),
         );
       case PackageDetailPhase.notFound:
@@ -105,10 +107,7 @@ class _PackageDetailBody extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadii.card),
         ),
         const SizedBox(height: AppSpacing.md),
-        Text(
-          package.name,
-          style: theme.textTheme.headlineMedium,
-        ),
+        Text(package.name, style: theme.textTheme.headlineMedium),
         if (package.category != null) ...[
           const SizedBox(height: AppSpacing.xs),
           Text(

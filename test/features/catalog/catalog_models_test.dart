@@ -111,12 +111,7 @@ void main() {
     test('normalizes custom bounds below 1 to null', () {
       final product = ProductOption.fromJson(
         customProductJson(
-          customAmount: {
-            'min': 0,
-            'max': -1,
-            'step': 0,
-            'unit_label': 'Coins',
-          },
+          customAmount: {'min': 0, 'max': -1, 'step': 0, 'unit_label': 'Coins'},
         ),
       );
       expect(product.customAmount?.min, isNull);
@@ -139,9 +134,7 @@ void main() {
       final home = CatalogHome.fromJson(
         catalogHomeJson(
           pricesVisible: false,
-          featured: [
-            packageSummaryJson(fromPrice: null),
-          ],
+          featured: [packageSummaryJson(fromPrice: null)],
           frequentlyOrdered: [
             {...packageSummaryJson(fromPrice: null), 'times_ordered': 2},
           ],
@@ -190,10 +183,10 @@ void main() {
 
   group('PackageListQuery', () {
     test('emits only set query parameters', () {
-      expect(
-        const PackageListQuery().toQueryParameters(),
-        {'page': 1, 'per_page': 24},
-      );
+      expect(const PackageListQuery().toQueryParameters(), {
+        'page': 1,
+        'per_page': 24,
+      });
       expect(
         const PackageListQuery(
           categoryId: 3,
