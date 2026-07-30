@@ -39,6 +39,8 @@ globs: ["lib/**/*.dart", "test/**/*.dart", "android/**/*", "pubspec.yaml"]
   exact version.
 - Flutter must never calculate trusted prices or mutate financial state
   independently of Laravel.
-- Do not add biometric unlock, refresh tokens, deep links, push, maps, media
-  upload, or other deferred features during M1.2.
+- Catalog UI must render only server `display.formatted` money text and treat
+  `meta.prices_visible=false` as distinct from an individual null price.
+- Do not add cart, checkout, wallet, orders, biometrics, refresh tokens, deep
+  links, push, maps, media upload, image-cache packages, or codegen during M2.2.
 - Do not claim production-signing readiness from debug APK success alone.

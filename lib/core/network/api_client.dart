@@ -84,7 +84,16 @@ class ApiClient {
   final Dio _dio;
   final TokenStorage tokenStorage;
 
-  Future<ApiResponse> get(String path) => _request(path, method: 'GET');
+  Future<ApiResponse> get(
+    String path, {
+    Map<String, Object?>? queryParameters,
+    CancelToken? cancelToken,
+  }) => _request(
+    path,
+    method: 'GET',
+    queryParameters: queryParameters,
+    cancelToken: cancelToken,
+  );
 
   Future<ApiResponse> post(String path, {Map<String, Object?>? data}) =>
       _request(path, method: 'POST', data: data);
@@ -93,11 +102,15 @@ class ApiClient {
     String path, {
     required String method,
     Map<String, Object?>? data,
+    Map<String, Object?>? queryParameters,
+    CancelToken? cancelToken,
   }) async {
     try {
       final response = await _dio.request<Object?>(
         path,
         data: data,
+        queryParameters: queryParameters,
+        cancelToken: cancelToken,
         options: Options(method: method),
       );
       final statusCode = response.statusCode;
@@ -124,6 +137,12 @@ class ApiClient {
     final fieldErrors = _parseFieldErrors(body?['errors']);
     final requestSession = _requestSession(error.requestOptions);
 
+    if (error.type == DioExceptionType.cancel) {
+      return ApiException(
+        kind: ApiErrorKind.cancelled,
+        requestSession: requestSession,
+      );
+    }
     if (statusCode == 401) {
       return ApiException(
         kind: ApiErrorKind.unauthorized,
@@ -135,6 +154,14 @@ class ApiClient {
     if (statusCode == 403) {
       return ApiException(
         kind: ApiErrorKind.forbidden,
+        code: code,
+        statusCode: statusCode,
+        requestSession: requestSession,
+      );
+    }
+    if (statusCode == 404) {
+      return ApiException(
+        kind: ApiErrorKind.notFound,
         code: code,
         statusCode: statusCode,
         requestSession: requestSession,
@@ -236,4 +263,8 @@ const _validationFields = {
   'challenge_token',
   'code',
   'recovery_code',
+  'category_id',
+  'q',
+  'page',
+  'per_page',
 };

@@ -47,9 +47,79 @@
   "sessionVerificationSubtitle": "احتفظنا بتسجيل دخولك. حاول مجدداً.",
   "retryAction": "إعادة المحاولة",
   "homeTitle": "الرئيسية",
+  "homeBrowseSubtitle": "استكشف الباقات وخيارات المنتجات والأسعار.",
   "homePlaceholder": "الأساس جاهز",
   "homePlaceholderBody": "ستُضاف مزايا التسوق في مراحل لاحقة.",
   "accountTitle": "الحساب",
+  "catalogLoading": "جارٍ تحميل الكتالوج",
+  "catalogUnavailableTitle": "تعذّر تحميل الكتالوج",
+  "catalogUnavailableBody": "تحقق من الاتصال ثم حاول مجدداً. ما زلت مسجّل الدخول.",
+  "searchPackagesLabel": "البحث في الباقات",
+  "searchPackagesHint": "ابحث عن باقة",
+  "clearSearch": "مسح البحث",
+  "browseAllPackages": "تصفح كل الباقات",
+  "frequentlyOrderedTitle": "طلبتها كثيراً",
+  "featuredPackagesTitle": "باقات مميزة",
+  "featuredPackagesEmpty": "لا توجد باقات مميزة حالياً.",
+  "categoriesTitle": "التصنيفات",
+  "packagesTitle": "الباقات",
+  "packagesEmptyTitle": "لا توجد باقات",
+  "packagesEmptyBody": "جرّب بحثاً أو تصنيفاً مختلفاً.",
+  "loadMorePackages": "تحميل المزيد",
+  "categoryFilterActive": "تصنيف محدّد",
+  "clearCategoryFilter": "إزالة التصنيف",
+  "categoryFilterInvalid": "التصنيف غير صالح. اختر تصنيفاً آخر.",
+  "searchQueryInvalid": "استعلام البحث غير صالح. استخدم حرفين على الأقل.",
+  "packageDetailTitle": "تفاصيل الباقة",
+  "packageNotFoundTitle": "الباقة غير موجودة",
+  "packageNotFound": "هذه الباقة غير متاحة.",
+  "backToPackages": "العودة إلى الباقات",
+  "productOptionsTitle": "خيارات المنتجات",
+  "productOptionsEmpty": "لا توجد منتجات نشطة في هذه الباقة.",
+  "fixedAmountMode": "سعر ثابت",
+  "customAmountMode": "مبلغ مخصص",
+  "fromPriceLabel": "من",
+  "minimumPriceLabel": "الحد الأدنى",
+  "priceHidden": "السعر غير ظاهر",
+  "priceUnavailable": "السعر غير متاح",
+  "priceFrom": "من {price}",
+  "@priceFrom": {
+    "placeholders": {
+      "price": {"type": "String"}
+    }
+  },
+  "customPriceCalculatedLater": "يُحسب السعر النهائي لاحقاً بعد إدخال المبلغ.",
+  "customAmountConfigUnavailable": "إعداد المبلغ المخصص غير مكتمل.",
+  "customAmountMin": "الحد الأدنى: {value}",
+  "@customAmountMin": {
+    "placeholders": {
+      "value": {"type": "int"}
+    }
+  },
+  "customAmountMax": "الحد الأقصى: {value}",
+  "@customAmountMax": {
+    "placeholders": {
+      "value": {"type": "int"}
+    }
+  },
+  "customAmountStep": "الخطوة: {value}",
+  "@customAmountStep": {
+    "placeholders": {
+      "value": {"type": "int"}
+    }
+  },
+  "customAmountUnit": "الوحدة: {label}",
+  "@customAmountUnit": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "timesOrdered": "{count, plural, zero {لم تُطلب} one {طُلبت مرة واحدة} two {طُلبت مرتين} few {طُلبت {count} مرات} many {طُلبت {count} مرة} other {طُلبت {count} مرة}}",
+  "@timesOrdered": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "welcomeUser": "مرحباً، {name}",
   "@welcomeUser": {
     "placeholders": {

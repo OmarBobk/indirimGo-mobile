@@ -5,8 +5,8 @@ import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 
-class ShellScreen extends ConsumerWidget {
-  const ShellScreen({super.key});
+class AccountScreen extends ConsumerWidget {
+  const AccountScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,11 +17,7 @@ class ShellScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.brandLatin,
-          textDirection: TextDirection.ltr,
-          style: const TextStyle(fontWeight: FontWeight.w900),
-        ),
+        title: Text(l10n.accountTitle),
         backgroundColor: BrandColors.yellow,
         foregroundColor: BrandColors.ink,
       ),
@@ -29,57 +25,18 @@ class ShellScreen extends ConsumerWidget {
         child: user == null
             ? const Center(child: CircularProgressIndicator())
             : ListView(
-                key: const Key('authenticated-shell'),
+                key: const Key('account-screen'),
                 padding: const EdgeInsets.all(AppSpacing.md),
                 children: [
-                  Text(
-                    l10n.welcomeUser(user.name),
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.home_outlined),
-                              const SizedBox(width: AppSpacing.sm),
-                              Text(
-                                l10n.homeTitle,
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          Text(
-                            l10n.homePlaceholder,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(l10n.homePlaceholderBody),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.account_circle_outlined),
-                              const SizedBox(width: AppSpacing.sm),
-                              Text(
-                                l10n.accountTitle,
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                            ],
+                          Text(
+                            l10n.welcomeUser(user.name),
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
                           const SizedBox(height: AppSpacing.md),
                           SelectableText(l10n.usernameValue(user.username)),

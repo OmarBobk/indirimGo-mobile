@@ -4,9 +4,11 @@ enum ApiErrorKind {
   validation,
   unauthorized,
   forbidden,
+  notFound,
   rateLimited,
   network,
   server,
+  cancelled,
   unknown,
 }
 
@@ -22,6 +24,7 @@ const stableApiErrorCodes = {
   'unauthenticated',
   'missing_mobile_ability',
   'too_many_requests',
+  'package_not_found',
 };
 
 class ApiException implements Exception {

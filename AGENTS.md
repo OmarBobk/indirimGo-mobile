@@ -24,9 +24,12 @@
   storage, theme, and shared widgets.
 - `lib/features/auth`: manual models, repository contract/remote
   implementation, Riverpod state, and auth screens.
-- `lib/features/shell`: minimal post-login shell only.
+- `lib/features/catalog`: commerce shell (home, package list/search, package
+  detail, account access) with manual OpenAPI models and a focused repository.
 - Prefer feature-first code and small manual immutable models. Avoid code
   generation and generic clean-architecture layers.
+- Never recalculate Laravel prices, parse money amounts into `double`, or add
+  purchase/checkout/wallet UI during M2.2.
 
 ## Implementation rules
 

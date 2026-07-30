@@ -159,6 +159,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTitle => 'Home';
 
   @override
+  String get homeBrowseSubtitle =>
+      'Browse packages, product options, and prices.';
+
+  @override
   String get homePlaceholder => 'The foundation is ready';
 
   @override
@@ -167,6 +171,147 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountTitle => 'Account';
+
+  @override
+  String get catalogLoading => 'Loading catalog';
+
+  @override
+  String get catalogUnavailableTitle => 'Catalog unavailable';
+
+  @override
+  String get catalogUnavailableBody =>
+      'Check your connection and try again. You are still signed in.';
+
+  @override
+  String get searchPackagesLabel => 'Search packages';
+
+  @override
+  String get searchPackagesHint => 'Search for a package';
+
+  @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get browseAllPackages => 'Browse all packages';
+
+  @override
+  String get frequentlyOrderedTitle => 'Frequently ordered';
+
+  @override
+  String get featuredPackagesTitle => 'Featured packages';
+
+  @override
+  String get featuredPackagesEmpty => 'No featured packages right now.';
+
+  @override
+  String get categoriesTitle => 'Categories';
+
+  @override
+  String get packagesTitle => 'Packages';
+
+  @override
+  String get packagesEmptyTitle => 'No packages found';
+
+  @override
+  String get packagesEmptyBody => 'Try a different search or category.';
+
+  @override
+  String get loadMorePackages => 'Load more';
+
+  @override
+  String get categoryFilterActive => 'Category selected';
+
+  @override
+  String get clearCategoryFilter => 'Clear category';
+
+  @override
+  String get categoryFilterInvalid =>
+      'That category is not valid. Choose another.';
+
+  @override
+  String get searchQueryInvalid =>
+      'That search is not valid. Use at least two characters.';
+
+  @override
+  String get packageDetailTitle => 'Package details';
+
+  @override
+  String get packageNotFoundTitle => 'Package not found';
+
+  @override
+  String get packageNotFound => 'This package is not available.';
+
+  @override
+  String get backToPackages => 'Back to packages';
+
+  @override
+  String get productOptionsTitle => 'Product options';
+
+  @override
+  String get productOptionsEmpty => 'This package has no active products.';
+
+  @override
+  String get fixedAmountMode => 'Fixed price';
+
+  @override
+  String get customAmountMode => 'Custom amount';
+
+  @override
+  String get fromPriceLabel => 'From';
+
+  @override
+  String get minimumPriceLabel => 'Minimum';
+
+  @override
+  String get priceHidden => 'Price hidden';
+
+  @override
+  String get priceUnavailable => 'Price unavailable';
+
+  @override
+  String priceFrom(String price) {
+    return 'From $price';
+  }
+
+  @override
+  String get customPriceCalculatedLater =>
+      'The exact price is calculated later after you enter an amount.';
+
+  @override
+  String get customAmountConfigUnavailable =>
+      'Custom amount settings are incomplete.';
+
+  @override
+  String customAmountMin(int value) {
+    return 'Min: $value';
+  }
+
+  @override
+  String customAmountMax(int value) {
+    return 'Max: $value';
+  }
+
+  @override
+  String customAmountStep(int value) {
+    return 'Step: $value';
+  }
+
+  @override
+  String customAmountUnit(String label) {
+    return 'Unit: $label';
+  }
+
+  @override
+  String timesOrdered(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ordered $count times',
+      one: 'Ordered once',
+      zero: 'Not ordered yet',
+    );
+    return '$_temp0';
+  }
 
   @override
   String welcomeUser(String name) {

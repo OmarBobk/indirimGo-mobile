@@ -18,6 +18,20 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
         : l10n.rateLimitSeconds(seconds);
   }
 
+  if (error.kind == ApiErrorKind.notFound ||
+      error.code == 'package_not_found') {
+    return l10n.packageNotFound;
+  }
+  if (error.kind == ApiErrorKind.validation) {
+    if (error.fieldErrors.containsKey('q')) {
+      return l10n.searchQueryInvalid;
+    }
+    if (error.fieldErrors.containsKey('category_id')) {
+      return l10n.categoryFilterInvalid;
+    }
+    return l10n.invalidFieldValue;
+  }
+
   return switch (error.code) {
     'invalid_credentials' => l10n.invalidCredentials,
     'account_inactive' => l10n.accountInactive,
@@ -28,6 +42,7 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
     'invalid_recovery_code' => l10n.invalidRecoveryCode,
     'two_factor_attempts_exceeded' => l10n.twoFactorAttemptsExceeded,
     'too_many_requests' => l10n.tooManyRequests,
+    'package_not_found' => l10n.packageNotFound,
     'unauthenticated' || 'missing_mobile_ability' => l10n.unauthenticated,
     _ => l10n.sessionFailure,
   };
