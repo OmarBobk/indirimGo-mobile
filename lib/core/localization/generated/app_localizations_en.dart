@@ -398,4 +398,208 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorAnnouncement => 'Error';
+
+  @override
+  String get buyNowAction => 'Buy now';
+
+  @override
+  String get buyNowTitle => 'Buy now';
+
+  @override
+  String get purchaseDetailsTitle => 'Purchase details';
+
+  @override
+  String get requirementsTitle => 'Required details';
+
+  @override
+  String get quantityLabel => 'Quantity';
+
+  @override
+  String get quantityInvalid => 'Enter a valid quantity of at least 1.';
+
+  @override
+  String quantityValue(int quantity) {
+    return 'Quantity: $quantity';
+  }
+
+  @override
+  String requestedAmountLabel(String unit) {
+    return 'Amount $unit';
+  }
+
+  @override
+  String get requestedAmountInvalid =>
+      'Enter a valid amount within the allowed range.';
+
+  @override
+  String requestedAmountValue(int amount) {
+    return 'Amount: $amount';
+  }
+
+  @override
+  String get unitPriceLabel => 'Unit price';
+
+  @override
+  String get requirementRequired => 'This field is required.';
+
+  @override
+  String get continueToReviewAction => 'Continue to review';
+
+  @override
+  String get quotingPurchase => 'Getting your quote';
+
+  @override
+  String get purchaseUnavailableTitle => 'Purchase unavailable';
+
+  @override
+  String get purchaseUnavailableBody =>
+      'This product cannot be purchased right now.';
+
+  @override
+  String get checkoutReviewTitle => 'Review purchase';
+
+  @override
+  String get quoteMissingBody =>
+      'Your quote is no longer available. Start the purchase again.';
+
+  @override
+  String get orderTotalsTitle => 'Totals';
+
+  @override
+  String get lineTotalLabel => 'Line total';
+
+  @override
+  String get finalTotalLabel => 'Total';
+
+  @override
+  String get walletSectionTitle => 'Wallet';
+
+  @override
+  String get availableToSpendLabel => 'Available to spend';
+
+  @override
+  String get walletUnavailableBody =>
+      'Wallet balance is temporarily unavailable.';
+
+  @override
+  String quoteExpiresAt(String timestamp) {
+    return 'Quote expires at $timestamp';
+  }
+
+  @override
+  String get confirmWalletChargeAction => 'Pay with wallet';
+
+  @override
+  String get confirmWalletChargeHint =>
+      'Your wallet will be charged for the total shown above.';
+
+  @override
+  String get submittingPurchase => 'Processing purchase';
+
+  @override
+  String get refreshQuoteAction => 'Refresh quote';
+
+  @override
+  String get priceChangedBody =>
+      'The price or purchase details changed. Review the updated total before paying.';
+
+  @override
+  String get insufficientBalanceBody =>
+      'Your available wallet balance is not enough for this purchase.';
+
+  @override
+  String get checkoutRecoveryTitle => 'Checking your purchase';
+
+  @override
+  String get checkoutRecoveryIdleBody =>
+      'There is no purchase waiting to be recovered.';
+
+  @override
+  String get checkoutRecoveryProcessingBody =>
+      'We are confirming whether your purchase completed. Please wait.';
+
+  @override
+  String get checkoutFailedTitle => 'Purchase could not be completed';
+
+  @override
+  String get checkoutRetryRequiredTitle => 'Purchase must be restarted';
+
+  @override
+  String get checkoutRetryRequiredBody =>
+      'This purchase did not finish. Start again from the product page.';
+
+  @override
+  String get checkoutAttemptNotFoundBody =>
+      'No pending purchase was found for this account.';
+
+  @override
+  String get purchaseSuccessTitle => 'Purchase successful';
+
+  @override
+  String get purchaseSuccessBody => 'Your wallet payment was completed.';
+
+  @override
+  String get viewReceiptAction => 'View receipt';
+
+  @override
+  String get receiptTitle => 'Receipt';
+
+  @override
+  String get loadingReceipt => 'Loading receipt';
+
+  @override
+  String get receiptItemsTitle => 'Items';
+
+  @override
+  String orderNumberLabel(String orderNumber) {
+    return 'Order $orderNumber';
+  }
+
+  @override
+  String paymentStatusLabel(String status) {
+    return 'Payment status: $status';
+  }
+
+  @override
+  String get orderNotFoundTitle => 'Order not found';
+
+  @override
+  String get orderNotFoundBody =>
+      'This order is not available for your account.';
+
+  @override
+  String get backToHomeAction => 'Back to home';
+
+  @override
+  String get purchasingUnavailable => 'Purchasing is temporarily unavailable.';
+
+  @override
+  String get productUnavailable => 'This product is unavailable.';
+
+  @override
+  String get invalidCustomAmount => 'That custom amount is not valid.';
+
+  @override
+  String get priceChanged => 'The price changed. Review the updated quote.';
+
+  @override
+  String get insufficientWalletBalance => 'Your wallet balance is not enough.';
+
+  @override
+  String get idempotencyConflict =>
+      'This purchase attempt conflicts with another request. Checking status.';
+
+  @override
+  String get checkoutInProgress => 'This purchase is still processing.';
+
+  @override
+  String get checkoutRetryRequired =>
+      'This purchase must be retried carefully. Start again if needed.';
+
+  @override
+  String get checkoutFailed =>
+      'The purchase failed. No further action was taken.';
+
+  @override
+  String get orderNotFound => 'Order not found.';
 }

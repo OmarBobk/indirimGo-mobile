@@ -161,5 +161,94 @@
   "configurationErrorTitle": "إعداد التطبيق غير مكتمل",
   "configurationErrorBody": "يجب تشغيل التطبيق مع API_BASE_URL صالح.",
   "dismissError": "إغلاق التنبيه",
-  "errorAnnouncement": "خطأ"
+  "errorAnnouncement": "خطأ",
+  "buyNowAction": "اشترِ الآن",
+  "buyNowTitle": "اشترِ الآن",
+  "purchaseDetailsTitle": "تفاصيل الشراء",
+  "requirementsTitle": "البيانات المطلوبة",
+  "quantityLabel": "الكمية",
+  "quantityInvalid": "أدخل كمية صحيحة لا تقل عن 1.",
+  "quantityValue": "الكمية: {quantity}",
+  "@quantityValue": {
+    "placeholders": {
+      "quantity": {"type": "int"}
+    }
+  },
+  "requestedAmountLabel": "المبلغ {unit}",
+  "@requestedAmountLabel": {
+    "placeholders": {
+      "unit": {"type": "String"}
+    }
+  },
+  "requestedAmountInvalid": "أدخل مبلغاً صالحاً ضمن النطاق المسموح.",
+  "requestedAmountValue": "المبلغ: {amount}",
+  "@requestedAmountValue": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "unitPriceLabel": "سعر الوحدة",
+  "requirementRequired": "هذا الحقل مطلوب.",
+  "continueToReviewAction": "متابعة للمراجعة",
+  "quotingPurchase": "جارٍ تجهيز عرض السعر",
+  "purchaseUnavailableTitle": "الشراء غير متاح",
+  "purchaseUnavailableBody": "لا يمكن شراء هذا المنتج حالياً.",
+  "checkoutReviewTitle": "مراجعة الشراء",
+  "quoteMissingBody": "عرض السعر لم يعد متاحاً. ابدأ الشراء مجدداً.",
+  "orderTotalsTitle": "الإجماليات",
+  "lineTotalLabel": "إجمالي البند",
+  "finalTotalLabel": "الإجمالي",
+  "walletSectionTitle": "المحفظة",
+  "availableToSpendLabel": "المتاح للإنفاق",
+  "walletUnavailableBody": "رصيد المحفظة غير متاح مؤقتاً.",
+  "quoteExpiresAt": "ينتهي عرض السعر في {timestamp}",
+  "@quoteExpiresAt": {
+    "placeholders": {
+      "timestamp": {"type": "String"}
+    }
+  },
+  "confirmWalletChargeAction": "ادفع من المحفظة",
+  "confirmWalletChargeHint": "سيتم خصم الإجمالي الظاهر أعلاه من محفظتك.",
+  "submittingPurchase": "جارٍ معالجة الشراء",
+  "refreshQuoteAction": "تحديث عرض السعر",
+  "priceChangedBody": "تغير السعر أو تفاصيل الشراء. راجع الإجمالي المحدّث قبل الدفع.",
+  "insufficientBalanceBody": "رصيد محفظتك المتاح غير كافٍ لهذا الشراء.",
+  "checkoutRecoveryTitle": "التحقق من الشراء",
+  "checkoutRecoveryIdleBody": "لا يوجد شراء بانتظار الاسترداد.",
+  "checkoutRecoveryProcessingBody": "نتحقق مما إذا اكتمل الشراء. يرجى الانتظار.",
+  "checkoutFailedTitle": "تعذّر إكمال الشراء",
+  "checkoutRetryRequiredTitle": "يجب إعادة بدء الشراء",
+  "checkoutRetryRequiredBody": "لم يكتمل هذا الشراء. ابدأ مجدداً من صفحة المنتج.",
+  "checkoutAttemptNotFoundBody": "لا يوجد شراء معلّق لهذا الحساب.",
+  "purchaseSuccessTitle": "تم الشراء بنجاح",
+  "purchaseSuccessBody": "اكتمل الدفع من المحفظة.",
+  "viewReceiptAction": "عرض الإيصال",
+  "receiptTitle": "الإيصال",
+  "loadingReceipt": "جارٍ تحميل الإيصال",
+  "receiptItemsTitle": "العناصر",
+  "orderNumberLabel": "الطلب {orderNumber}",
+  "@orderNumberLabel": {
+    "placeholders": {
+      "orderNumber": {"type": "String"}
+    }
+  },
+  "paymentStatusLabel": "حالة الدفع: {status}",
+  "@paymentStatusLabel": {
+    "placeholders": {
+      "status": {"type": "String"}
+    }
+  },
+  "orderNotFoundTitle": "الطلب غير موجود",
+  "orderNotFoundBody": "هذا الطلب غير متاح لحسابك.",
+  "backToHomeAction": "العودة إلى الرئيسية",
+  "purchasingUnavailable": "الشراء غير متاح مؤقتاً.",
+  "productUnavailable": "هذا المنتج غير متاح.",
+  "invalidCustomAmount": "المبلغ المخصص غير صالح.",
+  "priceChanged": "تغير السعر. راجع عرض السعر المحدّث.",
+  "insufficientWalletBalance": "رصيد المحفظة غير كافٍ.",
+  "idempotencyConflict": "تتعارض محاولة الشراء مع طلب آخر. جارٍ التحقق من الحالة.",
+  "checkoutInProgress": "لا يزال هذا الشراء قيد المعالجة.",
+  "checkoutRetryRequired": "يجب إعادة محاولة هذا الشراء بحذر. ابدأ مجدداً إذا لزم الأمر.",
+  "checkoutFailed": "فشل الشراء. لم يتم اتخاذ إجراء إضافي.",
+  "orderNotFound": "الطلب غير موجود."
 }

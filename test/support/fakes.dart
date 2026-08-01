@@ -19,6 +19,20 @@ final sampleUser = MobileUser(
   emailVerifiedAt: null,
 );
 
+final sampleUserB = MobileUser(
+  id: 8,
+  name: 'Other Customer',
+  username: 'other',
+  email: 'other@example.com',
+  phone: null,
+  countryCode: null,
+  locale: 'en',
+  preferredCurrency: 'USD',
+  timezone: null,
+  profilePhotoUrl: null,
+  emailVerifiedAt: null,
+);
+
 final sampleSession = AuthSession(
   token: AuthToken(
     accessToken: '7|test-secret',
@@ -26,6 +40,15 @@ final sampleSession = AuthSession(
     expiresAt: DateTime.utc(2026, 8, 28),
   ),
   user: sampleUser,
+);
+
+final sampleSessionB = AuthSession(
+  token: AuthToken(
+    accessToken: '8|test-secret-b',
+    tokenType: 'Bearer',
+    expiresAt: DateTime.utc(2026, 8, 28),
+  ),
+  user: sampleUserB,
 );
 
 StoredSession sampleStoredSession() => StoredSession(

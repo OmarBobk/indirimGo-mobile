@@ -89,22 +89,35 @@ class ApiClient {
   Future<ApiResponse> get(
     String path, {
     Map<String, Object?>? queryParameters,
+    Map<String, String>? headers,
     CancelToken? cancelToken,
   }) => _request(
     path,
     method: 'GET',
     queryParameters: queryParameters,
+    headers: headers,
     cancelToken: cancelToken,
   );
 
-  Future<ApiResponse> post(String path, {Map<String, Object?>? data}) =>
-      _request(path, method: 'POST', data: data);
+  Future<ApiResponse> post(
+    String path, {
+    Map<String, Object?>? data,
+    Map<String, String>? headers,
+    CancelToken? cancelToken,
+  }) => _request(
+    path,
+    method: 'POST',
+    data: data,
+    headers: headers,
+    cancelToken: cancelToken,
+  );
 
   Future<ApiResponse> _request(
     String path, {
     required String method,
     Map<String, Object?>? data,
     Map<String, Object?>? queryParameters,
+    Map<String, String>? headers,
     CancelToken? cancelToken,
   }) async {
     try {
@@ -113,7 +126,7 @@ class ApiClient {
         data: data,
         queryParameters: queryParameters,
         cancelToken: cancelToken,
-        options: Options(method: method),
+        options: Options(method: method, headers: headers),
       );
       final statusCode = response.statusCode;
       if (statusCode == null) {
@@ -137,6 +150,7 @@ class ApiClient {
         ? rawCode
         : null;
     final fieldErrors = _parseFieldErrors(body?['errors']);
+    final details = _parseDetails(body?['details']);
     final requestSession = _requestSession(error.requestOptions);
 
     if (error.type == DioExceptionType.cancel) {
@@ -169,12 +183,22 @@ class ApiClient {
         requestSession: requestSession,
       );
     }
+    if (statusCode == 409) {
+      return ApiException(
+        kind: ApiErrorKind.conflict,
+        code: code,
+        statusCode: statusCode,
+        details: details,
+        requestSession: requestSession,
+      );
+    }
     if (statusCode == 422) {
       return ApiException(
         kind: ApiErrorKind.validation,
         code: code,
         fieldErrors: fieldErrors,
         statusCode: statusCode,
+        details: details,
         requestSession: requestSession,
       );
     }
@@ -211,6 +235,7 @@ class ApiClient {
       kind: ApiErrorKind.unknown,
       code: code,
       statusCode: statusCode,
+      details: details,
       requestSession: requestSession,
     );
   }
@@ -256,6 +281,10 @@ Map<String, Object?>? _optionalJsonMap(Object? value) {
   return null;
 }
 
+Map<String, Object?>? _parseDetails(Object? value) {
+  return _optionalJsonMap(value);
+}
+
 Map<String, List<String>> _parseFieldErrors(Object? value) {
   final errors = _optionalJsonMap(value);
   if (errors == null) {
@@ -264,11 +293,19 @@ Map<String, List<String>> _parseFieldErrors(Object? value) {
 
   return {
     for (final entry in errors.entries)
-      if (_validationFields.contains(entry.key) &&
+      if (_isAllowedValidationField(entry.key) &&
           entry.value is List &&
           (entry.value! as List).isNotEmpty)
         entry.key: const ['invalid'],
   };
+}
+
+bool _isAllowedValidationField(String key) {
+  if (_validationFields.contains(key)) {
+    return true;
+  }
+  // Purchase validation paths. Values are scrubbed; keys are identifiers only.
+  return key.startsWith('items.0.');
 }
 
 const _validationFields = {
@@ -282,4 +319,6 @@ const _validationFields = {
   'q',
   'page',
   'per_page',
+  'items',
+  'quote_fingerprint',
 };

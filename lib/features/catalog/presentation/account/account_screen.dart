@@ -4,6 +4,7 @@ import 'package:indirimgo_mobile/core/localization/generated/app_localizations.d
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
+import 'package:indirimgo_mobile/features/wallet/presentation/wallet_summary_section.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -42,6 +43,8 @@ class AccountScreen extends ConsumerWidget {
                           SelectableText(l10n.usernameValue(user.username)),
                           const SizedBox(height: AppSpacing.xs),
                           SelectableText(l10n.emailValue(user.email)),
+                          const SizedBox(height: AppSpacing.lg),
+                          const WalletSummarySection(),
                           if (auth.error != null) ...[
                             const SizedBox(height: AppSpacing.md),
                             Semantics(

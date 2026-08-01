@@ -9,6 +9,9 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
     return l10n.networkError;
   }
   if (error.kind == ApiErrorKind.server) {
+    if (error.code == 'checkout_failed') {
+      return l10n.checkoutFailed;
+    }
     return l10n.serverError;
   }
   if (error.kind == ApiErrorKind.rateLimited) {
@@ -20,9 +23,24 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
 
   if (error.kind == ApiErrorKind.notFound ||
       error.code == 'package_not_found') {
+    if (error.code == 'order_not_found') {
+      return l10n.orderNotFound;
+    }
+    if (error.code == 'checkout_attempt_not_found') {
+      return l10n.checkoutAttemptNotFoundBody;
+    }
     return l10n.packageNotFound;
   }
   if (error.kind == ApiErrorKind.validation) {
+    if (error.code == 'insufficient_wallet_balance') {
+      return l10n.insufficientWalletBalance;
+    }
+    if (error.code == 'invalid_custom_amount') {
+      return l10n.invalidCustomAmount;
+    }
+    if (error.code == 'product_unavailable') {
+      return l10n.productUnavailable;
+    }
     if (error.fieldErrors.containsKey('q')) {
       return l10n.searchQueryInvalid;
     }
@@ -42,6 +60,17 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
     'two_factor_attempts_exceeded' => l10n.twoFactorAttemptsExceeded,
     'too_many_requests' => l10n.tooManyRequests,
     'package_not_found' => l10n.packageNotFound,
+    'purchasing_unavailable' => l10n.purchasingUnavailable,
+    'product_unavailable' => l10n.productUnavailable,
+    'invalid_custom_amount' => l10n.invalidCustomAmount,
+    'price_changed' => l10n.priceChanged,
+    'insufficient_wallet_balance' => l10n.insufficientWalletBalance,
+    'idempotency_conflict' => l10n.idempotencyConflict,
+    'checkout_in_progress' => l10n.checkoutInProgress,
+    'checkout_retry_required' => l10n.checkoutRetryRequired,
+    'checkout_failed' => l10n.checkoutFailed,
+    'checkout_attempt_not_found' => l10n.checkoutAttemptNotFoundBody,
+    'order_not_found' => l10n.orderNotFound,
     'unauthenticated' || 'missing_mobile_ability' => l10n.unauthenticated,
     _ => l10n.sessionFailure,
   };

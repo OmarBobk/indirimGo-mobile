@@ -9,6 +9,11 @@ import 'package:indirimgo_mobile/features/catalog/presentation/account/account_s
 import 'package:indirimgo_mobile/features/catalog/presentation/home/catalog_home_screen.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/package_detail/package_detail_screen.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/packages/package_list_screen.dart';
+import 'package:indirimgo_mobile/features/purchase/presentation/buy/purchase_form_screen.dart';
+import 'package:indirimgo_mobile/features/purchase/presentation/purchase_controllers.dart';
+import 'package:indirimgo_mobile/features/purchase/presentation/receipt/order_receipt_screen.dart';
+import 'package:indirimgo_mobile/features/purchase/presentation/recovery/checkout_recovery_screen.dart';
+import 'package:indirimgo_mobile/features/purchase/presentation/review/checkout_review_screen.dart';
 
 abstract final class AppRoutes {
   static const startup = '/startup';
@@ -17,8 +22,15 @@ abstract final class AppRoutes {
   static const shell = '/app';
   static const packages = '/app/packages';
   static const account = '/app/account';
+  static const checkoutReview = '/app/checkout/review';
+  static const checkoutRecovery = '/app/checkout/recovery';
 
   static String packageDetail(int id) => '/app/packages/$id';
+
+  static String packageBuy(int packageId, int productId) =>
+      '/app/packages/$packageId/buy?productId=$productId';
+
+  static String orderReceipt(String orderNumber) => '/app/orders/$orderNumber';
 
   static String packagesWithCategory(int categoryId, {String? name}) {
     final params = <String, String>{'category_id': '$categoryId'};
@@ -34,6 +46,10 @@ final routerProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefresh();
   ref.onDispose(refresh.dispose);
   ref.listen<AuthState>(authControllerProvider, (_, _) => refresh.notify());
+  ref.listen<CheckoutRecoveryState>(
+    checkoutRecoveryControllerProvider,
+    (_, _) => refresh.notify(),
+  );
 
   final router = GoRouter(
     initialLocation: AppRoutes.startup,
@@ -45,7 +61,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           location == AppRoutes.shell ||
           location.startsWith('${AppRoutes.shell}/');
 
-      return switch (auth.phase) {
+      final authRedirect = switch (auth.phase) {
         AuthPhase.initializing || AuthPhase.verificationFailed =>
           location == AppRoutes.startup ? null : AppRoutes.startup,
         AuthPhase.unauthenticated =>
@@ -61,6 +77,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         AuthPhase.authenticated ||
         AuthPhase.loggingOut => isAppRoute ? null : AppRoutes.shell,
       };
+      if (authRedirect != null) {
+        return authRedirect;
+      }
+
+      if (auth.phase == AuthPhase.authenticated) {
+        final recovery = ref.read(checkoutRecoveryControllerProvider);
+        final onRecovery = location == AppRoutes.checkoutRecovery;
+        final onReceipt = location.startsWith('/app/orders/');
+        if (recovery.phase == CheckoutRecoveryPhase.completed &&
+            recovery.receipt != null &&
+            !onReceipt) {
+          return AppRoutes.orderReceipt(recovery.receipt!.orderNumber);
+        }
+        if ((recovery.phase == CheckoutRecoveryPhase.checking ||
+                recovery.phase == CheckoutRecoveryPhase.processing) &&
+            !onRecovery &&
+            !onReceipt) {
+          return AppRoutes.checkoutRecovery;
+        }
+      }
+      return null;
     },
     routes: [
       GoRoute(
@@ -84,6 +121,21 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const AccountScreen(),
           ),
           GoRoute(
+            path: 'checkout/review',
+            builder: (context, state) => const CheckoutReviewScreen(),
+          ),
+          GoRoute(
+            path: 'checkout/recovery',
+            builder: (context, state) => const CheckoutRecoveryScreen(),
+          ),
+          GoRoute(
+            path: 'orders/:orderNumber',
+            builder: (context, state) {
+              final orderNumber = state.pathParameters['orderNumber'] ?? '';
+              return OrderReceiptScreen(orderNumber: orderNumber);
+            },
+          ),
+          GoRoute(
             path: 'packages',
             builder: (context, state) {
               final categoryRaw = state.uri.queryParameters['category_id'];
@@ -105,6 +157,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                   final id = int.tryParse(state.pathParameters['id'] ?? '');
                   return PackageDetailScreen(packageId: id ?? 0);
                 },
+                routes: [
+                  GoRoute(
+                    path: 'buy',
+                    builder: (context, state) {
+                      final id = int.tryParse(state.pathParameters['id'] ?? '');
+                      final productId = int.tryParse(
+                        state.uri.queryParameters['productId'] ?? '',
+                      );
+                      return PurchaseFormScreen(
+                        packageId: id ?? 0,
+                        productId: productId ?? 0,
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

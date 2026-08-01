@@ -13,9 +13,13 @@ import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/catalog_controllers.dart';
+import 'package:indirimgo_mobile/features/purchase/domain/purchase_repository.dart';
+import 'package:indirimgo_mobile/features/wallet/domain/wallet_repository.dart';
 
 import '../../support/catalog_fixtures.dart';
 import '../../support/fake_catalog_repository.dart';
+import '../../support/fake_purchase_repository.dart';
+import '../../support/fake_wallet_repository.dart';
 import '../../support/fakes.dart';
 
 void main() {
@@ -392,6 +396,8 @@ Future<ProviderContainer> _pumpApp(
       tokenStorageProvider.overrideWithValue(tokenStorage),
       authRepositoryProvider.overrideWithValue(auth),
       catalogRepositoryProvider.overrideWithValue(catalog),
+      purchaseRepositoryProvider.overrideWithValue(FakePurchaseRepository()),
+      walletRepositoryProvider.overrideWithValue(FakeWalletRepository()),
     ],
   );
   addTearDown(container.dispose);
