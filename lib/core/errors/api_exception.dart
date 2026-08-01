@@ -5,6 +5,7 @@ enum ApiErrorKind {
   unauthorized,
   forbidden,
   notFound,
+  conflict,
   rateLimited,
   network,
   server,
@@ -25,6 +26,19 @@ const stableApiErrorCodes = {
   'missing_mobile_ability',
   'too_many_requests',
   'package_not_found',
+  'purchasing_unavailable',
+  'product_unavailable',
+  'invalid_custom_amount',
+  'price_changed',
+  'insufficient_wallet_balance',
+  'idempotency_conflict',
+  'idempotency_key_required',
+  'idempotency_key_invalid',
+  'checkout_attempt_not_found',
+  'checkout_in_progress',
+  'checkout_retry_required',
+  'checkout_failed',
+  'order_not_found',
 };
 
 /// Stable API codes that prove the current mobile session cannot continue.
@@ -47,6 +61,7 @@ class ApiException implements Exception {
     this.statusCode,
     this.retryAfterSeconds,
     this.requestSession,
+    this.details,
   });
 
   final ApiErrorKind kind;
@@ -55,6 +70,9 @@ class ApiException implements Exception {
   final int? statusCode;
   final int? retryAfterSeconds;
   final SessionReference? requestSession;
+
+  /// Optional structured API `details`. Never logged or stringified.
+  final Map<String, Object?>? details;
 
   /// Whether this error ends the mobile session for the request's generation.
   ///

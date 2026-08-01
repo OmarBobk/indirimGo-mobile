@@ -141,8 +141,10 @@ class _PackageDetailBody extends StatelessWidget {
             (product) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: _ProductOptionCard(
+                packageId: package.id,
                 product: product,
                 pricesVisible: result.pricesVisible,
+                requirementsSupported: package.requirementsSupported,
               ),
             ),
           ),
@@ -154,12 +156,26 @@ class _PackageDetailBody extends StatelessWidget {
 
 class _ProductOptionCard extends StatelessWidget {
   const _ProductOptionCard({
+    required this.packageId,
     required this.product,
     required this.pricesVisible,
+    required this.requirementsSupported,
   });
 
+  final int packageId;
   final ProductOption product;
   final bool pricesVisible;
+  final bool requirementsSupported;
+
+  bool get _canPurchase {
+    if (!pricesVisible || !requirementsSupported) {
+      return false;
+    }
+    if (product.isFixed) {
+      return product.unitPrice != null;
+    }
+    return product.customAmount != null && product.customAmount!.hasAnyBound;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,6 +231,19 @@ class _ProductOptionCard extends StatelessWidget {
                 l10n.customPriceCalculatedLater,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                ),
+              ),
+            ],
+            if (_canPurchase) ...[
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton(
+                  key: Key('buy-now-${product.id}'),
+                  onPressed: () =>
+                      context.push(AppRoutes.packageBuy(packageId, product.id)),
+                  child: Text(l10n.buyNowAction),
                 ),
               ),
             ],

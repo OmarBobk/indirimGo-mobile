@@ -161,5 +161,94 @@
   "configurationErrorTitle": "App configuration is incomplete",
   "configurationErrorBody": "Run the app with a valid API_BASE_URL.",
   "dismissError": "Dismiss alert",
-  "errorAnnouncement": "Error"
+  "errorAnnouncement": "Error",
+  "buyNowAction": "Buy now",
+  "buyNowTitle": "Buy now",
+  "purchaseDetailsTitle": "Purchase details",
+  "requirementsTitle": "Required details",
+  "quantityLabel": "Quantity",
+  "quantityInvalid": "Enter a valid quantity of at least 1.",
+  "quantityValue": "Quantity: {quantity}",
+  "@quantityValue": {
+    "placeholders": {
+      "quantity": {"type": "int"}
+    }
+  },
+  "requestedAmountLabel": "Amount {unit}",
+  "@requestedAmountLabel": {
+    "placeholders": {
+      "unit": {"type": "String"}
+    }
+  },
+  "requestedAmountInvalid": "Enter a valid amount within the allowed range.",
+  "requestedAmountValue": "Amount: {amount}",
+  "@requestedAmountValue": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "unitPriceLabel": "Unit price",
+  "requirementRequired": "This field is required.",
+  "continueToReviewAction": "Continue to review",
+  "quotingPurchase": "Getting your quote",
+  "purchaseUnavailableTitle": "Purchase unavailable",
+  "purchaseUnavailableBody": "This product cannot be purchased right now.",
+  "checkoutReviewTitle": "Review purchase",
+  "quoteMissingBody": "Your quote is no longer available. Start the purchase again.",
+  "orderTotalsTitle": "Totals",
+  "lineTotalLabel": "Line total",
+  "finalTotalLabel": "Total",
+  "walletSectionTitle": "Wallet",
+  "availableToSpendLabel": "Available to spend",
+  "walletUnavailableBody": "Wallet balance is temporarily unavailable.",
+  "quoteExpiresAt": "Quote expires at {timestamp}",
+  "@quoteExpiresAt": {
+    "placeholders": {
+      "timestamp": {"type": "String"}
+    }
+  },
+  "confirmWalletChargeAction": "Pay with wallet",
+  "confirmWalletChargeHint": "Your wallet will be charged for the total shown above.",
+  "submittingPurchase": "Processing purchase",
+  "refreshQuoteAction": "Refresh quote",
+  "priceChangedBody": "The price or purchase details changed. Review the updated total before paying.",
+  "insufficientBalanceBody": "Your available wallet balance is not enough for this purchase.",
+  "checkoutRecoveryTitle": "Checking your purchase",
+  "checkoutRecoveryIdleBody": "There is no purchase waiting to be recovered.",
+  "checkoutRecoveryProcessingBody": "We are confirming whether your purchase completed. Please wait.",
+  "checkoutFailedTitle": "Purchase could not be completed",
+  "checkoutRetryRequiredTitle": "Purchase must be restarted",
+  "checkoutRetryRequiredBody": "This purchase did not finish. Start again from the product page.",
+  "checkoutAttemptNotFoundBody": "No pending purchase was found for this account.",
+  "purchaseSuccessTitle": "Purchase successful",
+  "purchaseSuccessBody": "Your wallet payment was completed.",
+  "viewReceiptAction": "View receipt",
+  "receiptTitle": "Receipt",
+  "loadingReceipt": "Loading receipt",
+  "receiptItemsTitle": "Items",
+  "orderNumberLabel": "Order {orderNumber}",
+  "@orderNumberLabel": {
+    "placeholders": {
+      "orderNumber": {"type": "String"}
+    }
+  },
+  "paymentStatusLabel": "Payment status: {status}",
+  "@paymentStatusLabel": {
+    "placeholders": {
+      "status": {"type": "String"}
+    }
+  },
+  "orderNotFoundTitle": "Order not found",
+  "orderNotFoundBody": "This order is not available for your account.",
+  "backToHomeAction": "Back to home",
+  "purchasingUnavailable": "Purchasing is temporarily unavailable.",
+  "productUnavailable": "This product is unavailable.",
+  "invalidCustomAmount": "That custom amount is not valid.",
+  "priceChanged": "The price changed. Review the updated quote.",
+  "insufficientWalletBalance": "Your wallet balance is not enough.",
+  "idempotencyConflict": "This purchase attempt conflicts with another request. Checking status.",
+  "checkoutInProgress": "This purchase is still processing.",
+  "checkoutRetryRequired": "This purchase must be retried carefully. Start again if needed.",
+  "checkoutFailed": "The purchase failed. No further action was taken.",
+  "orderNotFound": "Order not found."
 }

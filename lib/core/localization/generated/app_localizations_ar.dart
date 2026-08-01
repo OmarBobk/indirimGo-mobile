@@ -395,4 +395,200 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errorAnnouncement => 'خطأ';
+
+  @override
+  String get buyNowAction => 'اشترِ الآن';
+
+  @override
+  String get buyNowTitle => 'اشترِ الآن';
+
+  @override
+  String get purchaseDetailsTitle => 'تفاصيل الشراء';
+
+  @override
+  String get requirementsTitle => 'البيانات المطلوبة';
+
+  @override
+  String get quantityLabel => 'الكمية';
+
+  @override
+  String get quantityInvalid => 'أدخل كمية صحيحة لا تقل عن 1.';
+
+  @override
+  String quantityValue(int quantity) {
+    return 'الكمية: $quantity';
+  }
+
+  @override
+  String requestedAmountLabel(String unit) {
+    return 'المبلغ $unit';
+  }
+
+  @override
+  String get requestedAmountInvalid => 'أدخل مبلغاً صالحاً ضمن النطاق المسموح.';
+
+  @override
+  String requestedAmountValue(int amount) {
+    return 'المبلغ: $amount';
+  }
+
+  @override
+  String get unitPriceLabel => 'سعر الوحدة';
+
+  @override
+  String get requirementRequired => 'هذا الحقل مطلوب.';
+
+  @override
+  String get continueToReviewAction => 'متابعة للمراجعة';
+
+  @override
+  String get quotingPurchase => 'جارٍ تجهيز عرض السعر';
+
+  @override
+  String get purchaseUnavailableTitle => 'الشراء غير متاح';
+
+  @override
+  String get purchaseUnavailableBody => 'لا يمكن شراء هذا المنتج حالياً.';
+
+  @override
+  String get checkoutReviewTitle => 'مراجعة الشراء';
+
+  @override
+  String get quoteMissingBody => 'عرض السعر لم يعد متاحاً. ابدأ الشراء مجدداً.';
+
+  @override
+  String get orderTotalsTitle => 'الإجماليات';
+
+  @override
+  String get lineTotalLabel => 'إجمالي البند';
+
+  @override
+  String get finalTotalLabel => 'الإجمالي';
+
+  @override
+  String get walletSectionTitle => 'المحفظة';
+
+  @override
+  String get availableToSpendLabel => 'المتاح للإنفاق';
+
+  @override
+  String get walletUnavailableBody => 'رصيد المحفظة غير متاح مؤقتاً.';
+
+  @override
+  String quoteExpiresAt(String timestamp) {
+    return 'ينتهي عرض السعر في $timestamp';
+  }
+
+  @override
+  String get confirmWalletChargeAction => 'ادفع من المحفظة';
+
+  @override
+  String get confirmWalletChargeHint =>
+      'سيتم خصم الإجمالي الظاهر أعلاه من محفظتك.';
+
+  @override
+  String get submittingPurchase => 'جارٍ معالجة الشراء';
+
+  @override
+  String get refreshQuoteAction => 'تحديث عرض السعر';
+
+  @override
+  String get priceChangedBody =>
+      'تغير السعر أو تفاصيل الشراء. راجع الإجمالي المحدّث قبل الدفع.';
+
+  @override
+  String get insufficientBalanceBody =>
+      'رصيد محفظتك المتاح غير كافٍ لهذا الشراء.';
+
+  @override
+  String get checkoutRecoveryTitle => 'التحقق من الشراء';
+
+  @override
+  String get checkoutRecoveryIdleBody => 'لا يوجد شراء بانتظار الاسترداد.';
+
+  @override
+  String get checkoutRecoveryProcessingBody =>
+      'نتحقق مما إذا اكتمل الشراء. يرجى الانتظار.';
+
+  @override
+  String get checkoutFailedTitle => 'تعذّر إكمال الشراء';
+
+  @override
+  String get checkoutRetryRequiredTitle => 'يجب إعادة بدء الشراء';
+
+  @override
+  String get checkoutRetryRequiredBody =>
+      'لم يكتمل هذا الشراء. ابدأ مجدداً من صفحة المنتج.';
+
+  @override
+  String get checkoutAttemptNotFoundBody => 'لا يوجد شراء معلّق لهذا الحساب.';
+
+  @override
+  String get purchaseSuccessTitle => 'تم الشراء بنجاح';
+
+  @override
+  String get purchaseSuccessBody => 'اكتمل الدفع من المحفظة.';
+
+  @override
+  String get viewReceiptAction => 'عرض الإيصال';
+
+  @override
+  String get receiptTitle => 'الإيصال';
+
+  @override
+  String get loadingReceipt => 'جارٍ تحميل الإيصال';
+
+  @override
+  String get receiptItemsTitle => 'العناصر';
+
+  @override
+  String orderNumberLabel(String orderNumber) {
+    return 'الطلب $orderNumber';
+  }
+
+  @override
+  String paymentStatusLabel(String status) {
+    return 'حالة الدفع: $status';
+  }
+
+  @override
+  String get orderNotFoundTitle => 'الطلب غير موجود';
+
+  @override
+  String get orderNotFoundBody => 'هذا الطلب غير متاح لحسابك.';
+
+  @override
+  String get backToHomeAction => 'العودة إلى الرئيسية';
+
+  @override
+  String get purchasingUnavailable => 'الشراء غير متاح مؤقتاً.';
+
+  @override
+  String get productUnavailable => 'هذا المنتج غير متاح.';
+
+  @override
+  String get invalidCustomAmount => 'المبلغ المخصص غير صالح.';
+
+  @override
+  String get priceChanged => 'تغير السعر. راجع عرض السعر المحدّث.';
+
+  @override
+  String get insufficientWalletBalance => 'رصيد المحفظة غير كافٍ.';
+
+  @override
+  String get idempotencyConflict =>
+      'تتعارض محاولة الشراء مع طلب آخر. جارٍ التحقق من الحالة.';
+
+  @override
+  String get checkoutInProgress => 'لا يزال هذا الشراء قيد المعالجة.';
+
+  @override
+  String get checkoutRetryRequired =>
+      'يجب إعادة محاولة هذا الشراء بحذر. ابدأ مجدداً إذا لزم الأمر.';
+
+  @override
+  String get checkoutFailed => 'فشل الشراء. لم يتم اتخاذ إجراء إضافي.';
+
+  @override
+  String get orderNotFound => 'الطلب غير موجود.';
 }

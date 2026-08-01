@@ -1,8 +1,7 @@
 # İndirimGo Mobile
 
-Customer-only Android application for İndirimGo. Milestone **M2.2** adds the
-authenticated Commerce Shell (catalog home, package browse/search, and package
-detail). Purchasing, wallet, and orders remain out of scope.
+Customer-only Android application for İndirimGo. Milestone **M3.2** adds the
+buy-now / single-line wallet purchasing flow on top of the M2.2 Commerce Shell.
 
 ## Requirements
 
@@ -62,30 +61,38 @@ Keystore state.
 - 2FA challenges and codes remain only in memory and are never logged
 - Laravel remains authoritative for challenge expiry and attempt limits
 
-## Commerce shell (M2.2)
+## Commerce shell and purchase flow
 
 Authenticated routes:
 
 - `/app` — catalog home (frequently ordered, featured, categories)
 - `/app/packages` — browse/search with `category_id` and `q`
 - `/app/packages/:id` — package detail with fixed/custom product options
-- `/app/account` — account details and logout
+- `/app/packages/:id/buy` — buy-now form (quantity/custom amount + requirements)
+- `/app/checkout/review` — server quote review and wallet confirm
+- `/app/checkout/recovery` — unknown-result recovery / polling
+- `/app/orders/:orderNumber` — durable owned receipt
+- `/app/account` — account details, wallet available-to-spend, logout
 
-Consumed endpoints only:
+Consumed endpoints:
 
 - `GET /api/v1/catalog/home`
 - `GET /api/v1/packages`
 - `GET /api/v1/packages/{id}`
+- `GET /api/v1/wallet/summary`
+- `POST /api/v1/checkout/quote`
+- `POST /api/v1/checkout` (requires `Idempotency-Key`)
+- `GET /api/v1/checkout/status` (requires `Idempotency-Key`)
+- `GET /api/v1/orders/{order_number}`
 
-Prices are displayed from Laravel `display.formatted` only. Flutter never
-parses authoritative USD amounts into `double`, never converts currency, and
-never shows purchase CTAs. `meta.prices_visible=false` is distinct from an
-individual unavailable price.
+Prices and totals are displayed from Laravel `display.formatted` only. Flutter
+never parses authoritative USD amounts into `double`, never multiplies
+price × quantity, and never computes affordability. `meta.prices_visible=false`
+hides purchase CTAs and maps quote/checkout to `purchasing_unavailable`
+without ending the session.
 
-The authoritative contract is Laravel
-`docs/api/v1/openapi.yaml` on `origin/staging`. The Flutter client must not
-invent API fields, calculate trusted prices, or mutate financial state without
-Laravel.
+The authoritative contract is Laravel `docs/api/v1/openapi.yaml` on
+`origin/staging` (OpenAPI **1.2.0**, commit `d23f961`).
 
 ## Localization and accessibility
 
@@ -93,8 +100,9 @@ Arabic and English use Flutter ARB localization. Arabic is the fallback when no
 supported preferred locale exists; a preference list such as Turkish then
 English selects English. Active locale is sent in `Accept-Language`. The UI
 supports RTL/LTR, light/dark themes with contrast-checked accents, semantic
-labels, keyboard traversal, large text, and minimum touch targets. Catalog
-names/descriptions remain exactly as returned by Laravel.
+labels, keyboard traversal, large text, and minimum touch targets. Catalog and
+requirement labels remain exactly as returned by Laravel. Money text is always
+LTR.
 
 ## Verify
 
@@ -116,14 +124,16 @@ Release builds still use the debug signing configuration so local
 `flutter run --release` works. Production signing must be configured before any
 distribution or publishing workflow. No Play upload or deploy step exists in CI.
 
-## M2.2 exclusions
+## M3.2 exclusions
 
-No cart, buy now, checkout, wallet, top-ups, orders, fulfillments, refunds,
-activity, notifications, registration, password reset, deep links, analytics,
-push, biometrics, recommendations, client-side pricing, bottom navigation,
-Firebase, or deployment is part of this milestone.
+No multi-line cart, cart icon, server cart, wallet top-up, full order history,
+fulfillment tracking, refunds, notifications/realtime UI, client-side pricing,
+contract endpoints, registration, password reset, deep links, analytics, push,
+biometrics, Firebase, or deployment is part of this milestone.
 
-See [`docs/architecture/m2.2-commerce-shell.md`](docs/architecture/m2.2-commerce-shell.md)
-for architecture details and
+See [`docs/architecture/m3.2-purchase-flow.md`](docs/architecture/m3.2-purchase-flow.md)
+for purchase architecture,
+[`docs/architecture/m2.2-commerce-shell.md`](docs/architecture/m2.2-commerce-shell.md)
+for catalog foundations, and
 [`docs/architecture/m1.2-auth-foundation.md`](docs/architecture/m1.2-auth-foundation.md)
 for authentication foundations.

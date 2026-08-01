@@ -146,10 +146,29 @@ Map<String, Object?> packageListJson({
   };
 }
 
+Map<String, Object?> requirementFieldJson({
+  String key = 'id',
+  String label = 'Player ID',
+  String inputType = 'text',
+  bool required = true,
+  Object? maxLength = 64,
+  Object? options,
+}) {
+  return {
+    'key': key,
+    'label': label,
+    'input_type': inputType,
+    'required': required,
+    'max_length': maxLength,
+    'options': options,
+  };
+}
+
 Map<String, Object?> packageDetailJson({
   bool pricesVisible = true,
   Object? description = 'Digital top-up options.',
   List<Map<String, Object?>>? products,
+  List<Map<String, Object?>>? requirements,
   Object? fromPrice,
 }) {
   return {
@@ -157,6 +176,7 @@ Map<String, Object?> packageDetailJson({
       ...packageSummaryJson(fromPrice: fromPrice),
       'description': description,
       'products': products ?? [fixedProductJson(), customProductJson()],
+      'requirements': requirements ?? [requirementFieldJson()],
     },
     'meta': {'prices_visible': pricesVisible},
   };

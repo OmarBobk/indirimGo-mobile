@@ -250,6 +250,87 @@ class FrequentlyOrderedPackage extends PackageSummary {
   final int timesOrdered;
 }
 
+enum RequirementInputType { text, number, select }
+
+/// Sanitized package requirement field from OpenAPI `PackageRequirementField`.
+///
+/// [key] is a server identifier, never UI copy. [label]/[options] are
+/// catalog content supplied by Laravel. Requirement *values* never appear here.
+class PackageRequirementField {
+  const PackageRequirementField({
+    required this.key,
+    required this.label,
+    required this.inputType,
+    required this.required,
+    required this.maxLength,
+    required this.options,
+  });
+
+  /// Parses one field. Returns null when the schema is unsafe/unsupported so
+  /// the UI can fail closed instead of inventing an arbitrary input.
+  static PackageRequirementField? tryParse(Map<String, Object?> json) {
+    try {
+      return PackageRequirementField.fromJson(json);
+    } on FormatException {
+      return null;
+    }
+  }
+
+  factory PackageRequirementField.fromJson(Map<String, Object?> json) {
+    _requireKeys(json, const {
+      'key',
+      'label',
+      'input_type',
+      'required',
+      'max_length',
+      'options',
+    });
+    final key = _requiredString(json, 'key');
+    if (key.length > 64 || !_requirementKeyPattern.hasMatch(key)) {
+      throw const FormatException('Requirement key is unsafe.');
+    }
+    final label = _requiredString(json, 'label');
+    if (label.length > 120) {
+      throw const FormatException('Requirement label is oversized.');
+    }
+    final inputRaw = _requiredString(json, 'input_type');
+    final inputType = switch (inputRaw) {
+      'text' => RequirementInputType.text,
+      'number' => RequirementInputType.number,
+      'select' => RequirementInputType.select,
+      _ => throw FormatException('Unsupported requirement input_type.'),
+    };
+    final maxLength = _nullablePositiveInt(json, 'max_length');
+    if (maxLength != null && maxLength > 255) {
+      throw const FormatException('Requirement max_length exceeds 255.');
+    }
+    final options = _nullableStringOptions(json, 'options');
+    if (inputType == RequirementInputType.select &&
+        (options == null || options.isEmpty)) {
+      throw const FormatException('Select requirement lacks safe options.');
+    }
+    return PackageRequirementField(
+      key: key,
+      label: label,
+      inputType: inputType,
+      required: _requiredBool(json, 'required'),
+      maxLength: maxLength,
+      options: options,
+    );
+  }
+
+  final String key;
+  final String label;
+  final RequirementInputType inputType;
+  final bool required;
+  final int? maxLength;
+  final List<String>? options;
+
+  @override
+  String toString() =>
+      'PackageRequirementField(key: $key, inputType: $inputType, required: $required)';
+}
+
 class PackageDetail extends PackageSummary {
   const PackageDetail({
     required super.id,
@@ -261,6 +342,8 @@ class PackageDetail extends PackageSummary {
     required super.category,
     required this.description,
     required this.products,
+    required this.requirements,
+    required this.requirementsSupported,
   });
 
   factory PackageDetail.fromJson(Map<String, Object?> json) {
@@ -274,10 +357,27 @@ class PackageDetail extends PackageSummary {
       'from_price',
       'category',
       'products',
+      'requirements',
     });
     final productsRaw = json['products'];
     if (productsRaw is! List) {
       throw const FormatException('products must be an array.');
+    }
+    final requirementsRaw = json['requirements'];
+    if (requirementsRaw is! List) {
+      throw const FormatException('requirements must be an array.');
+    }
+    final requirements = <PackageRequirementField>[];
+    var supported = true;
+    for (final item in requirementsRaw) {
+      final map = _asObjectMap(item, 'requirements item');
+      final parsed = PackageRequirementField.tryParse(map);
+      if (parsed == null) {
+        // Fail closed: unsupported/unsafe schema must not invent a field.
+        supported = false;
+        continue;
+      }
+      requirements.add(parsed);
     }
     return PackageDetail(
       id: _requiredInt(json, 'id'),
@@ -292,11 +392,17 @@ class PackageDetail extends PackageSummary {
         for (final item in productsRaw)
           ProductOption.fromJson(_asObjectMap(item, 'products item')),
       ],
+      requirements: requirements,
+      requirementsSupported: supported,
     );
   }
 
   final String? description;
   final List<ProductOption> products;
+  final List<PackageRequirementField> requirements;
+
+  /// False when any requirement entry was unsafe/unsupported.
+  final bool requirementsSupported;
 }
 
 class OffsetPagination {
@@ -469,6 +575,7 @@ class PackageListQuery {
 }
 
 final _moneyAmountPattern = RegExp(r'^-?\d+\.\d{2}$');
+final _requirementKeyPattern = RegExp(r'^[A-Za-z][A-Za-z0-9_]{0,63}$');
 
 void _requireKeys(Map<String, Object?> json, Set<String> keys) {
   for (final key in keys) {
@@ -606,4 +713,25 @@ List<T> _mapList<T>(
     throw FormatException('$label must be an array.');
   }
   return [for (final item in value) map(_asObjectMap(item, '$label item'))];
+}
+
+List<String>? _nullableStringOptions(Map<String, Object?> json, String key) {
+  final value = json[key];
+  if (value == null) {
+    return null;
+  }
+  if (value is! List) {
+    throw FormatException('$key must be an array or null.');
+  }
+  if (value.length > 32) {
+    throw const FormatException('Requirement options exceed 32 items.');
+  }
+  final options = <String>[];
+  for (final item in value) {
+    if (item is! String || item.isEmpty || item.length > 64) {
+      throw const FormatException('Requirement option is unsafe.');
+    }
+    options.add(item);
+  }
+  return options;
 }

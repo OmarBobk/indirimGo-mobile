@@ -26,10 +26,12 @@
   implementation, Riverpod state, and auth screens.
 - `lib/features/catalog`: commerce shell (home, package list/search, package
   detail, account access) with manual OpenAPI models and a focused repository.
+- `lib/features/purchase`: buy-now draft, quote, checkout, recovery, and
+  receipt UI with manual OpenAPI models.
+- `lib/features/wallet`: wallet summary for Account/checkout surfaces.
 - Prefer feature-first code and small manual immutable models. Avoid code
   generation and generic clean-architecture layers.
-- Never recalculate Laravel prices, parse money amounts into `double`, or add
-  purchase/checkout/wallet UI during M2.2.
+- Never recalculate Laravel prices or parse money amounts into `double`.
 
 ## Implementation rules
 
@@ -37,14 +39,16 @@
 - Use the single configured Dio client; never add secret-bearing logging.
 - Store only the Sanctum token and its expiry in secure storage as one atomic
   session value.
-- Keep password, 2FA codes, recovery codes, and challenge tokens out of
-  persistence and logs.
+- Pending checkout recovery may store only customer id + Idempotency-Key (+
+  timestamp). Never persist requirement values, quote bodies, or fingerprints.
+- Keep password, 2FA codes, recovery codes, challenge tokens, requirement
+  values, and idempotency keys out of logs and exception strings.
 - A 401 is authoritative. Connectivity, timeout, and 5xx failures must retain
   the session for retry.
 - Clear tokens only for the request session that observed unauthorized
   responses.
-- Do not decide 2FA expiry on the client clock; let the API own challenge
-  validity.
+- Do not decide 2FA expiry or checkout denial on the client clock; let the API
+  own validity. Quote expiry may refresh UI freshness only.
 - Never surface raw API `message` or unknown `code` values in UI.
 - User-facing copy belongs in Arabic and English ARB files.
 - Preserve exact Android namespace/application ID `tr.indirimgo.app`.

@@ -39,8 +39,13 @@ globs: ["lib/**/*.dart", "test/**/*.dart", "android/**/*", "pubspec.yaml"]
   exact version.
 - Flutter must never calculate trusted prices or mutate financial state
   independently of Laravel.
-- Catalog UI must render only server `display.formatted` money text and treat
-  `meta.prices_visible=false` as distinct from an individual null price.
-- Do not add cart, checkout, wallet, orders, biometrics, refresh tokens, deep
-  links, push, maps, media upload, image-cache packages, or codegen during M2.2.
+- Catalog/purchase UI must render only server `display.formatted` money text
+  and treat `meta.prices_visible=false` as distinct from an individual null
+  price.
+- Buy-now purchasing may use quote/checkout/status/order/wallet-summary only.
+  Do not add multi-line cart, top-up, order history, biometrics, refresh
+  tokens, deep links, push, maps, media upload, image-cache packages, or
+  codegen during M3.2.
+- Pending checkout storage may keep only customer id + Idempotency-Key.
+  Never persist requirement values, quote fingerprints, or raw payloads.
 - Do not claim production-signing readiness from debug APK success alone.

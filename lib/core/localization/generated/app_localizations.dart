@@ -769,6 +769,360 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'خطأ'**
   String get errorAnnouncement;
+
+  /// No description provided for @buyNowAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'اشترِ الآن'**
+  String get buyNowAction;
+
+  /// No description provided for @buyNowTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اشترِ الآن'**
+  String get buyNowTitle;
+
+  /// No description provided for @purchaseDetailsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل الشراء'**
+  String get purchaseDetailsTitle;
+
+  /// No description provided for @requirementsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'البيانات المطلوبة'**
+  String get requirementsTitle;
+
+  /// No description provided for @quantityLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكمية'**
+  String get quantityLabel;
+
+  /// No description provided for @quantityInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل كمية صحيحة لا تقل عن 1.'**
+  String get quantityInvalid;
+
+  /// No description provided for @quantityValue.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكمية: {quantity}'**
+  String quantityValue(int quantity);
+
+  /// No description provided for @requestedAmountLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ {unit}'**
+  String requestedAmountLabel(String unit);
+
+  /// No description provided for @requestedAmountInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل مبلغاً صالحاً ضمن النطاق المسموح.'**
+  String get requestedAmountInvalid;
+
+  /// No description provided for @requestedAmountValue.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ: {amount}'**
+  String requestedAmountValue(int amount);
+
+  /// No description provided for @unitPriceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر الوحدة'**
+  String get unitPriceLabel;
+
+  /// No description provided for @requirementRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الحقل مطلوب.'**
+  String get requirementRequired;
+
+  /// No description provided for @continueToReviewAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة للمراجعة'**
+  String get continueToReviewAction;
+
+  /// No description provided for @quotingPurchase.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تجهيز عرض السعر'**
+  String get quotingPurchase;
+
+  /// No description provided for @purchaseUnavailableTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشراء غير متاح'**
+  String get purchaseUnavailableTitle;
+
+  /// No description provided for @purchaseUnavailableBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكن شراء هذا المنتج حالياً.'**
+  String get purchaseUnavailableBody;
+
+  /// No description provided for @checkoutReviewTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مراجعة الشراء'**
+  String get checkoutReviewTitle;
+
+  /// No description provided for @quoteMissingBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض السعر لم يعد متاحاً. ابدأ الشراء مجدداً.'**
+  String get quoteMissingBody;
+
+  /// No description provided for @orderTotalsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإجماليات'**
+  String get orderTotalsTitle;
+
+  /// No description provided for @lineTotalLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي البند'**
+  String get lineTotalLabel;
+
+  /// No description provided for @finalTotalLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإجمالي'**
+  String get finalTotalLabel;
+
+  /// No description provided for @walletSectionTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحفظة'**
+  String get walletSectionTitle;
+
+  /// No description provided for @availableToSpendLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتاح للإنفاق'**
+  String get availableToSpendLabel;
+
+  /// No description provided for @walletUnavailableBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'رصيد المحفظة غير متاح مؤقتاً.'**
+  String get walletUnavailableBody;
+
+  /// No description provided for @quoteExpiresAt.
+  ///
+  /// In ar, this message translates to:
+  /// **'ينتهي عرض السعر في {timestamp}'**
+  String quoteExpiresAt(String timestamp);
+
+  /// No description provided for @confirmWalletChargeAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'ادفع من المحفظة'**
+  String get confirmWalletChargeAction;
+
+  /// No description provided for @confirmWalletChargeHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيتم خصم الإجمالي الظاهر أعلاه من محفظتك.'**
+  String get confirmWalletChargeHint;
+
+  /// No description provided for @submittingPurchase.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ معالجة الشراء'**
+  String get submittingPurchase;
+
+  /// No description provided for @refreshQuoteAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث عرض السعر'**
+  String get refreshQuoteAction;
+
+  /// No description provided for @priceChangedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغير السعر أو تفاصيل الشراء. راجع الإجمالي المحدّث قبل الدفع.'**
+  String get priceChangedBody;
+
+  /// No description provided for @insufficientBalanceBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'رصيد محفظتك المتاح غير كافٍ لهذا الشراء.'**
+  String get insufficientBalanceBody;
+
+  /// No description provided for @checkoutRecoveryTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'التحقق من الشراء'**
+  String get checkoutRecoveryTitle;
+
+  /// No description provided for @checkoutRecoveryIdleBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد شراء بانتظار الاسترداد.'**
+  String get checkoutRecoveryIdleBody;
+
+  /// No description provided for @checkoutRecoveryProcessingBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'نتحقق مما إذا اكتمل الشراء. يرجى الانتظار.'**
+  String get checkoutRecoveryProcessingBody;
+
+  /// No description provided for @checkoutFailedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر إكمال الشراء'**
+  String get checkoutFailedTitle;
+
+  /// No description provided for @checkoutRetryRequiredTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'يجب إعادة بدء الشراء'**
+  String get checkoutRetryRequiredTitle;
+
+  /// No description provided for @checkoutRetryRequiredBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل هذا الشراء. ابدأ مجدداً من صفحة المنتج.'**
+  String get checkoutRetryRequiredBody;
+
+  /// No description provided for @checkoutAttemptNotFoundBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد شراء معلّق لهذا الحساب.'**
+  String get checkoutAttemptNotFoundBody;
+
+  /// No description provided for @purchaseSuccessTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الشراء بنجاح'**
+  String get purchaseSuccessTitle;
+
+  /// No description provided for @purchaseSuccessBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتمل الدفع من المحفظة.'**
+  String get purchaseSuccessBody;
+
+  /// No description provided for @viewReceiptAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الإيصال'**
+  String get viewReceiptAction;
+
+  /// No description provided for @receiptTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيصال'**
+  String get receiptTitle;
+
+  /// No description provided for @loadingReceipt.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحميل الإيصال'**
+  String get loadingReceipt;
+
+  /// No description provided for @receiptItemsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'العناصر'**
+  String get receiptItemsTitle;
+
+  /// No description provided for @orderNumberLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب {orderNumber}'**
+  String orderNumberLabel(String orderNumber);
+
+  /// No description provided for @paymentStatusLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'حالة الدفع: {status}'**
+  String paymentStatusLabel(String status);
+
+  /// No description provided for @orderNotFoundTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب غير موجود'**
+  String get orderNotFoundTitle;
+
+  /// No description provided for @orderNotFoundBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الطلب غير متاح لحسابك.'**
+  String get orderNotFoundBody;
+
+  /// No description provided for @backToHomeAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'العودة إلى الرئيسية'**
+  String get backToHomeAction;
+
+  /// No description provided for @purchasingUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشراء غير متاح مؤقتاً.'**
+  String get purchasingUnavailable;
+
+  /// No description provided for @productUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا المنتج غير متاح.'**
+  String get productUnavailable;
+
+  /// No description provided for @invalidCustomAmount.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ المخصص غير صالح.'**
+  String get invalidCustomAmount;
+
+  /// No description provided for @priceChanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغير السعر. راجع عرض السعر المحدّث.'**
+  String get priceChanged;
+
+  /// No description provided for @insufficientWalletBalance.
+  ///
+  /// In ar, this message translates to:
+  /// **'رصيد المحفظة غير كافٍ.'**
+  String get insufficientWalletBalance;
+
+  /// No description provided for @idempotencyConflict.
+  ///
+  /// In ar, this message translates to:
+  /// **'تتعارض محاولة الشراء مع طلب آخر. جارٍ التحقق من الحالة.'**
+  String get idempotencyConflict;
+
+  /// No description provided for @checkoutInProgress.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يزال هذا الشراء قيد المعالجة.'**
+  String get checkoutInProgress;
+
+  /// No description provided for @checkoutRetryRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'يجب إعادة محاولة هذا الشراء بحذر. ابدأ مجدداً إذا لزم الأمر.'**
+  String get checkoutRetryRequired;
+
+  /// No description provided for @checkoutFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'فشل الشراء. لم يتم اتخاذ إجراء إضافي.'**
+  String get checkoutFailed;
+
+  /// No description provided for @orderNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب غير موجود.'**
+  String get orderNotFound;
 }
 
 class _AppLocalizationsDelegate
