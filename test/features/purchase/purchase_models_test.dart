@@ -42,9 +42,7 @@ void main() {
         isNull,
       );
       expect(
-        PackageRequirementField.tryParse(
-          requirementFieldJson(key: '1bad'),
-        ),
+        PackageRequirementField.tryParse(requirementFieldJson(key: '1bad')),
         isNull,
       );
     });
@@ -153,7 +151,10 @@ void main() {
         requirements: {'id': 'player-secret'},
       );
       final json = item.toJson();
-      expect(json.keys, containsAll(['product_id', 'package_id', 'quantity', 'requirements']));
+      expect(
+        json.keys,
+        containsAll(['product_id', 'package_id', 'quantity', 'requirements']),
+      );
       expect(json.containsKey('unit_price'), isFalse);
       expect(json.containsKey('line_total'), isFalse);
       expect(item.toString(), isNot(contains('player-secret')));
@@ -177,7 +178,10 @@ void main() {
         quote: sampleCheckoutQuote,
       );
       expect(draft.toString(), isNot(contains('secret-value')));
-      expect(draft.toString(), isNot(contains(sampleCheckoutQuote.quoteFingerprint)));
+      expect(
+        draft.toString(),
+        isNot(contains(sampleCheckoutQuote.quoteFingerprint)),
+      );
     });
   });
 }

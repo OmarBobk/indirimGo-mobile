@@ -28,9 +28,11 @@ Map<String, Object?> checkoutQuoteJson({
         'quantity': quantity,
         'requested_amount': requestedAmount,
         'unit_price': moneyJson(amount: '10.00', formatted: r'$10.00'),
-        'line_total': moneyJson(amount: totalAmount, formatted: '\$$totalAmount'),
-        'requirements_schema':
-            requirementsSchema ?? [requirementFieldJson()],
+        'line_total': moneyJson(
+          amount: totalAmount,
+          formatted: '\$$totalAmount',
+        ),
+        'requirements_schema': requirementsSchema ?? [requirementFieldJson()],
       },
       'subtotal': moneyJson(amount: totalAmount, formatted: '\$$totalAmount'),
       'fee': moneyJson(amount: '0.00', formatted: r'$0.00'),
@@ -78,7 +80,10 @@ Map<String, Object?> purchaseReceiptJson({
         'amount_mode': 'fixed',
         'quantity': 2,
         'requested_amount': null,
-        'line_total': moneyJson(amount: totalAmount, formatted: '\$$totalAmount'),
+        'line_total': moneyJson(
+          amount: totalAmount,
+          formatted: '\$$totalAmount',
+        ),
       },
     ],
   };

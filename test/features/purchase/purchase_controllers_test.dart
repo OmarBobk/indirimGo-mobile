@@ -59,7 +59,9 @@ void main() {
   }
 
   PurchaseDraft seedDraft(ProviderContainer container) {
-    container.read(purchaseDraftControllerProvider.notifier).start(
+    container
+        .read(purchaseDraftControllerProvider.notifier)
+        .start(
           packageId: 42,
           packageName: 'Example Game Top-up',
           product: ProductOption.fromJson(fixedProductJson()),
@@ -88,10 +90,10 @@ void main() {
   test('starting a different product clears previous draft values', () async {
     final container = await createContainer();
     seedDraft(container);
+    container.read(purchaseDraftControllerProvider.notifier).updateQuantity(3);
     container
         .read(purchaseDraftControllerProvider.notifier)
-        .updateQuantity(3);
-    container.read(purchaseDraftControllerProvider.notifier).start(
+        .start(
           packageId: 42,
           packageName: 'Example Game Top-up',
           product: ProductOption.fromJson(customProductJson()),
@@ -109,7 +111,9 @@ void main() {
     final purchase = FakePurchaseRepository();
     final container = await createContainer(purchase: purchase);
     seedDraft(container);
-    container.read(purchaseDraftControllerProvider.notifier).updateQuantity(null);
+    container
+        .read(purchaseDraftControllerProvider.notifier)
+        .updateQuantity(null);
 
     final invalid = await container
         .read(purchaseFormControllerProvider.notifier)
@@ -130,41 +134,47 @@ void main() {
     expect(ok, isTrue);
     expect(purchase.quoteCalls, 1);
     expect(purchase.quoteItems.single.quantity, 2);
-    expect(container.read(purchaseDraftControllerProvider).draft?.quote, isNotNull);
-  });
-
-  test('confirm persists key before request and reuses after timeout', () async {
-    final pending = InMemoryPendingCheckoutStore();
-    final purchase = FakePurchaseRepository()
-      ..checkoutDelay = const Duration(milliseconds: 20)
-      ..checkoutError = const ApiException(kind: ApiErrorKind.network);
-    final container = await createContainer(
-      purchase: purchase,
-      pending: pending,
-    );
-    seedDraft(container);
-    container.read(purchaseDraftControllerProvider.notifier).setQuote(
-          sampleCheckoutQuote,
-        );
-
-    await container
-        .read(checkoutReviewControllerProvider.notifier)
-        .confirmPurchase();
-    expect(pending.writeCount, 1);
-    expect(pending.attempt, isNotNull);
-    expect(purchase.checkoutCalls, 1);
     expect(
-      container.read(checkoutReviewControllerProvider).phase,
-      CheckoutReviewPhase.recoveryRequired,
+      container.read(purchaseDraftControllerProvider).draft?.quote,
+      isNotNull,
     );
-
-    purchase.checkoutError = null;
-    await container
-        .read(checkoutReviewControllerProvider.notifier)
-        .confirmPurchase();
-    expect(purchase.checkoutKeys, hasLength(2));
-    expect(purchase.checkoutKeys[0], purchase.checkoutKeys[1]);
   });
+
+  test(
+    'confirm persists key before request and reuses after timeout',
+    () async {
+      final pending = InMemoryPendingCheckoutStore();
+      final purchase = FakePurchaseRepository()
+        ..checkoutDelay = const Duration(milliseconds: 20)
+        ..checkoutError = const ApiException(kind: ApiErrorKind.network);
+      final container = await createContainer(
+        purchase: purchase,
+        pending: pending,
+      );
+      seedDraft(container);
+      container
+          .read(purchaseDraftControllerProvider.notifier)
+          .setQuote(sampleCheckoutQuote);
+
+      await container
+          .read(checkoutReviewControllerProvider.notifier)
+          .confirmPurchase();
+      expect(pending.writeCount, 1);
+      expect(pending.attempt, isNotNull);
+      expect(purchase.checkoutCalls, 1);
+      expect(
+        container.read(checkoutReviewControllerProvider).phase,
+        CheckoutReviewPhase.recoveryRequired,
+      );
+
+      purchase.checkoutError = null;
+      await container
+          .read(checkoutReviewControllerProvider.notifier)
+          .confirmPurchase();
+      expect(purchase.checkoutKeys, hasLength(2));
+      expect(purchase.checkoutKeys[0], purchase.checkoutKeys[1]);
+    },
+  );
 
   test('terminal success clears pending key and draft', () async {
     final pending = InMemoryPendingCheckoutStore();
@@ -174,9 +184,9 @@ void main() {
       pending: pending,
     );
     seedDraft(container);
-    container.read(purchaseDraftControllerProvider.notifier).setQuote(
-          sampleCheckoutQuote,
-        );
+    container
+        .read(purchaseDraftControllerProvider.notifier)
+        .setQuote(sampleCheckoutQuote);
 
     final receipt = await container
         .read(checkoutReviewControllerProvider.notifier)
@@ -191,9 +201,9 @@ void main() {
       ..checkoutDelay = const Duration(milliseconds: 40);
     final container = await createContainer(purchase: purchase);
     seedDraft(container);
-    container.read(purchaseDraftControllerProvider.notifier).setQuote(
-          sampleCheckoutQuote,
-        );
+    container
+        .read(purchaseDraftControllerProvider.notifier)
+        .setQuote(sampleCheckoutQuote);
 
     final first = container
         .read(checkoutReviewControllerProvider.notifier)
@@ -207,14 +217,22 @@ void main() {
 
   test('price_changed refreshes quote and requires reconfirmation', () async {
     final refreshed = CheckoutQuote.fromSuccessJson(
-      checkoutQuoteJson(totalAmount: '25.00', fingerprint: 'quote-fingerprint-example-999999'),
+      checkoutQuoteJson(
+        totalAmount: '25.00',
+        fingerprint: 'quote-fingerprint-example-999999',
+      ),
     );
     final purchase = FakePurchaseRepository()
       ..checkoutError = ApiException(
         kind: ApiErrorKind.conflict,
         code: 'price_changed',
         statusCode: 409,
-        details: {'current_quote': checkoutQuoteJson(totalAmount: '25.00', fingerprint: refreshed.quoteFingerprint)['data']},
+        details: {
+          'current_quote': checkoutQuoteJson(
+            totalAmount: '25.00',
+            fingerprint: refreshed.quoteFingerprint,
+          )['data'],
+        },
       );
     final pending = InMemoryPendingCheckoutStore();
     final container = await createContainer(
@@ -222,9 +240,9 @@ void main() {
       pending: pending,
     );
     seedDraft(container);
-    container.read(purchaseDraftControllerProvider.notifier).setQuote(
-          sampleCheckoutQuote,
-        );
+    container
+        .read(purchaseDraftControllerProvider.notifier)
+        .setQuote(sampleCheckoutQuote);
 
     await container
         .read(checkoutReviewControllerProvider.notifier)
@@ -234,7 +252,12 @@ void main() {
       CheckoutReviewPhase.priceChanged,
     );
     expect(
-      container.read(purchaseDraftControllerProvider).draft?.quote?.total.amount,
+      container
+          .read(purchaseDraftControllerProvider)
+          .draft
+          ?.quote
+          ?.total
+          .amount,
       '25.00',
     );
     expect(pending.attempt, isNull);

@@ -25,9 +25,7 @@ void main() {
   setUp(() {
     storage = InMemoryTokenStorage(sampleStoredSession());
     adapter = _QueueAdapter();
-    final dio = Dio(
-      BaseOptions(baseUrl: 'https://api.example.test/api/v1/'),
-    );
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.example.test/api/v1/'));
     dio.httpClientAdapter = adapter;
     apiClient = ApiClient(
       config: AppConfig(
@@ -99,14 +97,11 @@ void main() {
   });
 
   test('maps purchase error codes including price_changed details', () async {
-    adapter.enqueueError(
-      409,
-      {
-        'message': 'changed',
-        'code': 'price_changed',
-        'details': {'current_quote': checkoutQuoteJson()['data']},
-      },
-    );
+    adapter.enqueueError(409, {
+      'message': 'changed',
+      'code': 'price_changed',
+      'details': {'current_quote': checkoutQuoteJson()['data']},
+    });
     try {
       await purchase.checkout(
         item: const CheckoutLineItemRequest(productId: 901),
@@ -122,56 +117,67 @@ void main() {
     }
   });
 
-  test('maps insufficient balance, in progress, retry required, 429, network', () async {
-    Future<void> expectCode(int status, String code, ApiErrorKind kind) async {
-      adapter.enqueueError(status, {'message': 'x', 'code': code});
+  test(
+    'maps insufficient balance, in progress, retry required, 429, network',
+    () async {
+      Future<void> expectCode(
+        int status,
+        String code,
+        ApiErrorKind kind,
+      ) async {
+        adapter.enqueueError(status, {'message': 'x', 'code': code});
+        try {
+          await purchase.checkout(
+            item: const CheckoutLineItemRequest(productId: 901),
+            quoteFingerprint: 'quote-fingerprint-example-123456',
+            idempotencyKey: 'ig-key',
+          );
+          fail('expected $code');
+        } on ApiException catch (error) {
+          expect(error.code, code);
+          expect(error.kind, kind);
+        }
+      }
+
+      await expectCode(
+        422,
+        'insufficient_wallet_balance',
+        ApiErrorKind.validation,
+      );
+      await expectCode(409, 'purchasing_unavailable', ApiErrorKind.conflict);
+      await expectCode(409, 'idempotency_conflict', ApiErrorKind.conflict);
+      await expectCode(409, 'checkout_retry_required', ApiErrorKind.conflict);
+      await expectCode(429, 'too_many_requests', ApiErrorKind.rateLimited);
+
+      adapter.enqueue(202, {
+        'message': 'in progress',
+        'code': 'checkout_in_progress',
+      });
       try {
         await purchase.checkout(
           item: const CheckoutLineItemRequest(productId: 901),
           quoteFingerprint: 'quote-fingerprint-example-123456',
           idempotencyKey: 'ig-key',
         );
-        fail('expected $code');
+        fail('expected in progress');
       } on ApiException catch (error) {
-        expect(error.code, code);
-        expect(error.kind, kind);
+        expect(error.code, 'checkout_in_progress');
+        expect(error.statusCode, 202);
       }
-    }
 
-    await expectCode(
-      422,
-      'insufficient_wallet_balance',
-      ApiErrorKind.validation,
-    );
-    await expectCode(409, 'purchasing_unavailable', ApiErrorKind.conflict);
-    await expectCode(409, 'idempotency_conflict', ApiErrorKind.conflict);
-    await expectCode(409, 'checkout_retry_required', ApiErrorKind.conflict);
-    await expectCode(429, 'too_many_requests', ApiErrorKind.rateLimited);
-
-    adapter.enqueue(202, {
-      'message': 'in progress',
-      'code': 'checkout_in_progress',
-    });
-    try {
-      await purchase.checkout(
-        item: const CheckoutLineItemRequest(productId: 901),
-        quoteFingerprint: 'quote-fingerprint-example-123456',
-        idempotencyKey: 'ig-key',
+      adapter.enqueueNetworkError();
+      expect(
+        () => purchase.quote(const CheckoutLineItemRequest(productId: 901)),
+        throwsA(
+          isA<ApiException>().having(
+            (e) => e.kind,
+            'kind',
+            ApiErrorKind.network,
+          ),
+        ),
       );
-      fail('expected in progress');
-    } on ApiException catch (error) {
-      expect(error.code, 'checkout_in_progress');
-      expect(error.statusCode, 202);
-    }
-
-    adapter.enqueueNetworkError();
-    expect(
-      () => purchase.quote(const CheckoutLineItemRequest(productId: 901)),
-      throwsA(
-        isA<ApiException>().having((e) => e.kind, 'kind', ApiErrorKind.network),
-      ),
-    );
-  });
+    },
+  );
 
   test('requirement values are absent from exception strings', () async {
     adapter.enqueueError(422, {
@@ -213,8 +219,7 @@ Map<String, Object?> _requestBody(RequestOptions request) {
 }
 
 class _QueuedResponse {
-  _QueuedResponse.success(this.statusCode, this.body)
-    : isNetworkError = false;
+  _QueuedResponse.success(this.statusCode, this.body) : isNetworkError = false;
   _QueuedResponse.error(this.statusCode, this.body) : isNetworkError = false;
   _QueuedResponse.network()
     : statusCode = 0,

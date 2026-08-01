@@ -26,7 +26,9 @@ void main() {
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized()
         .platformDispatcher
-        .localesTestValue = const [Locale('ar')];
+        .localesTestValue = const [
+      Locale('ar'),
+    ];
   });
 
   tearDown(() {
@@ -69,10 +71,12 @@ void main() {
     expect(find.byKey(const Key('checkout-review')), findsOneWidget);
     expect(find.byKey(const Key('final-total')), findsOneWidget);
     final money = tester.widget<Text>(
-      find.descendant(
-        of: find.byKey(const Key('final-total')),
-        matching: find.byType(Text),
-      ).first,
+      find
+          .descendant(
+            of: find.byKey(const Key('final-total')),
+            matching: find.byType(Text),
+          )
+          .first,
     );
     expect(money.textDirection, TextDirection.ltr);
     expect(find.textContaining(r'$20.00'), findsWidgets);
@@ -84,7 +88,9 @@ void main() {
   ) async {
     TestWidgetsFlutterBinding.ensureInitialized()
         .platformDispatcher
-        .localesTestValue = const [Locale('en')];
+        .localesTestValue = const [
+      Locale('en'),
+    ];
     final purchase = FakePurchaseRepository(
       quote: CheckoutQuote.fromSuccessJson(
         checkoutQuoteJson(canAfford: false, available: '1.00'),
@@ -105,7 +111,10 @@ void main() {
     await tester.tap(find.byKey(const Key('continue-to-quote')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('insufficient-balance-message')), findsOneWidget);
+    expect(
+      find.byKey(const Key('insufficient-balance-message')),
+      findsOneWidget,
+    );
     final button = tester.widget<FilledButton>(
       find.byKey(const Key('confirm-wallet-purchase')),
     );
@@ -131,21 +140,17 @@ void main() {
     final container = await _pumpAuthenticated(tester);
     container.read(routerProvider).go(AppRoutes.packageDetail(42));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('buy-now-901')),
-      200,
-    );
+    await tester.scrollUntilVisible(find.byKey(const Key('buy-now-901')), 200);
     expect(find.byKey(const Key('buy-now-901')), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('buy-now-902')),
-      200,
-    );
+    await tester.scrollUntilVisible(find.byKey(const Key('buy-now-902')), 200);
     expect(find.byKey(const Key('buy-now-902')), findsOneWidget);
   });
 
   testWidgets('receipt screen shows server totals only', (tester) async {
     final container = await _pumpAuthenticated(tester);
-    container.read(routerProvider).go(AppRoutes.orderReceipt('ORD-2026-000001'));
+    container
+        .read(routerProvider)
+        .go(AppRoutes.orderReceipt('ORD-2026-000001'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('order-receipt')), findsOneWidget);
     expect(find.byKey(const Key('receipt-total')), findsOneWidget);
@@ -189,8 +194,14 @@ void main() {
         break;
       }
     }
-    expect(find.byKey(const Key('checkout-recovery-processing')), findsOneWidget);
-    expect(find.byKey(const Key('checkout-recovery-manual-retry')), findsOneWidget);
+    expect(
+      find.byKey(const Key('checkout-recovery-processing')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('checkout-recovery-manual-retry')),
+      findsOneWidget,
+    );
     container
         .read(checkoutRecoveryControllerProvider.notifier)
         .acknowledgeTerminal();
@@ -248,7 +259,9 @@ void main() {
     expect(find.textContaining('كمية'), findsWidgets);
   });
 
-  testWidgets('confirm button semantics describe wallet charge', (tester) async {
+  testWidgets('confirm button semantics describe wallet charge', (
+    tester,
+  ) async {
     final purchase = FakePurchaseRepository();
     final container = await _pumpAuthenticated(tester, purchase: purchase);
     container.read(routerProvider).go(AppRoutes.packageBuy(42, 901));
@@ -298,9 +311,7 @@ Future<ProviderContainer> _pumpApp(
           buildMode: AppBuildMode.release,
         ),
       ),
-      tokenStorageProvider.overrideWithValue(
-        storage ?? InMemoryTokenStorage(),
-      ),
+      tokenStorageProvider.overrideWithValue(storage ?? InMemoryTokenStorage()),
       pendingCheckoutStoreProvider.overrideWithValue(
         pending ?? InMemoryPendingCheckoutStore(),
       ),
