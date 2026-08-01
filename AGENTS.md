@@ -39,8 +39,10 @@
 - Use the single configured Dio client; never add secret-bearing logging.
 - Store only the Sanctum token and its expiry in secure storage as one atomic
   session value.
-- Pending checkout recovery may store only customer id + Idempotency-Key (+
-  timestamp). Never persist requirement values, quote bodies, or fingerprints.
+- Pending checkout recovery is per-customer and may store only customer id,
+  unresolved Idempotency-Key, optional completed `order_number` anchor, and
+  timestamp. Never persist requirement values, quote bodies, fingerprints,
+  prices, or receipt bodies.
 - Keep password, 2FA codes, recovery codes, challenge tokens, requirement
   values, and idempotency keys out of logs and exception strings.
 - A 401 is authoritative. Connectivity, timeout, and 5xx failures must retain

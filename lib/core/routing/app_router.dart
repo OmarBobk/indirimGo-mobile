@@ -85,6 +85,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         final recovery = ref.read(checkoutRecoveryControllerProvider);
         final onRecovery = location == AppRoutes.checkoutRecovery;
         final onReceipt = location.startsWith('/app/orders/');
+        if (recovery.phase == CheckoutRecoveryPhase.completed &&
+            recovery.receipt != null &&
+            !onReceipt) {
+          return AppRoutes.orderReceipt(recovery.receipt!.orderNumber);
+        }
         if ((recovery.phase == CheckoutRecoveryPhase.checking ||
                 recovery.phase == CheckoutRecoveryPhase.processing) &&
             !onRecovery &&

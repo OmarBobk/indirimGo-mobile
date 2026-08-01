@@ -56,13 +56,13 @@ class OrderReceiptScreen extends ConsumerWidget {
   }
 }
 
-class _ReceiptBody extends StatelessWidget {
+class _ReceiptBody extends ConsumerWidget {
   const _ReceiptBody({required this.result});
 
   final CheckoutResult result;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final order = result.order;
     final theme = Theme.of(context);
@@ -118,7 +118,16 @@ class _ReceiptBody extends StatelessWidget {
           height: 48,
           child: FilledButton(
             key: const Key('receipt-done'),
-            onPressed: () => context.go(AppRoutes.shell),
+            onPressed: () async {
+              await ref
+                  .read(
+                    orderReceiptControllerProvider(order.orderNumber).notifier,
+                  )
+                  .acknowledgeAndLeave();
+              if (context.mounted) {
+                context.go(AppRoutes.shell);
+              }
+            },
             child: Text(l10n.backToHomeAction),
           ),
         ),

@@ -46,6 +46,8 @@ globs: ["lib/**/*.dart", "test/**/*.dart", "android/**/*", "pubspec.yaml"]
   Do not add multi-line cart, top-up, order history, biometrics, refresh
   tokens, deep links, push, maps, media upload, image-cache packages, or
   codegen during M3.2.
-- Pending checkout storage may keep only customer id + Idempotency-Key.
+- Pending checkout storage is per-customer and may keep only customer id,
+  unresolved Idempotency-Key, optional completed order_number anchor, and
+  timestamp.
   Never persist requirement values, quote fingerprints, or raw payloads.
 - Do not claim production-signing readiness from debug APK success alone.

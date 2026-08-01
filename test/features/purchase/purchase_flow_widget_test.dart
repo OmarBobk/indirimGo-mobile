@@ -159,7 +159,7 @@ void main() {
 
   testWidgets('unknown-result recovery processing UI', (tester) async {
     final pending = InMemoryPendingCheckoutStore()
-      ..attempt = PendingCheckoutAttempt(
+      ..attempt = CheckoutRecoveryRecord(
         customerId: sampleUser.id,
         idempotencyKey: 'ig-pending',
         createdAt: DateTime.utc(2026, 8, 1),
@@ -272,6 +272,70 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('محفظتك'), findsWidgets);
     expect(find.byKey(const Key('confirm-wallet-purchase')), findsOneWidget);
+  });
+
+  testWidgets('PopScope blocks back during submission', (tester) async {
+    final purchase = FakePurchaseRepository()
+      ..checkoutDelay = const Duration(milliseconds: 300);
+    final container = await _pumpAuthenticated(tester, purchase: purchase);
+    container.read(routerProvider).go(AppRoutes.packageBuy(42, 901));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('requirement-id')), 'player-1');
+    await tester.ensureVisible(find.byKey(const Key('continue-to-quote')));
+    await tester.tap(find.byKey(const Key('continue-to-quote')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('confirm-wallet-purchase')));
+    await tester.pump();
+    expect(
+      container.read(checkoutReviewControllerProvider).phase,
+      CheckoutReviewPhase.submitting,
+    );
+    final popScope = tester.widget<PopScope<Object?>>(
+      find.byKey(const Key('checkout-review-popscope')),
+    );
+    expect(popScope.canPop, isFalse);
+
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('completed recovery navigates to receipt and keeps anchor', (
+    tester,
+  ) async {
+    final pending = InMemoryPendingCheckoutStore()
+      ..attempt = CheckoutRecoveryRecord(
+        customerId: sampleUser.id,
+        idempotencyKey: 'ig-pending',
+        createdAt: DateTime.utc(2026, 8, 1),
+      );
+    final purchase = FakePurchaseRepository(
+      status: CheckoutStatus.fromResponse(
+        statusCode: 200,
+        json: checkoutStatusCompletedJson(),
+      ),
+    );
+    await _pumpAuthenticated(
+      tester,
+      purchase: purchase,
+      pending: pending,
+      settle: false,
+    );
+    for (var i = 0; i < 60; i++) {
+      await tester.pump(const Duration(milliseconds: 20));
+      if (find.byKey(const Key('order-receipt')).evaluate().isNotEmpty ||
+          find.byKey(const Key('receipt-loading')).evaluate().isNotEmpty) {
+        break;
+      }
+    }
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('order-receipt')), findsOneWidget);
+    final record = await pending.readForCustomer(sampleUser.id);
+    expect(record?.hasCompletedAnchor, isTrue);
+    expect(record?.hasUnresolvedKey, isFalse);
+
+    await tester.tap(find.byKey(const Key('receipt-done')));
+    await tester.pumpAndSettle();
+    expect(await pending.readForCustomer(sampleUser.id), isNull);
   });
 }
 

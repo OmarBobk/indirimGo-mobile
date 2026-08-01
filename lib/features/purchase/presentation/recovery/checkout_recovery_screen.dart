@@ -19,9 +19,8 @@ class CheckoutRecoveryScreen extends ConsumerWidget {
     ref.listen(checkoutRecoveryControllerProvider, (previous, next) {
       if (next.phase == CheckoutRecoveryPhase.completed &&
           next.receipt != null) {
-        ref
-            .read(checkoutRecoveryControllerProvider.notifier)
-            .acknowledgeTerminal();
+        // Keep completed state + durable anchor until receipt Done.
+        // Do not acknowledgeTerminal before navigation succeeds.
         context.go(AppRoutes.orderReceipt(next.receipt!.orderNumber));
       }
     });
@@ -33,7 +32,8 @@ class CheckoutRecoveryScreen extends ConsumerWidget {
         foregroundColor: BrandColors.ink,
         automaticallyImplyLeading:
             state.phase != CheckoutRecoveryPhase.processing &&
-            state.phase != CheckoutRecoveryPhase.checking,
+            state.phase != CheckoutRecoveryPhase.checking &&
+            state.phase != CheckoutRecoveryPhase.completed,
       ),
       body: SafeArea(
         child: switch (state.phase) {
@@ -76,6 +76,7 @@ class CheckoutRecoveryScreen extends ConsumerWidget {
             ),
           ),
           CheckoutRecoveryPhase.completed => PurchaseStatusView(
+            key: const Key('checkout-recovery-completed'),
             title: l10n.purchaseSuccessTitle,
             body: l10n.purchaseSuccessBody,
             icon: Icons.check_circle_outline,

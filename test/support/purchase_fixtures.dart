@@ -6,7 +6,7 @@ export 'catalog_fixtures.dart';
 
 Map<String, Object?> checkoutQuoteJson({
   String fingerprint = 'quote-fingerprint-example-123456',
-  String expiresAt = '2026-08-01T14:00:00.000Z',
+  String expiresAt = '2099-01-01T00:00:00.000Z',
   int quantity = 2,
   int? requestedAmount,
   String amountMode = 'fixed',

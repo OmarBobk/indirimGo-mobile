@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
@@ -391,6 +392,34 @@ class CheckoutReviewState {
   final bool submittingLocked;
 }
 
+/// Explicit allowlist for enabling wallet confirm.
+///
+/// Confirm is allowed only for ordinary ready review, explicit `priceChanged`
+/// reconfirmation, or in-session identical-payload `checkout_retry_required`.
+bool isCheckoutConfirmEnabled({
+  required CheckoutQuote? quote,
+  required CheckoutReviewState review,
+  DateTime? now,
+}) {
+  if (quote == null || review.submittingLocked) {
+    return false;
+  }
+  if (!quote.wallet.canAfford) {
+    return false;
+  }
+  final clock = now ?? DateTime.now().toUtc();
+  if (quote.isExpiredAt(clock)) {
+    return false;
+  }
+  return switch (review.phase) {
+    CheckoutReviewPhase.ready => true,
+    CheckoutReviewPhase.priceChanged => true,
+    CheckoutReviewPhase.error =>
+      review.error?.code == 'checkout_retry_required',
+    _ => false,
+  };
+}
+
 final checkoutReviewControllerProvider =
     NotifierProvider<CheckoutReviewController, CheckoutReviewState>(
       CheckoutReviewController.new,
@@ -414,6 +443,10 @@ class CheckoutReviewController extends Notifier<CheckoutReviewState> {
       _submitInFlight = false;
     });
     ref.listen<int?>(purchaseCustomerIdProvider, (previous, next) {
+      // Ignore the initial null→authenticated bind; only real switches reset.
+      if (previous == null && next != null) {
+        return;
+      }
       if (previous != next) {
         _activeIdempotencyKey = null;
         _submitInFlight = false;
@@ -423,10 +456,26 @@ class CheckoutReviewController extends Notifier<CheckoutReviewState> {
     return const CheckoutReviewState.idle();
   }
 
+  void resetAfterAcknowledgement() {
+    _activeIdempotencyKey = null;
+    _submitInFlight = false;
+    state = const CheckoutReviewState.idle();
+  }
+
+  /// Test-only: drop the in-memory key while leaving the durable store intact.
+  @visibleForTesting
+  void debugClearActiveIdempotencyKey() {
+    _activeIdempotencyKey = null;
+  }
+
   Future<void> ensureFreshQuote({bool force = false}) async {
     final draft = ref.read(purchaseDraftControllerProvider).draft;
     final customerId = ref.read(purchaseCustomerIdProvider);
     if (draft == null || draft.quote == null || customerId == null) {
+      return;
+    }
+    // Never bump the operation epoch while a wallet confirm is in flight.
+    if (_submitInFlight || state.phase == CheckoutReviewPhase.submitting) {
       return;
     }
     final quote = draft.quote!;
@@ -472,17 +521,29 @@ class CheckoutReviewController extends Notifier<CheckoutReviewState> {
     final draft = ref.read(purchaseDraftControllerProvider).draft;
     final customerId = ref.read(purchaseCustomerIdProvider);
     final quote = draft?.quote;
-    if (draft == null || quote == null || customerId == null) {
+    if (customerId == null) {
       return null;
     }
-    if (!quote.wallet.canAfford) {
-      state = const CheckoutReviewState(
-        phase: CheckoutReviewPhase.insufficientBalance,
+
+    final existing = await _pendingStore.readForCustomer(customerId);
+    if (existing != null && existing.hasCompletedAnchor) {
+      return _recoverCompletedAnchor(
+        customerId: customerId,
+        orderNumber: existing.completedOrderNumber!,
       );
+    }
+
+    if (!isCheckoutConfirmEnabled(quote: quote, review: state)) {
+      if (quote != null && !quote.wallet.canAfford) {
+        state = const CheckoutReviewState(
+          phase: CheckoutReviewPhase.insufficientBalance,
+        );
+      } else if (quote != null && quote.isExpiredAt(DateTime.now().toUtc())) {
+        await ensureFreshQuote(force: true);
+      }
       return null;
     }
-    if (quote.isExpiredAt(DateTime.now().toUtc())) {
-      await ensureFreshQuote(force: true);
+    if (draft == null || quote == null) {
       return null;
     }
 
@@ -494,14 +555,12 @@ class CheckoutReviewController extends Notifier<CheckoutReviewState> {
     );
 
     try {
-      final key = _activeIdempotencyKey ?? generateIdempotencyKey();
+      final key = await _resolveIdempotencyKey(customerId);
       _activeIdempotencyKey = key;
-      await _pendingStore.write(
-        PendingCheckoutAttempt(
-          customerId: customerId,
-          idempotencyKey: key,
-          createdAt: DateTime.now().toUtc(),
-        ),
+      await _pendingStore.writeUnresolved(
+        customerId: customerId,
+        idempotencyKey: key,
+        createdAt: DateTime.now().toUtc(),
       );
 
       final result = await _repository.checkout(
@@ -509,16 +568,58 @@ class CheckoutReviewController extends Notifier<CheckoutReviewState> {
         quoteFingerprint: quote.quoteFingerprint,
         idempotencyKey: key,
       );
+      // Must await so finally does not clear the in-flight guard before
+      // durable success finalization finishes.
+      return await _finalizeSuccessfulCheckout(
+        order: result.order,
+        customerId: customerId,
+        operation: operation,
+      );
+    } on ApiException catch (error) {
+      if (error.kind == ApiErrorKind.cancelled || operation != _epoch) {
+        return null;
+      }
+      if (await _applyAuthoritativeRejection(error)) {
+        state = const CheckoutReviewState.idle();
+        return null;
+      }
+      await _handleCheckoutFailure(error, customerId: customerId);
+      return null;
+    } finally {
+      _submitInFlight = false;
+    }
+  }
+
+  Future<String> _resolveIdempotencyKey(int customerId) async {
+    final active = _activeIdempotencyKey;
+    if (active != null && active.isNotEmpty) {
+      return active;
+    }
+    final stored = await _pendingStore.readForCustomer(customerId);
+    if (stored != null && stored.hasUnresolvedKey) {
+      return stored.idempotencyKey!;
+    }
+    return generateIdempotencyKey();
+  }
+
+  Future<PurchaseReceipt?> _recoverCompletedAnchor({
+    required int customerId,
+    required String orderNumber,
+  }) async {
+    final operation = ++_epoch;
+    state = const CheckoutReviewState(
+      phase: CheckoutReviewPhase.submitting,
+      submittingLocked: true,
+    );
+    try {
+      final result = await _repository.fetchOrder(orderNumber);
       if (operation != _epoch || _disposed) {
         return null;
       }
       if (ref.read(purchaseCustomerIdProvider) != customerId) {
         return null;
       }
-      await _pendingStore.clearForCustomer(customerId);
-      _activeIdempotencyKey = null;
       ref.read(purchaseDraftControllerProvider.notifier).clear();
-      unawaited(ref.read(walletSummaryControllerProvider.notifier).refresh());
       state = CheckoutReviewState(
         phase: CheckoutReviewPhase.success,
         receipt: result.order,
@@ -529,15 +630,64 @@ class CheckoutReviewController extends Notifier<CheckoutReviewState> {
         return null;
       }
       if (await _applyAuthoritativeRejection(error)) {
-        _submitInFlight = false;
         state = const CheckoutReviewState.idle();
         return null;
       }
-      await _handleCheckoutFailure(error, customerId: customerId);
+      if (error.kind == ApiErrorKind.notFound ||
+          error.code == 'order_not_found') {
+        await _pendingStore.clearForCustomer(customerId);
+      }
+      state = CheckoutReviewState(
+        phase: CheckoutReviewPhase.error,
+        error: error,
+      );
       return null;
-    } finally {
-      _submitInFlight = false;
     }
+  }
+
+  /// Durable success ordering shared by confirm and delayed-response paths.
+  Future<PurchaseReceipt?> _finalizeSuccessfulCheckout({
+    required PurchaseReceipt order,
+    required int customerId,
+    required int operation,
+  }) async {
+    // 1–2. Validate receipt (already parsed) and persist order anchor while key
+    // still exists.
+    await _pendingStore.markCompleted(
+      customerId: customerId,
+      orderNumber: order.orderNumber,
+    );
+
+    final activeCustomer = ref.read(purchaseCustomerIdProvider);
+    if (activeCustomer != customerId) {
+      // Delayed A response after switch to B: keep A's anchor, drop only A's key.
+      await _pendingStore.clearPendingKey(customerId);
+      _activeIdempotencyKey = null;
+      return null;
+    }
+    if (_disposed) {
+      await _pendingStore.clearPendingKey(customerId);
+      return null;
+    }
+
+    // Same customer: establish success when this operation is current, or when
+    // UI is still on submitting from this attempt (stale epoch from refresh).
+    final canPresentSuccess =
+        operation == _epoch || state.phase == CheckoutReviewPhase.submitting;
+    if (canPresentSuccess) {
+      // 3. Establish in-memory success/receipt state before key removal.
+      ref.read(purchaseDraftControllerProvider.notifier).clear();
+      unawaited(ref.read(walletSummaryControllerProvider.notifier).refresh());
+      state = CheckoutReviewState(
+        phase: CheckoutReviewPhase.success,
+        receipt: order,
+      );
+    }
+
+    // 4. Remove raw Idempotency-Key while preserving completed order anchor.
+    await _pendingStore.clearPendingKey(customerId);
+    _activeIdempotencyKey = null;
+    return canPresentSuccess ? order : null;
   }
 
   Future<void> _handleCheckoutFailure(
@@ -731,6 +881,7 @@ class CheckoutRecoveryController extends Notifier<CheckoutRecoveryState> {
       _epoch += 1;
       _requestInFlight = false;
       if (next == null) {
+        // Clear in-memory UI only. Never delete another customer's recovery.
         state = const CheckoutRecoveryState.idle();
         return;
       }
@@ -757,17 +908,71 @@ class CheckoutRecoveryController extends Notifier<CheckoutRecoveryState> {
       state = const CheckoutRecoveryState.idle();
       return;
     }
-    final pending = await _pendingStore.read();
-    if (pending == null) {
+    final record = await _pendingStore.readForCustomer(customerId);
+    if (record == null) {
       state = const CheckoutRecoveryState.idle();
       return;
     }
-    if (pending.customerId != customerId) {
-      await _pendingStore.clear();
-      state = const CheckoutRecoveryState.idle();
+    if (record.hasCompletedAnchor) {
+      await _loadCompletedAnchor(
+        customerId: customerId,
+        orderNumber: record.completedOrderNumber!,
+      );
       return;
     }
-    await pollStatus(manual: true);
+    if (record.hasUnresolvedKey) {
+      await pollStatus(manual: true);
+      return;
+    }
+    state = const CheckoutRecoveryState.idle();
+  }
+
+  Future<void> _loadCompletedAnchor({
+    required int customerId,
+    required String orderNumber,
+  }) async {
+    final operation = ++_epoch;
+    _stopPolling();
+    state = CheckoutRecoveryState(
+      phase: CheckoutRecoveryPhase.checking,
+      pollCount: state.pollCount,
+    );
+    try {
+      final result = await _repository.fetchOrder(orderNumber);
+      if (operation != _epoch || _disposed || !ref.mounted) {
+        return;
+      }
+      if (ref.read(purchaseCustomerIdProvider) != customerId) {
+        return;
+      }
+      ref.read(purchaseDraftControllerProvider.notifier).clear();
+      // Keep completed anchor until explicit acknowledgement.
+      state = CheckoutRecoveryState(
+        phase: CheckoutRecoveryPhase.completed,
+        receipt: result.order,
+      );
+    } on ApiException catch (error) {
+      if (error.kind == ApiErrorKind.cancelled || operation != _epoch) {
+        return;
+      }
+      if (await _applyAuthoritativeRejection(error)) {
+        state = const CheckoutRecoveryState.idle();
+        return;
+      }
+      if (error.kind == ApiErrorKind.notFound ||
+          error.code == 'order_not_found') {
+        await _pendingStore.clearForCustomer(customerId);
+        state = const CheckoutRecoveryState(
+          phase: CheckoutRecoveryPhase.notFound,
+        );
+        return;
+      }
+      // Offline / 5xx retain the anchor for retry.
+      state = CheckoutRecoveryState(
+        phase: CheckoutRecoveryPhase.error,
+        error: error,
+      );
+    }
   }
 
   Future<void> pollStatus({bool manual = false}) async {
@@ -780,11 +985,20 @@ class CheckoutRecoveryController extends Notifier<CheckoutRecoveryState> {
       state = const CheckoutRecoveryState.idle();
       return;
     }
-    final pending = await _pendingStore.read();
-    if (pending == null || pending.customerId != customerId) {
-      if (pending != null && pending.customerId != customerId) {
-        await _pendingStore.clear();
-      }
+    final record = await _pendingStore.readForCustomer(customerId);
+    if (record == null) {
+      _stopPolling();
+      state = const CheckoutRecoveryState.idle();
+      return;
+    }
+    if (record.hasCompletedAnchor) {
+      await _loadCompletedAnchor(
+        customerId: customerId,
+        orderNumber: record.completedOrderNumber!,
+      );
+      return;
+    }
+    if (!record.hasUnresolvedKey) {
       _stopPolling();
       state = const CheckoutRecoveryState.idle();
       return;
@@ -803,19 +1017,17 @@ class CheckoutRecoveryController extends Notifier<CheckoutRecoveryState> {
 
     try {
       final status = await _repository.checkoutStatus(
-        idempotencyKey: pending.idempotencyKey,
+        idempotencyKey: record.idempotencyKey!,
         cancelToken: cancelToken,
       );
       if (operation != _epoch || _disposed || !ref.mounted) {
-        return;
-      }
-      if (ref.read(purchaseCustomerIdProvider) != customerId) {
         return;
       }
       await _applyStatus(
         status,
         pollCount: nextPollCount,
         customerId: customerId,
+        operation: operation,
       );
     } on ApiException catch (error) {
       if (error.kind == ApiErrorKind.cancelled || operation != _epoch) {
@@ -824,6 +1036,9 @@ class CheckoutRecoveryController extends Notifier<CheckoutRecoveryState> {
       if (await _applyAuthoritativeRejection(error)) {
         _stopPolling();
         state = const CheckoutRecoveryState.idle();
+        return;
+      }
+      if (ref.read(purchaseCustomerIdProvider) != customerId) {
         return;
       }
       if (error.code == 'checkout_attempt_not_found' ||
@@ -866,26 +1081,29 @@ class CheckoutRecoveryController extends Notifier<CheckoutRecoveryState> {
     CheckoutStatus status, {
     required int pollCount,
     required int customerId,
+    required int operation,
   }) async {
     switch (status.state) {
       case CheckoutStatusState.completed:
         final order = status.order;
         if (order == null) {
-          state = const CheckoutRecoveryState(
-            phase: CheckoutRecoveryPhase.error,
-          );
+          if (ref.read(purchaseCustomerIdProvider) == customerId) {
+            state = const CheckoutRecoveryState(
+              phase: CheckoutRecoveryPhase.error,
+            );
+          }
           return;
         }
-        await _pendingStore.clearForCustomer(customerId);
-        _stopPolling();
-        ref.read(purchaseDraftControllerProvider.notifier).clear();
-        unawaited(ref.read(walletSummaryControllerProvider.notifier).refresh());
-        state = CheckoutRecoveryState(
-          phase: CheckoutRecoveryPhase.completed,
-          receipt: order,
+        await _finalizeCompletedRecovery(
+          order: order,
+          customerId: customerId,
+          operation: operation,
           pollCount: pollCount,
         );
       case CheckoutStatusState.failed:
+        if (ref.read(purchaseCustomerIdProvider) != customerId) {
+          return;
+        }
         await _pendingStore.clearForCustomer(customerId);
         _stopPolling();
         state = CheckoutRecoveryState(
@@ -897,6 +1115,9 @@ class CheckoutRecoveryController extends Notifier<CheckoutRecoveryState> {
           pollCount: pollCount,
         );
       case CheckoutStatusState.processing:
+        if (ref.read(purchaseCustomerIdProvider) != customerId) {
+          return;
+        }
         state = CheckoutRecoveryState(
           phase: CheckoutRecoveryPhase.processing,
           retryAfterSeconds: status.retryAfterSeconds,
@@ -909,6 +1130,35 @@ class CheckoutRecoveryController extends Notifier<CheckoutRecoveryState> {
           );
         }
     }
+  }
+
+  Future<void> _finalizeCompletedRecovery({
+    required PurchaseReceipt order,
+    required int customerId,
+    required int operation,
+    required int pollCount,
+  }) async {
+    await _pendingStore.markCompleted(
+      customerId: customerId,
+      orderNumber: order.orderNumber,
+    );
+
+    final stillSameOperation = operation == _epoch && !_disposed;
+    final activeCustomer = ref.read(purchaseCustomerIdProvider);
+    if (!stillSameOperation || activeCustomer != customerId) {
+      await _pendingStore.clearPendingKey(customerId);
+      return;
+    }
+
+    _stopPolling();
+    ref.read(purchaseDraftControllerProvider.notifier).clear();
+    unawaited(ref.read(walletSummaryControllerProvider.notifier).refresh());
+    state = CheckoutRecoveryState(
+      phase: CheckoutRecoveryPhase.completed,
+      receipt: order,
+      pollCount: pollCount,
+    );
+    await _pendingStore.clearPendingKey(customerId);
   }
 
   void _schedulePoll({required int seconds, required int pollCount}) {
@@ -931,9 +1181,23 @@ class CheckoutRecoveryController extends Notifier<CheckoutRecoveryState> {
     _cancelToken = null;
   }
 
+  /// Clears in-memory recovery UI without deleting durable recovery records.
   void acknowledgeTerminal() {
     _stopPolling();
     state = const CheckoutRecoveryState.idle();
+  }
+
+  /// Explicit receipt Done/Home acknowledgement. Clears this customer's anchor.
+  Future<void> acknowledgeCompletedReceipt() async {
+    final customerId = ref.read(purchaseCustomerIdProvider);
+    if (customerId != null) {
+      await _pendingStore.clearForCustomer(customerId);
+    }
+    _stopPolling();
+    state = const CheckoutRecoveryState.idle();
+    ref
+        .read(checkoutReviewControllerProvider.notifier)
+        .resetAfterAcknowledgement();
   }
 
   Future<bool> _applyAuthoritativeRejection(ApiException error) {
@@ -966,6 +1230,8 @@ class OrderReceiptController extends Notifier<OrderReceiptState> {
   final String orderNumber;
 
   PurchaseRepository get _repository => ref.read(purchaseRepositoryProvider);
+  PendingCheckoutStore get _pendingStore =>
+      ref.read(pendingCheckoutStoreProvider);
   int _epoch = 0;
   CancelToken? _cancelToken;
 
@@ -1019,6 +1285,9 @@ class OrderReceiptController extends Notifier<OrderReceiptState> {
       if (operation != _epoch) {
         return;
       }
+      if (ref.read(purchaseCustomerIdProvider) != customerId) {
+        return;
+      }
       state = OrderReceiptState(phase: OrderReceiptPhase.ready, result: result);
     } on ApiException catch (error) {
       if (error.kind == ApiErrorKind.cancelled || operation != _epoch) {
@@ -1030,16 +1299,30 @@ class OrderReceiptController extends Notifier<OrderReceiptState> {
         state = const OrderReceiptState.idle();
         return;
       }
+      if (ref.read(purchaseCustomerIdProvider) != customerId) {
+        return;
+      }
       if (error.kind == ApiErrorKind.notFound ||
           error.code == 'order_not_found') {
+        final record = await _pendingStore.readForCustomer(customerId);
+        if (record?.completedOrderNumber == orderNumber) {
+          await _pendingStore.clearForCustomer(customerId);
+        }
         state = OrderReceiptState(
           phase: OrderReceiptPhase.notFound,
           error: error,
         );
         return;
       }
+      // Offline / 5xx retain any completed anchor.
       state = OrderReceiptState(phase: OrderReceiptPhase.error, error: error);
     }
+  }
+
+  Future<void> acknowledgeAndLeave() {
+    return ref
+        .read(checkoutRecoveryControllerProvider.notifier)
+        .acknowledgeCompletedReceipt();
   }
 }
 
