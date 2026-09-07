@@ -335,14 +335,11 @@ void main() {
     expect(record?.hasCompletedAnchor, isTrue);
     expect(record?.hasUnresolvedKey, isFalse);
 
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('receipt-done')),
-      300,
-      scrollable: find.descendant(
-        of: find.byKey(const Key('order-receipt')),
-        matching: find.byType(Scrollable),
-      ),
+    await tester.drag(
+      find.byKey(const Key('order-receipt')),
+      const Offset(0, -500),
     );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('receipt-done')));
     await tester.pumpAndSettle();
     expect(await pending.readForCustomer(sampleUser.id), isNull);
