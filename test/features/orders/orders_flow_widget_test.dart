@@ -1,21 +1,23 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:indirimgo_mobile/app.dart';
 import 'package:indirimgo_mobile/core/config/app_config.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
+import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
-import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
 import 'package:indirimgo_mobile/features/orders/domain/order_models.dart';
 import 'package:indirimgo_mobile/features/orders/domain/order_repository.dart';
+import 'package:indirimgo_mobile/features/orders/presentation/order_controllers.dart';
+import 'package:indirimgo_mobile/features/orders/presentation/orders_list_screen.dart';
 import 'package:indirimgo_mobile/features/purchase/domain/purchase_repository.dart';
-import 'package:indirimgo_mobile/features/purchase/presentation/purchase_controllers.dart';
 import 'package:indirimgo_mobile/features/wallet/domain/wallet_repository.dart';
 
 import '../../support/fake_catalog_repository.dart';
@@ -96,9 +98,7 @@ void main() {
     final completer = Completer<OrderListPage>();
     final loading = FakeOrderRepository()
       ..listHandler = (_, _) => completer.future;
-    var container = await _pumpAuthenticated(tester, loading, settle: false);
-    container.read(routerProvider).go(AppRoutes.orders);
-    await tester.pump();
+    await _pumpOrdersScreen(tester, loading);
     expect(find.byKey(const Key('orders-loading')), findsOneWidget);
     completer.complete(OrderListPage.fromJson(orderListPageJson(orders: [])));
     await tester.pumpAndSettle();
@@ -107,8 +107,7 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     final failed = FakeOrderRepository()
       ..listError = const ApiException(kind: ApiErrorKind.network);
-    container = await _pumpAuthenticated(tester, failed);
-    container.read(routerProvider).go(AppRoutes.orders);
+    await _pumpOrdersScreen(tester, failed);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('orders-error')), findsOneWidget);
     expect(find.textContaining('الخادم'), findsOneWidget);
@@ -135,11 +134,35 @@ void main() {
   });
 }
 
+Future<void> _pumpOrdersScreen(
+  WidgetTester tester,
+  FakeOrderRepository orders,
+) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        orderCustomerIdProvider.overrideWithValue(7),
+        orderRepositoryProvider.overrideWithValue(orders),
+      ],
+      child: const MaterialApp(
+        locale: Locale('ar'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: OrdersListScreen(),
+      ),
+    ),
+  );
+}
+
 Future<ProviderContainer> _pumpAuthenticated(
   WidgetTester tester,
-  FakeOrderRepository orders, {
-  bool settle = true,
-}) async {
+  FakeOrderRepository orders,
+) async {
   final storage = InMemoryTokenStorage(sampleStoredSession());
   final container = ProviderContainer(
     overrides: [
@@ -169,20 +192,6 @@ Future<ProviderContainer> _pumpAuthenticated(
       child: const IndirimGoApp(),
     ),
   );
-  if (settle) {
-    await tester.pumpAndSettle();
-  } else {
-    await tester.pump();
-    for (var i = 0; i < 40; i++) {
-      await tester.pump(const Duration(milliseconds: 10));
-      if (container.read(authControllerProvider).phase ==
-              AuthPhase.authenticated &&
-          container.read(checkoutRecoveryControllerProvider).phase ==
-              CheckoutRecoveryPhase.idle) {
-        break;
-      }
-    }
-    await tester.pump();
-  }
+  await tester.pumpAndSettle();
   return container;
 }
