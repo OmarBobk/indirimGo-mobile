@@ -602,4 +602,162 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderNotFound => 'Order not found.';
+
+  @override
+  String get ordersTitle => 'Orders';
+
+  @override
+  String get ordersLoading => 'Loading orders';
+
+  @override
+  String get ordersUnavailableTitle => 'Orders unavailable';
+
+  @override
+  String get ordersEmptyTitle => 'No orders yet';
+
+  @override
+  String get ordersEmptyBody => 'Your completed purchases will appear here.';
+
+  @override
+  String get loadMoreOrders => 'Load more orders';
+
+  @override
+  String get ordersLoadingMore => 'Loading more orders';
+
+  @override
+  String get refreshingOrders => 'Refreshing orders';
+
+  @override
+  String get orderTitleFallback => 'Order';
+
+  @override
+  String orderCardSemantics(
+    String title,
+    String orderNumber,
+    String date,
+    String total,
+    String state,
+    int itemCount,
+  ) {
+    return '$title, order $orderNumber, created $date, total $total, status $state, $itemCount items';
+  }
+
+  @override
+  String orderCreatedLabel(String date) {
+    return 'Created: $date';
+  }
+
+  @override
+  String orderPaidLabel(String date) {
+    return 'Paid: $date';
+  }
+
+  @override
+  String customerStateLabel(String state) {
+    return 'Status: $state';
+  }
+
+  @override
+  String orderItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get orderDetailTitle => 'Order detail';
+
+  @override
+  String get refreshOrderAction => 'Refresh order';
+
+  @override
+  String get loadingOrderDetail => 'Loading order detail';
+
+  @override
+  String get orderStatusRefreshing => 'Refreshing order status';
+
+  @override
+  String get orderPollingEnded =>
+      'Automatic updates paused. Refresh to check again.';
+
+  @override
+  String get orderNumberHeading => 'Order number';
+
+  @override
+  String get orderStatusSection => 'Status';
+
+  @override
+  String get paymentLabel => 'Payment';
+
+  @override
+  String get fulfillmentLabel => 'Fulfillment';
+
+  @override
+  String get fulfillmentSummaryTitle => 'Fulfillment summary';
+
+  @override
+  String get fulfillmentSummaryTotal => 'Total';
+
+  @override
+  String fulfillmentSummaryCount(String label, int count) {
+    return '$label: $count';
+  }
+
+  @override
+  String get paymentStatusPaid => 'Paid';
+
+  @override
+  String get paymentStatusPending => 'Payment pending';
+
+  @override
+  String get paymentStatusProcessing => 'Payment processing';
+
+  @override
+  String get paymentStatusFulfilled => 'Paid';
+
+  @override
+  String get paymentStatusFailed => 'Payment failed';
+
+  @override
+  String get paymentStatusRefunded => 'Refunded';
+
+  @override
+  String get paymentStatusCancelled => 'Payment cancelled';
+
+  @override
+  String get fulfillmentStatusPending => 'Pending';
+
+  @override
+  String get fulfillmentStatusQueued => 'Queued';
+
+  @override
+  String get fulfillmentStatusProcessing => 'Processing';
+
+  @override
+  String get fulfillmentStatusCompleted => 'Completed';
+
+  @override
+  String get fulfillmentStatusFailed => 'Failed';
+
+  @override
+  String get fulfillmentStatusCancelled => 'Cancelled';
+
+  @override
+  String get customerStateNeedsAttention => 'Needs attention';
+
+  @override
+  String get customerStateInProgress => 'In progress';
+
+  @override
+  String get customerStateDelivered => 'Delivered';
+
+  @override
+  String get customerStateRefunded => 'Refunded';
+
+  @override
+  String get statusOther => 'Other';
 }

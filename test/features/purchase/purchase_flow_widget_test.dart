@@ -11,12 +11,14 @@ import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
+import 'package:indirimgo_mobile/features/orders/domain/order_repository.dart';
 import 'package:indirimgo_mobile/features/purchase/domain/purchase_models.dart';
 import 'package:indirimgo_mobile/features/purchase/domain/purchase_repository.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/purchase_controllers.dart';
 import 'package:indirimgo_mobile/features/wallet/domain/wallet_repository.dart';
 
 import '../../support/fake_catalog_repository.dart';
+import '../../support/fake_order_repository.dart';
 import '../../support/fake_purchase_repository.dart';
 import '../../support/fake_wallet_repository.dart';
 import '../../support/fakes.dart';
@@ -333,6 +335,11 @@ void main() {
     expect(record?.hasCompletedAnchor, isTrue);
     expect(record?.hasUnresolvedKey, isFalse);
 
+    await tester.drag(
+      find.byKey(const Key('order-receipt')),
+      const Offset(0, -500),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('receipt-done')));
     await tester.pumpAndSettle();
     expect(await pending.readForCustomer(sampleUser.id), isNull);
@@ -381,6 +388,7 @@ Future<ProviderContainer> _pumpApp(
       ),
       authRepositoryProvider.overrideWithValue(auth),
       catalogRepositoryProvider.overrideWithValue(catalog),
+      orderRepositoryProvider.overrideWithValue(FakeOrderRepository()),
       purchaseRepositoryProvider.overrideWithValue(purchase),
       walletRepositoryProvider.overrideWithValue(FakeWalletRepository()),
     ],

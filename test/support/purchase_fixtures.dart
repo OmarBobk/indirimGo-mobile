@@ -64,14 +64,31 @@ Map<String, Object?> walletSummaryJson({
 Map<String, Object?> purchaseReceiptJson({
   String orderNumber = 'ORD-2026-000001',
   String totalAmount = '20.00',
+  String paymentStatus = 'paid',
+  String fulfillmentStatus = 'completed',
+  String customerState = 'delivered',
 }) {
   return {
     'order_number': orderNumber,
     'status': 'paid',
-    'payment_status': 'paid',
+    'payment_status': paymentStatus,
     'currency': 'USD',
     'total': moneyJson(amount: totalAmount, formatted: '\$$totalAmount'),
     'paid_at': '2026-08-01T13:01:00.000Z',
+    'created_at': '2026-08-01T13:00:00.000Z',
+    'fulfillment_status': fulfillmentStatus,
+    'customer_state': customerState,
+    'fulfillment_summary': {
+      'total': 2,
+      'queued': fulfillmentStatus == 'queued' ? 2 : 0,
+      'processing':
+          fulfillmentStatus == 'pending' || fulfillmentStatus == 'processing'
+          ? 2
+          : 0,
+      'completed': fulfillmentStatus == 'completed' ? 2 : 0,
+      'failed': fulfillmentStatus == 'failed' ? 2 : 0,
+      'cancelled': fulfillmentStatus == 'cancelled' ? 2 : 0,
+    },
     'items': [
       {
         'product_id': 901,

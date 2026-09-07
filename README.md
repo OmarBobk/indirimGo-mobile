@@ -1,7 +1,8 @@
 # İndirimGo Mobile
 
-Customer-only Android application for İndirimGo. Milestone **M3.2** adds the
-buy-now / single-line wallet purchasing flow on top of the M2.2 Commerce Shell.
+Customer-only Android application for İndirimGo. Milestone **M4.2** adds
+customer-owned order history and fulfillment status on top of the M3.2
+buy-now flow.
 
 ## Requirements
 
@@ -71,7 +72,8 @@ Authenticated routes:
 - `/app/packages/:id/buy` — buy-now form (quantity/custom amount + requirements)
 - `/app/checkout/review` — server quote review and wallet confirm
 - `/app/checkout/recovery` — unknown-result recovery / polling
-- `/app/orders/:orderNumber` — durable owned receipt
+- `/app/orders` — paginated owned order history
+- `/app/orders/:orderNumber` — owned order detail and receipt reopening
 - `/app/account` — account details, wallet available-to-spend, logout
 
 Consumed endpoints:
@@ -83,6 +85,7 @@ Consumed endpoints:
 - `POST /api/v1/checkout/quote`
 - `POST /api/v1/checkout` (requires `Idempotency-Key`)
 - `GET /api/v1/checkout/status` (requires `Idempotency-Key`)
+- `GET /api/v1/orders?page={page}&per_page=20`
 - `GET /api/v1/orders/{order_number}`
 
 Prices and totals are displayed from Laravel `display.formatted` only. Flutter
@@ -92,7 +95,7 @@ hides purchase CTAs and maps quote/checkout to `purchasing_unavailable`
 without ending the session.
 
 The authoritative contract is Laravel `docs/api/v1/openapi.yaml` on
-`origin/staging` (OpenAPI **1.2.0**, commit `d23f961`).
+`origin/staging` (API **1.3.0**, M4.1 commit `942f3de`).
 
 ## Localization and accessibility
 
@@ -124,15 +127,22 @@ Release builds still use the debug signing configuration so local
 `flutter run --release` works. Production signing must be configured before any
 distribution or publishing workflow. No Play upload or deploy step exists in CI.
 
-## M3.2 exclusions
+## M4.2 order behavior
 
-No multi-line cart, cart icon, server cart, wallet top-up, full order history,
-fulfillment tracking, refunds, notifications/realtime UI, client-side pricing,
-contract endpoints, registration, password reset, deep links, analytics, push,
-biometrics, Firebase, or deployment is part of this milestone.
+Order list and detail state is customer-scoped and memory-only. Pull-to-refresh
+retains the last safe response on connectivity/server failures. Unfinished
+detail screens poll at most eight times while foregrounded; disposal,
+backgrounding, logout, and customer changes cancel stale work. Receipt recovery
+anchors remain durable until the matching receipt's explicit Done/Home action.
+
+Search/filtering, refund/retry/cancel actions, cart, wallet top-up, push,
+Reverb, persistent order-body caching, client-side pricing, and deployment are
+excluded.
 
 See [`docs/architecture/m3.2-purchase-flow.md`](docs/architecture/m3.2-purchase-flow.md)
 for purchase architecture,
+[`docs/architecture/m4.2-orders-status.md`](docs/architecture/m4.2-orders-status.md)
+for order-history architecture,
 [`docs/architecture/m2.2-commerce-shell.md`](docs/architecture/m2.2-commerce-shell.md)
 for catalog foundations, and
 [`docs/architecture/m1.2-auth-foundation.md`](docs/architecture/m1.2-auth-foundation.md)

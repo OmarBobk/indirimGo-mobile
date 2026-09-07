@@ -250,5 +250,85 @@
   "checkoutInProgress": "This purchase is still processing.",
   "checkoutRetryRequired": "This purchase must be retried carefully. Start again if needed.",
   "checkoutFailed": "The purchase failed. No further action was taken.",
-  "orderNotFound": "Order not found."
+  "orderNotFound": "Order not found.",
+  "ordersTitle": "Orders",
+  "ordersLoading": "Loading orders",
+  "ordersUnavailableTitle": "Orders unavailable",
+  "ordersEmptyTitle": "No orders yet",
+  "ordersEmptyBody": "Your completed purchases will appear here.",
+  "loadMoreOrders": "Load more orders",
+  "ordersLoadingMore": "Loading more orders",
+  "refreshingOrders": "Refreshing orders",
+  "orderTitleFallback": "Order",
+  "orderCardSemantics": "{title}, order {orderNumber}, created {date}, total {total}, status {state}, {itemCount} items",
+  "@orderCardSemantics": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "orderNumber": {"type": "String"},
+      "date": {"type": "String"},
+      "total": {"type": "String"},
+      "state": {"type": "String"},
+      "itemCount": {"type": "int"}
+    }
+  },
+  "orderCreatedLabel": "Created: {date}",
+  "@orderCreatedLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "orderPaidLabel": "Paid: {date}",
+  "@orderPaidLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "customerStateLabel": "Status: {state}",
+  "@customerStateLabel": {
+    "placeholders": {
+      "state": {"type": "String"}
+    }
+  },
+  "orderItemCount": "{count, plural, =1 {1 item} other {{count} items}}",
+  "@orderItemCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "orderDetailTitle": "Order detail",
+  "refreshOrderAction": "Refresh order",
+  "loadingOrderDetail": "Loading order detail",
+  "orderStatusRefreshing": "Refreshing order status",
+  "orderPollingEnded": "Automatic updates paused. Refresh to check again.",
+  "orderNumberHeading": "Order number",
+  "orderStatusSection": "Status",
+  "paymentLabel": "Payment",
+  "fulfillmentLabel": "Fulfillment",
+  "fulfillmentSummaryTitle": "Fulfillment summary",
+  "fulfillmentSummaryTotal": "Total",
+  "fulfillmentSummaryCount": "{label}: {count}",
+  "@fulfillmentSummaryCount": {
+    "placeholders": {
+      "label": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "paymentStatusPaid": "Paid",
+  "paymentStatusPending": "Payment pending",
+  "paymentStatusProcessing": "Payment processing",
+  "paymentStatusFulfilled": "Paid",
+  "paymentStatusFailed": "Payment failed",
+  "paymentStatusRefunded": "Refunded",
+  "paymentStatusCancelled": "Payment cancelled",
+  "fulfillmentStatusPending": "Pending",
+  "fulfillmentStatusQueued": "Queued",
+  "fulfillmentStatusProcessing": "Processing",
+  "fulfillmentStatusCompleted": "Completed",
+  "fulfillmentStatusFailed": "Failed",
+  "fulfillmentStatusCancelled": "Cancelled",
+  "customerStateNeedsAttention": "Needs attention",
+  "customerStateInProgress": "In progress",
+  "customerStateDelivered": "Delivered",
+  "customerStateRefunded": "Refunded",
+  "statusOther": "Other"
 }

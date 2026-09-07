@@ -1123,6 +1123,277 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الطلب غير موجود.'**
   String get orderNotFound;
+
+  /// No description provided for @ordersTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات'**
+  String get ordersTitle;
+
+  /// No description provided for @ordersLoading.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحميل الطلبات'**
+  String get ordersLoading;
+
+  /// No description provided for @ordersUnavailableTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل الطلبات'**
+  String get ordersUnavailableTitle;
+
+  /// No description provided for @ordersEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد طلبات بعد'**
+  String get ordersEmptyTitle;
+
+  /// No description provided for @ordersEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستظهر مشترياتك المكتملة هنا.'**
+  String get ordersEmptyBody;
+
+  /// No description provided for @loadMoreOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحميل المزيد من الطلبات'**
+  String get loadMoreOrders;
+
+  /// No description provided for @ordersLoadingMore.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحميل المزيد من الطلبات'**
+  String get ordersLoadingMore;
+
+  /// No description provided for @refreshingOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحديث الطلبات'**
+  String get refreshingOrders;
+
+  /// No description provided for @orderTitleFallback.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب'**
+  String get orderTitleFallback;
+
+  /// No description provided for @orderCardSemantics.
+  ///
+  /// In ar, this message translates to:
+  /// **'{title}، الطلب {orderNumber}، أُنشئ في {date}، الإجمالي {total}، الحالة {state}، عدد العناصر {itemCount}'**
+  String orderCardSemantics(
+    String title,
+    String orderNumber,
+    String date,
+    String total,
+    String state,
+    int itemCount,
+  );
+
+  /// No description provided for @orderCreatedLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ الإنشاء: {date}'**
+  String orderCreatedLabel(String date);
+
+  /// No description provided for @orderPaidLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ الدفع: {date}'**
+  String orderPaidLabel(String date);
+
+  /// No description provided for @customerStateLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة: {state}'**
+  String customerStateLabel(String state);
+
+  /// No description provided for @orderItemCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, zero {لا عناصر} one {عنصر واحد} two {عنصران} few {{count} عناصر} many {{count} عنصراً} other {{count} عنصر}}'**
+  String orderItemCount(int count);
+
+  /// No description provided for @orderDetailTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل الطلب'**
+  String get orderDetailTitle;
+
+  /// No description provided for @refreshOrderAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث الطلب'**
+  String get refreshOrderAction;
+
+  /// No description provided for @loadingOrderDetail.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحميل تفاصيل الطلب'**
+  String get loadingOrderDetail;
+
+  /// No description provided for @orderStatusRefreshing.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحديث حالة الطلب'**
+  String get orderStatusRefreshing;
+
+  /// No description provided for @orderPollingEnded.
+  ///
+  /// In ar, this message translates to:
+  /// **'توقفت التحديثات التلقائية. حدّث للتحقق مجدداً.'**
+  String get orderPollingEnded;
+
+  /// No description provided for @orderNumberHeading.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الطلب'**
+  String get orderNumberHeading;
+
+  /// No description provided for @orderStatusSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة'**
+  String get orderStatusSection;
+
+  /// No description provided for @paymentLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفع'**
+  String get paymentLabel;
+
+  /// No description provided for @fulfillmentLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'التنفيذ'**
+  String get fulfillmentLabel;
+
+  /// No description provided for @fulfillmentSummaryTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملخص التنفيذ'**
+  String get fulfillmentSummaryTitle;
+
+  /// No description provided for @fulfillmentSummaryTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإجمالي'**
+  String get fulfillmentSummaryTotal;
+
+  /// No description provided for @fulfillmentSummaryCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{label}: {count}'**
+  String fulfillmentSummaryCount(String label, int count);
+
+  /// No description provided for @paymentStatusPaid.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدفوع'**
+  String get paymentStatusPaid;
+
+  /// No description provided for @paymentStatusPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار الدفع'**
+  String get paymentStatusPending;
+
+  /// No description provided for @paymentStatusProcessing.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفع قيد المعالجة'**
+  String get paymentStatusProcessing;
+
+  /// No description provided for @paymentStatusFulfilled.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدفوع'**
+  String get paymentStatusFulfilled;
+
+  /// No description provided for @paymentStatusFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'فشل الدفع'**
+  String get paymentStatusFailed;
+
+  /// No description provided for @paymentStatusRefunded.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسترد'**
+  String get paymentStatusRefunded;
+
+  /// No description provided for @paymentStatusCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغي الدفع'**
+  String get paymentStatusCancelled;
+
+  /// No description provided for @fulfillmentStatusPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد الانتظار'**
+  String get fulfillmentStatusPending;
+
+  /// No description provided for @fulfillmentStatusQueued.
+  ///
+  /// In ar, this message translates to:
+  /// **'في قائمة الانتظار'**
+  String get fulfillmentStatusQueued;
+
+  /// No description provided for @fulfillmentStatusProcessing.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد التنفيذ'**
+  String get fulfillmentStatusProcessing;
+
+  /// No description provided for @fulfillmentStatusCompleted.
+  ///
+  /// In ar, this message translates to:
+  /// **'مكتمل'**
+  String get fulfillmentStatusCompleted;
+
+  /// No description provided for @fulfillmentStatusFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'فشل'**
+  String get fulfillmentStatusFailed;
+
+  /// No description provided for @fulfillmentStatusCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملغى'**
+  String get fulfillmentStatusCancelled;
+
+  /// No description provided for @customerStateNeedsAttention.
+  ///
+  /// In ar, this message translates to:
+  /// **'يتطلب انتباهاً'**
+  String get customerStateNeedsAttention;
+
+  /// No description provided for @customerStateInProgress.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد التنفيذ'**
+  String get customerStateInProgress;
+
+  /// No description provided for @customerStateDelivered.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التسليم'**
+  String get customerStateDelivered;
+
+  /// No description provided for @customerStateRefunded.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسترد'**
+  String get customerStateRefunded;
+
+  /// No description provided for @statusOther.
+  ///
+  /// In ar, this message translates to:
+  /// **'أخرى'**
+  String get statusOther;
 }
 
 class _AppLocalizationsDelegate
