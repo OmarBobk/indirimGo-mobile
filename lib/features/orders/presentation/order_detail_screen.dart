@@ -10,7 +10,7 @@ import 'package:indirimgo_mobile/features/orders/presentation/order_controllers.
 import 'package:indirimgo_mobile/features/orders/presentation/order_status_labels.dart';
 import 'package:indirimgo_mobile/features/purchase/domain/purchase_models.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/widgets/purchase_widgets.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 class OrderDetailScreen extends ConsumerStatefulWidget {
   const OrderDetailScreen({super.key, required this.orderNumber});

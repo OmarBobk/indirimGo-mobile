@@ -248,12 +248,9 @@ void main() {
     () async {
       final orders = FakeOrderRepository();
       final env = await createContainer(orders);
-      await env.pending.write(
-        CheckoutRecoveryRecord(
-          customerId: sampleUser.id,
-          completedOrderNumber: 'ORD-2026-RECENT',
-          createdAt: DateTime.utc(2026, 8, 1),
-        ),
+      await env.pending.markCompleted(
+        customerId: sampleUser.id,
+        orderNumber: 'ORD-2026-RECENT',
       );
       final subscription = env.container.listen(
         orderDetailControllerProvider('ORD-2026-000001'),

@@ -1,6 +1,5 @@
 import 'package:indirimgo_mobile/features/orders/domain/order_models.dart';
 
-import 'catalog_fixtures.dart';
 import 'purchase_fixtures.dart';
 
 Map<String, Object?> orderListItemJson({
