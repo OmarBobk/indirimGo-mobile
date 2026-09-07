@@ -15,6 +15,7 @@ import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart
 import 'package:indirimgo_mobile/features/orders/domain/order_models.dart';
 import 'package:indirimgo_mobile/features/orders/domain/order_repository.dart';
 import 'package:indirimgo_mobile/features/purchase/domain/purchase_repository.dart';
+import 'package:indirimgo_mobile/features/purchase/presentation/purchase_controllers.dart';
 import 'package:indirimgo_mobile/features/wallet/domain/wallet_repository.dart';
 
 import '../../support/fake_catalog_repository.dart';
@@ -175,7 +176,9 @@ Future<ProviderContainer> _pumpAuthenticated(
     for (var i = 0; i < 40; i++) {
       await tester.pump(const Duration(milliseconds: 10));
       if (container.read(authControllerProvider).phase ==
-          AuthPhase.authenticated) {
+              AuthPhase.authenticated &&
+          container.read(checkoutRecoveryControllerProvider).phase ==
+              CheckoutRecoveryPhase.idle) {
         break;
       }
     }
