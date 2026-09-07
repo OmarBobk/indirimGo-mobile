@@ -10,6 +10,7 @@ import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
+import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
 import 'package:indirimgo_mobile/features/orders/domain/order_models.dart';
 import 'package:indirimgo_mobile/features/orders/domain/order_repository.dart';
@@ -41,7 +42,6 @@ void main() {
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
     final container = await _pumpAuthenticated(tester, FakeOrderRepository());
     container.read(routerProvider).go(AppRoutes.orders);
     await tester.pumpAndSettle();
@@ -68,6 +68,7 @@ void main() {
           .label,
       contains('ORD-2026-000001'),
     );
+    semantics.dispose();
   });
 
   testWidgets('English history navigates to localized detail', (tester) async {
@@ -171,7 +172,13 @@ Future<ProviderContainer> _pumpAuthenticated(
     await tester.pumpAndSettle();
   } else {
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 20));
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 10));
+      if (container.read(authControllerProvider).phase ==
+          AuthPhase.authenticated) {
+        break;
+      }
+    }
   }
   return container;
 }
