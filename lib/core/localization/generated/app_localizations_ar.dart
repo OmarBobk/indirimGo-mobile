@@ -591,4 +591,166 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get orderNotFound => 'الطلب غير موجود.';
+
+  @override
+  String get ordersTitle => 'الطلبات';
+
+  @override
+  String get ordersLoading => 'جارٍ تحميل الطلبات';
+
+  @override
+  String get ordersUnavailableTitle => 'تعذّر تحميل الطلبات';
+
+  @override
+  String get ordersEmptyTitle => 'لا توجد طلبات بعد';
+
+  @override
+  String get ordersEmptyBody => 'ستظهر مشترياتك المكتملة هنا.';
+
+  @override
+  String get loadMoreOrders => 'تحميل المزيد من الطلبات';
+
+  @override
+  String get ordersLoadingMore => 'جارٍ تحميل المزيد من الطلبات';
+
+  @override
+  String get refreshingOrders => 'جارٍ تحديث الطلبات';
+
+  @override
+  String get orderTitleFallback => 'طلب';
+
+  @override
+  String orderCardSemantics(
+    String title,
+    String orderNumber,
+    String date,
+    String total,
+    String state,
+    int itemCount,
+  ) {
+    return '$title، الطلب $orderNumber، أُنشئ في $date، الإجمالي $total، الحالة $state، عدد العناصر $itemCount';
+  }
+
+  @override
+  String orderCreatedLabel(String date) {
+    return 'تاريخ الإنشاء: $date';
+  }
+
+  @override
+  String orderPaidLabel(String date) {
+    return 'تاريخ الدفع: $date';
+  }
+
+  @override
+  String customerStateLabel(String state) {
+    return 'الحالة: $state';
+  }
+
+  @override
+  String orderItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count عنصر',
+      many: '$count عنصراً',
+      few: '$count عناصر',
+      two: 'عنصران',
+      one: 'عنصر واحد',
+      zero: 'لا عناصر',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get orderDetailTitle => 'تفاصيل الطلب';
+
+  @override
+  String get refreshOrderAction => 'تحديث الطلب';
+
+  @override
+  String get loadingOrderDetail => 'جارٍ تحميل تفاصيل الطلب';
+
+  @override
+  String get orderStatusRefreshing => 'جارٍ تحديث حالة الطلب';
+
+  @override
+  String get orderPollingEnded =>
+      'توقفت التحديثات التلقائية. حدّث للتحقق مجدداً.';
+
+  @override
+  String get orderNumberHeading => 'رقم الطلب';
+
+  @override
+  String get orderStatusSection => 'الحالة';
+
+  @override
+  String get paymentLabel => 'الدفع';
+
+  @override
+  String get fulfillmentLabel => 'التنفيذ';
+
+  @override
+  String get fulfillmentSummaryTitle => 'ملخص التنفيذ';
+
+  @override
+  String get fulfillmentSummaryTotal => 'الإجمالي';
+
+  @override
+  String fulfillmentSummaryCount(String label, int count) {
+    return '$label: $count';
+  }
+
+  @override
+  String get paymentStatusPaid => 'مدفوع';
+
+  @override
+  String get paymentStatusPending => 'بانتظار الدفع';
+
+  @override
+  String get paymentStatusProcessing => 'الدفع قيد المعالجة';
+
+  @override
+  String get paymentStatusFulfilled => 'مدفوع';
+
+  @override
+  String get paymentStatusFailed => 'فشل الدفع';
+
+  @override
+  String get paymentStatusRefunded => 'مسترد';
+
+  @override
+  String get paymentStatusCancelled => 'أُلغي الدفع';
+
+  @override
+  String get fulfillmentStatusPending => 'قيد الانتظار';
+
+  @override
+  String get fulfillmentStatusQueued => 'في قائمة الانتظار';
+
+  @override
+  String get fulfillmentStatusProcessing => 'قيد التنفيذ';
+
+  @override
+  String get fulfillmentStatusCompleted => 'مكتمل';
+
+  @override
+  String get fulfillmentStatusFailed => 'فشل';
+
+  @override
+  String get fulfillmentStatusCancelled => 'ملغى';
+
+  @override
+  String get customerStateNeedsAttention => 'يتطلب انتباهاً';
+
+  @override
+  String get customerStateInProgress => 'قيد التنفيذ';
+
+  @override
+  String get customerStateDelivered => 'تم التسليم';
+
+  @override
+  String get customerStateRefunded => 'مسترد';
+
+  @override
+  String get statusOther => 'أخرى';
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
+import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
@@ -44,6 +46,16 @@ class AccountScreen extends ConsumerWidget {
                           const SizedBox(height: AppSpacing.xs),
                           SelectableText(l10n.emailValue(user.email)),
                           const SizedBox(height: AppSpacing.lg),
+                          ListTile(
+                            key: const Key('account-orders'),
+                            contentPadding: EdgeInsets.zero,
+                            minTileHeight: 48,
+                            leading: const Icon(Icons.receipt_long_outlined),
+                            title: Text(l10n.ordersTitle),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => context.push(AppRoutes.orders),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
                           const WalletSummarySection(),
                           if (auth.error != null) ...[
                             const SizedBox(height: AppSpacing.md),

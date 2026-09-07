@@ -6,6 +6,7 @@
 library;
 
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
+import 'package:indirimgo_mobile/features/orders/domain/order_models.dart';
 
 export 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart'
     show
@@ -254,6 +255,10 @@ class PurchaseReceipt {
     required this.currency,
     required this.total,
     required this.paidAt,
+    required this.createdAt,
+    required this.fulfillmentStatus,
+    required this.customerState,
+    required this.fulfillmentSummary,
     required this.items,
   });
 
@@ -265,20 +270,21 @@ class PurchaseReceipt {
       'currency',
       'total',
       'paid_at',
+      'created_at',
+      'fulfillment_status',
+      'customer_state',
+      'fulfillment_summary',
       'items',
     });
     final orderNumber = _requiredString(json, 'order_number');
-    if (!_orderNumberPattern.hasMatch(orderNumber)) {
+    if (!orderNumberPattern.hasMatch(orderNumber)) {
       throw const FormatException('order_number format is invalid.');
     }
     final currency = _requiredString(json, 'currency');
     if (currency != 'USD') {
       throw const FormatException('Receipt currency must be USD.');
     }
-    final paymentStatus = _requiredString(json, 'payment_status');
-    if (!_paymentStatuses.contains(paymentStatus)) {
-      throw FormatException('Unsupported payment_status: $paymentStatus');
-    }
+    final paymentStatus = parsePaymentStatus(json['payment_status']);
     final itemsRaw = json['items'];
     if (itemsRaw is! List) {
       throw const FormatException('items must be an array.');
@@ -290,6 +296,12 @@ class PurchaseReceipt {
       currency: currency,
       total: Money.fromJson(_requiredMap(json, 'total')),
       paidAt: _nullableDateTime(json, 'paid_at'),
+      createdAt: _requiredDateTime(json, 'created_at'),
+      fulfillmentStatus: parseFulfillmentStatus(json['fulfillment_status']),
+      customerState: parseCustomerOrderState(json['customer_state']),
+      fulfillmentSummary: FulfillmentSummary.fromJson(
+        _requiredMap(json, 'fulfillment_summary'),
+      ),
       items: [
         for (final item in itemsRaw)
           PurchaseReceiptItem.fromJson(_asObjectMap(item, 'items item')),
@@ -303,6 +315,10 @@ class PurchaseReceipt {
   final String currency;
   final Money total;
   final DateTime? paidAt;
+  final DateTime createdAt;
+  final String fulfillmentStatus;
+  final String customerState;
+  final FulfillmentSummary fulfillmentSummary;
   final List<PurchaseReceiptItem> items;
 }
 
@@ -452,17 +468,6 @@ class PurchaseDraft {
       'PurchaseDraft(customerId: $customerId, packageId: $packageId, '
       'productId: ${product.id}, hasQuote: ${quote != null})';
 }
-
-final _orderNumberPattern = RegExp(r'^ORD-[A-Za-z0-9\-]+$');
-const _paymentStatuses = {
-  'paid',
-  'pending_payment',
-  'processing',
-  'fulfilled',
-  'failed',
-  'refunded',
-  'cancelled',
-};
 
 void _requireKeys(Map<String, Object?> json, Set<String> keys) {
   for (final key in keys) {

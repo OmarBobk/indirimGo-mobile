@@ -9,9 +9,10 @@ import 'package:indirimgo_mobile/features/catalog/presentation/account/account_s
 import 'package:indirimgo_mobile/features/catalog/presentation/home/catalog_home_screen.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/package_detail/package_detail_screen.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/packages/package_list_screen.dart';
+import 'package:indirimgo_mobile/features/orders/presentation/order_detail_screen.dart';
+import 'package:indirimgo_mobile/features/orders/presentation/orders_list_screen.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/buy/purchase_form_screen.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/purchase_controllers.dart';
-import 'package:indirimgo_mobile/features/purchase/presentation/receipt/order_receipt_screen.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/recovery/checkout_recovery_screen.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/review/checkout_review_screen.dart';
 
@@ -22,6 +23,7 @@ abstract final class AppRoutes {
   static const shell = '/app';
   static const packages = '/app/packages';
   static const account = '/app/account';
+  static const orders = '/app/orders';
   static const checkoutReview = '/app/checkout/review';
   static const checkoutRecovery = '/app/checkout/recovery';
 
@@ -129,11 +131,17 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const CheckoutRecoveryScreen(),
           ),
           GoRoute(
-            path: 'orders/:orderNumber',
-            builder: (context, state) {
-              final orderNumber = state.pathParameters['orderNumber'] ?? '';
-              return OrderReceiptScreen(orderNumber: orderNumber);
-            },
+            path: 'orders',
+            builder: (context, state) => const OrdersListScreen(),
+            routes: [
+              GoRoute(
+                path: ':orderNumber',
+                builder: (context, state) {
+                  final orderNumber = state.pathParameters['orderNumber'] ?? '';
+                  return OrderDetailScreen(orderNumber: orderNumber);
+                },
+              ),
+            ],
           ),
           GoRoute(
             path: 'packages',
