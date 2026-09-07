@@ -182,6 +182,7 @@ Future<ProviderContainer> _pumpAuthenticated(
         break;
       }
     }
+    await tester.pump();
   }
   return container;
 }
