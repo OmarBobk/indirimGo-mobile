@@ -98,4 +98,20 @@ void main() {
     order.remove('fulfillment_summary');
     expect(() => CheckoutResult.fromJson(json), throwsFormatException);
   });
+
+  test('list query omits empty q and all/other filters', () {
+    expect(const OrderListQuery().toQueryParameters(), {
+      'page': 1,
+      'per_page': 20,
+    });
+    expect(
+      const OrderListQuery(
+        q: 'ORD-1',
+        customerState: 'delivered',
+      ).toQueryParameters(),
+      {'page': 1, 'per_page': 20, 'q': 'ORD-1', 'customer_state': 'delivered'},
+    );
+    expect(supportedOrderCustomerStateFilters.contains('all'), isFalse);
+    expect(supportedOrderCustomerStateFilters.contains('other'), isFalse);
+  });
 }

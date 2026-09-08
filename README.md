@@ -1,8 +1,9 @@
 # İndirimGo Mobile
 
-Customer-only Android application for İndirimGo. Milestone **M4.2** adds
-customer-owned order history and fulfillment status on top of the M3.2
-buy-now flow.
+Customer-only Android application for İndirimGo. Milestone **M4.5.2** adds
+app-wide navigation, persistent language selection, Orders API 1.4.0 search
+and status presentation, and catalog image/layout work on top of the M4.2
+order-history slice.
 
 ## Requirements
 
@@ -64,17 +65,22 @@ Keystore state.
 
 ## Commerce shell and purchase flow
 
-Authenticated routes:
+Authenticated destinations:
 
-- `/app` — catalog home (frequently ordered, featured, categories)
-- `/app/packages` — browse/search with `category_id` and `q`
-- `/app/packages/:id` — package detail with fixed/custom product options
-- `/app/packages/:id/buy` — buy-now form (quantity/custom amount + requirements)
-- `/app/checkout/review` — server quote review and wallet confirm
-- `/app/checkout/recovery` — unknown-result recovery / polling
-- `/app/orders` — paginated owned order history
-- `/app/orders/:orderNumber` — owned order detail and receipt reopening
-- `/app/account` — account details, wallet available-to-spend, logout
+- `/app` — Home
+- `/app/packages` — Packages (search/category)
+- `/app/packages/:id` — package detail (Packages remains selected)
+- `/app/packages/:id/buy` — buy-now form (navigation chrome hidden)
+- `/app/checkout/review` — server quote review and wallet confirm (outside the shell)
+- `/app/checkout/recovery` — unknown-result recovery / polling (outside the shell)
+- `/app/orders` — Orders (search + status filters)
+- `/app/orders/:orderNumber` — owned order detail (Orders remains selected)
+- `/app/account` — identity, language, wallet available-to-spend, logout
+
+A Material 3 `NavigationBar` (or `NavigationRail` from 840 logical pixels)
+preserves each destination’s navigation stack. Re-tapping a selected
+destination returns to that branch root. Android back pops the inner route,
+then returns to Home from a non-Home root.
 
 Consumed endpoints:
 
@@ -85,7 +91,7 @@ Consumed endpoints:
 - `POST /api/v1/checkout/quote`
 - `POST /api/v1/checkout` (requires `Idempotency-Key`)
 - `GET /api/v1/checkout/status` (requires `Idempotency-Key`)
-- `GET /api/v1/orders?page={page}&per_page=20`
+- `GET /api/v1/orders?page={page}&per_page=20&q={q}&customer_state={state}`
 - `GET /api/v1/orders/{order_number}`
 
 Prices and totals are displayed from Laravel `display.formatted` only. Flutter
@@ -95,17 +101,21 @@ hides purchase CTAs and maps quote/checkout to `purchasing_unavailable`
 without ending the session.
 
 The authoritative contract is Laravel `docs/api/v1/openapi.yaml` on
-`origin/staging` (API **1.3.0**, M4.1 commit `942f3de`).
+`origin/staging` (API **1.4.0**, including merged backend PR `#50`).
 
 ## Localization and accessibility
 
-Arabic and English use Flutter ARB localization. Arabic is the fallback when no
-supported preferred locale exists; a preference list such as Turkish then
-English selects English. Active locale is sent in `Accept-Language`. The UI
-supports RTL/LTR, light/dark themes with contrast-checked accents, semantic
-labels, keyboard traversal, large text, and minimum touch targets. Catalog and
-requirement labels remain exactly as returned by Laravel. Money text is always
-LTR.
+Arabic and English use Flutter ARB localization. A persisted
+`locale.preference` (`system`, `ar`, or `en`) is restored at startup and kept
+across logout. Device language uses the existing supported-locale resolver
+(Arabic fallback) and follows OS locale changes; explicit Arabic or English
+does not. Login, 2FA, and Account share the selector. Changing language updates
+direction, dates, validation, dialogs, navigation labels, and subsequent
+`Accept-Language` headers without reconstructing authentication, the router, or
+an in-flight checkout. Catalog and historical item names remain exactly as
+returned by Laravel. Money and `ORD-…` identifiers stay LTR. The UI supports
+light/dark themes, semantic labels, keyboard traversal, large text, and
+minimum 48×48 logical-pixel targets.
 
 ## Verify
 
@@ -127,22 +137,25 @@ Release builds still use the debug signing configuration so local
 `flutter run --release` works. Production signing must be configured before any
 distribution or publishing workflow. No Play upload or deploy step exists in CI.
 
-## M4.2 order behavior
+## M4.2 / M4.5.2 order and UX behavior
 
-Order list and detail state is customer-scoped and memory-only. Pull-to-refresh
-retains the last safe response on connectivity/server failures. Unfinished
-detail screens poll at most eight times while foregrounded; disposal,
-backgrounding, logout, and customer changes cancel stale work. Receipt recovery
-anchors remain durable until the matching receipt's explicit Done/Home action.
+M4.2 order list/detail, recovery, and fulfillment polling remain in force.
+M4.5.2 adds destination navigation, language preference, Orders search/filters
+from API 1.4.0, status badges, and contained catalog artwork.
 
-Search/filtering, refund/retry/cancel actions, cart, wallet top-up, push,
-Reverb, persistent order-body caching, client-side pricing, and deployment are
-excluded.
+Omar accepted the earlier M4.3 walkthrough after backend `#48` and mobile `#7`
+merged. This M4.5.2 UX slice is not claimed as accepted yet.
 
-See [`docs/architecture/m3.2-purchase-flow.md`](docs/architecture/m3.2-purchase-flow.md)
-for purchase architecture,
+Refund/retry/cancel actions, cart, wallet top-up, push, Reverb, persistent
+order-body caching, client-side pricing, Laravel/CDN/image-contract changes,
+and deployment are excluded.
+
+See [`docs/architecture/m4.5.2-ux-foundation.md`](docs/architecture/m4.5.2-ux-foundation.md)
+for navigation, language, Orders 1.4.0, images, and a local walkthrough,
 [`docs/architecture/m4.2-orders-status.md`](docs/architecture/m4.2-orders-status.md)
 for order-history architecture,
+[`docs/architecture/m3.2-purchase-flow.md`](docs/architecture/m3.2-purchase-flow.md)
+for purchase architecture,
 [`docs/architecture/m2.2-commerce-shell.md`](docs/architecture/m2.2-commerce-shell.md)
 for catalog foundations, and
 [`docs/architecture/m1.2-auth-foundation.md`](docs/architecture/m1.2-auth-foundation.md)

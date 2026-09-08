@@ -7,14 +7,18 @@ import 'package:indirimgo_mobile/app.dart';
 import 'package:indirimgo_mobile/core/config/app_config.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
+import 'package:indirimgo_mobile/core/storage/locale_preference_store.dart';
+import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_models.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
+import 'package:indirimgo_mobile/features/orders/domain/order_repository.dart';
 import 'package:indirimgo_mobile/features/purchase/domain/purchase_repository.dart';
 import 'package:indirimgo_mobile/features/wallet/domain/wallet_repository.dart';
 
 import 'support/fake_catalog_repository.dart';
+import 'support/fake_order_repository.dart';
 import 'support/fake_purchase_repository.dart';
 import 'support/fake_wallet_repository.dart';
 import 'support/fakes.dart';
@@ -50,8 +54,12 @@ void main() {
       TextDirection.rtl,
     );
 
+    await tester.enterText(find.byKey(const Key('username-field')), 'omar');
     await tester.tap(find.byKey(const Key('language-toggle')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('language-option-en')));
+    await tester.pumpAndSettle();
+    expect(find.text('omar'), findsOneWidget);
     final englishTitle = find.text('Welcome back');
     expect(englishTitle, findsOneWidget);
     expect(
@@ -295,7 +303,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('account-button')));
+    await tester.tap(find.byKey(const Key('nav-account')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('logout-button')));
     await tester.pumpAndSettle();
@@ -411,8 +419,15 @@ Future<ProviderContainer> _pumpApp(
         ),
       ),
       tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
+      pendingCheckoutStoreProvider.overrideWithValue(
+        InMemoryPendingCheckoutStore(),
+      ),
+      localePreferenceStoreProvider.overrideWithValue(
+        InMemoryLocalePreferenceStore(),
+      ),
       authRepositoryProvider.overrideWithValue(repository),
       catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
+      orderRepositoryProvider.overrideWithValue(FakeOrderRepository()),
       purchaseRepositoryProvider.overrideWithValue(FakePurchaseRepository()),
       walletRepositoryProvider.overrideWithValue(FakeWalletRepository()),
     ],

@@ -70,7 +70,55 @@ abstract final class AppTheme {
         titleLarge: base.textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w800,
         ),
-        bodyLarge: base.textTheme.bodyLarge?.copyWith(height: 1.5),
+        bodyLarge: base.textTheme.bodyLarge?.copyWith(height: 1.6),
+        bodyMedium: base.textTheme.bodyMedium?.copyWith(height: 1.55),
+        bodySmall: base.textTheme.bodySmall?.copyWith(height: 1.5),
+        labelLarge: base.textTheme.labelLarge?.copyWith(height: 1.35),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          tapTargetSize: MaterialTapTargetSize.padded,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          tapTargetSize: MaterialTapTargetSize.padded,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(48),
+          tapTargetSize: MaterialTapTargetSize.padded,
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 80,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        indicatorColor: BrandColors.yellow.withValues(
+          alpha: isDark ? 0.24 : 0.4,
+        ),
+      ),
+      navigationRailTheme: NavigationRailThemeData(
+        selectedIconTheme: IconThemeData(
+          color: isDark ? BrandColors.yellowSoft : BrandColors.ink,
+        ),
+        selectedLabelTextStyle: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: scheme.onSurface,
+        ),
+        minWidth: 80,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: BrandColors.yellow,
+        foregroundColor: BrandColors.ink,
+        elevation: 0,
+        titleTextStyle: base.textTheme.titleLarge?.copyWith(
+          color: BrandColors.ink,
+          fontWeight: FontWeight.w800,
+          height: 1.3,
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

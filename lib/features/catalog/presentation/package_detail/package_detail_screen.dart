@@ -5,6 +5,7 @@ import 'package:indirimgo_mobile/core/localization/generated/app_localizations.d
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
+import 'package:indirimgo_mobile/core/widgets/catalog_media_frame.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/catalog_controllers.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/widgets/catalog_widgets.dart';
@@ -98,14 +99,9 @@ class _PackageDetailBody extends StatelessWidget {
 
     return ListView(
       key: const Key('package-detail'),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsetsDirectional.all(AppSpacing.md),
       children: [
-        PackageImage(
-          imageUrl: package.imageUrl,
-          height: 180,
-          width: double.infinity,
-          borderRadius: BorderRadius.circular(AppRadii.card),
-        ),
+        CatalogDetailArtwork(imageUrl: package.imageUrl),
         const SizedBox(height: AppSpacing.md),
         Text(package.name, style: theme.textTheme.headlineMedium),
         if (package.category != null) ...[

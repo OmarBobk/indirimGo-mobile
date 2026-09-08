@@ -488,6 +488,18 @@ abstract class AppLocalizations {
   /// **'جرّب بحثاً أو تصنيفاً مختلفاً.'**
   String get packagesEmptyBody;
 
+  /// No description provided for @packagesCatalogEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد باقات بعد'**
+  String get packagesCatalogEmptyTitle;
+
+  /// No description provided for @packagesCatalogEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تتوفر باقات للعرض حالياً.'**
+  String get packagesCatalogEmptyBody;
+
   /// No description provided for @loadMorePackages.
   ///
   /// In ar, this message translates to:
@@ -1394,6 +1406,144 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'أخرى'**
   String get statusOther;
+
+  /// No description provided for @navHome.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرئيسية'**
+  String get navHome;
+
+  /// No description provided for @navPackages.
+  ///
+  /// In ar, this message translates to:
+  /// **'الباقات'**
+  String get navPackages;
+
+  /// No description provided for @navOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات'**
+  String get navOrders;
+
+  /// No description provided for @navAccount.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحساب'**
+  String get navAccount;
+
+  /// No description provided for @languagePreferenceTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اللغة'**
+  String get languagePreferenceTitle;
+
+  /// No description provided for @languagePreferenceSystem.
+  ///
+  /// In ar, this message translates to:
+  /// **'لغة الجهاز'**
+  String get languagePreferenceSystem;
+
+  /// No description provided for @languagePreferenceArabic.
+  ///
+  /// In ar, this message translates to:
+  /// **'العربية'**
+  String get languagePreferenceArabic;
+
+  /// No description provided for @languagePreferenceEnglish.
+  ///
+  /// In ar, this message translates to:
+  /// **'English'**
+  String get languagePreferenceEnglish;
+
+  /// No description provided for @searchOrdersLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'البحث في الطلبات'**
+  String get searchOrdersLabel;
+
+  /// No description provided for @searchOrdersHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الطلب أو اسم العنصر'**
+  String get searchOrdersHint;
+
+  /// No description provided for @ordersSearchTooShort.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل حرفين على الأقل للبحث.'**
+  String get ordersSearchTooShort;
+
+  /// No description provided for @ordersNoMatchesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد طلبات مطابقة'**
+  String get ordersNoMatchesTitle;
+
+  /// No description provided for @ordersNoMatchesBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب رقم طلب أو اسم عنصر أو حالة مختلفة.'**
+  String get ordersNoMatchesBody;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get filterAll;
+
+  /// No description provided for @filterNeedsAttention.
+  ///
+  /// In ar, this message translates to:
+  /// **'يتطلب انتباهاً'**
+  String get filterNeedsAttention;
+
+  /// No description provided for @filterInProgress.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد التنفيذ'**
+  String get filterInProgress;
+
+  /// No description provided for @filterDelivered.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التسليم'**
+  String get filterDelivered;
+
+  /// No description provided for @filterRefunded.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسترد'**
+  String get filterRefunded;
+
+  /// No description provided for @customerStateBadgeSemantics.
+  ///
+  /// In ar, this message translates to:
+  /// **'حالة الطلب: {state}'**
+  String customerStateBadgeSemantics(String state);
+
+  /// No description provided for @receiptDoneAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم'**
+  String get receiptDoneAction;
+
+  /// No description provided for @packageImageLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة الباقة'**
+  String get packageImageLabel;
+
+  /// No description provided for @categoryImageLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة التصنيف'**
+  String get categoryImageLabel;
+
+  /// No description provided for @imageUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر عرض الصورة'**
+  String get imageUnavailable;
 }
 
 class _AppLocalizationsDelegate

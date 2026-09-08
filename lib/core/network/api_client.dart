@@ -11,7 +11,8 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   final client = ApiClient(
     config: ref.watch(appConfigProvider),
     tokenStorage: ref.watch(tokenStorageProvider),
-    locale: ref.watch(localeControllerProvider).languageCode,
+    localeResolver: () =>
+        ref.read(localeControllerProvider).resolved.languageCode,
   );
   ref.onDispose(client.close);
   return client;
@@ -33,9 +34,11 @@ class ApiClient {
   ApiClient({
     required AppConfig config,
     required this.tokenStorage,
-    required String locale,
+    String locale = 'ar',
+    String Function()? localeResolver,
     Dio? dio,
-  }) : _dio =
+  }) : _localeResolver = localeResolver ?? (() => locale),
+       _dio =
            dio ??
            Dio(
              BaseOptions(
@@ -52,7 +55,7 @@ class ApiClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           options.headers[Headers.acceptHeader] = Headers.jsonContentType;
-          options.headers['Accept-Language'] = locale;
+          options.headers['Accept-Language'] = _localeResolver();
           final session = await tokenStorage.read();
           if (session != null) {
             options.headers['Authorization'] = 'Bearer ${session.token}';
@@ -85,6 +88,7 @@ class ApiClient {
 
   final Dio _dio;
   final TokenStorage tokenStorage;
+  final String Function() _localeResolver;
 
   Future<ApiResponse> get(
     String path, {
@@ -319,6 +323,7 @@ const _validationFields = {
   'q',
   'page',
   'per_page',
+  'customer_state',
   'items',
   'quote_fingerprint',
 };

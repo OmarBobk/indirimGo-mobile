@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
-import 'package:indirimgo_mobile/core/localization/locale_controller.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
+import 'package:indirimgo_mobile/core/widgets/language_selector.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -80,17 +80,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               runSpacing: AppSpacing.sm,
                               children: [
                                 const _BrandMark(),
-                                TextButton.icon(
-                                  key: const Key('language-toggle'),
-                                  onPressed: isLoading
-                                      ? null
-                                      : ref
-                                            .read(
-                                              localeControllerProvider.notifier,
-                                            )
-                                            .toggle,
-                                  icon: const Icon(Icons.language, size: 19),
-                                  label: Text(l10n.languageAction),
+                                LanguageSelector(
+                                  compact: true,
+                                  enabled: !isLoading,
                                 ),
                               ],
                             ),

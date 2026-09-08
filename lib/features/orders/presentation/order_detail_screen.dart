@@ -5,6 +5,7 @@ import 'package:indirimgo_mobile/core/localization/generated/app_localizations.d
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
+import 'package:indirimgo_mobile/core/widgets/customer_state_badge.dart';
 import 'package:indirimgo_mobile/features/orders/domain/order_models.dart';
 import 'package:indirimgo_mobile/features/orders/presentation/order_controllers.dart';
 import 'package:indirimgo_mobile/features/orders/presentation/order_status_labels.dart';
@@ -12,42 +13,17 @@ import 'package:indirimgo_mobile/features/purchase/domain/purchase_models.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/widgets/purchase_widgets.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
-class OrderDetailScreen extends ConsumerStatefulWidget {
+class OrderDetailScreen extends ConsumerWidget {
   const OrderDetailScreen({super.key, required this.orderNumber});
 
   final String orderNumber;
 
   @override
-  ConsumerState<OrderDetailScreen> createState() => _OrderDetailScreenState();
-}
-
-class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
-    with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    ref
-        .read(orderDetailControllerProvider(widget.orderNumber).notifier)
-        .setForeground(state == AppLifecycleState.resumed);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final state = ref.watch(orderDetailControllerProvider(widget.orderNumber));
+    final state = ref.watch(orderDetailControllerProvider(orderNumber));
     final controller = ref.read(
-      orderDetailControllerProvider(widget.orderNumber).notifier,
+      orderDetailControllerProvider(orderNumber).notifier,
     );
 
     return Scaffold(
@@ -100,6 +76,12 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
             onDone: () async {
               await controller.acknowledgeAndLeave();
               if (context.mounted) {
+                context.go(AppRoutes.orders);
+              }
+            },
+            onHome: () async {
+              await controller.acknowledgeAndLeave();
+              if (context.mounted) {
                 context.go(AppRoutes.shell);
               }
             },
@@ -116,11 +98,13 @@ class _OrderDetailBody extends StatelessWidget {
     required this.state,
     required this.onRefresh,
     required this.onDone,
+    required this.onHome,
   });
 
   final OrderDetailState state;
   final Future<void> Function() onRefresh;
   final Future<void> Function() onDone;
+  final Future<void> Function() onHome;
 
   @override
   Widget build(BuildContext context) {
@@ -192,6 +176,14 @@ class _OrderDetailBody extends StatelessWidget {
           if (order.paidAt != null)
             Text(l10n.orderPaidLabel(dateFormat.format(order.paidAt!))),
           PurchaseSectionLabel(l10n.orderStatusSection),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: CustomerStateBadge(
+              key: const Key('customer-state-badge'),
+              state: order.customerState,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
           _StatusLine(
             label: l10n.paymentLabel,
             value: localizedPaymentStatus(l10n, order.paymentStatus),
@@ -254,6 +246,15 @@ class _OrderDetailBody extends StatelessWidget {
             child: FilledButton(
               key: const Key('receipt-done'),
               onPressed: onDone,
+              child: Text(l10n.receiptDoneAction),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: OutlinedButton(
+              key: const Key('receipt-home'),
+              onPressed: onHome,
               child: Text(l10n.backToHomeAction),
             ),
           ),
