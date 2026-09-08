@@ -66,5 +66,9 @@ void main() {
     );
     expect(find.byType(AspectRatio), findsOneWidget);
     expect(find.byType(CatalogMediaFrame), findsOneWidget);
+    expect(
+      tester.getSize(find.byType(CatalogMediaFrame)).longestSide,
+      lessThanOrEqualTo(CatalogDetailArtwork.maxLogicalSize + 0.5),
+    );
   });
 }

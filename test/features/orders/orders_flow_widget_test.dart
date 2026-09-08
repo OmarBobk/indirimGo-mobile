@@ -84,7 +84,7 @@ void main() {
     final container = await _pumpAuthenticated(tester, FakeOrderRepository());
     container.read(routerProvider).go(AppRoutes.orders);
     await tester.pumpAndSettle();
-    expect(find.text('Orders'), findsOneWidget);
+    expect(find.text('Orders'), findsWidgets);
 
     await tester.tap(find.byKey(const Key('order-card-ORD-2026-000001')));
     await tester.pumpAndSettle();

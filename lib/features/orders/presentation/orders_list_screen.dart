@@ -110,12 +110,17 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                 onSubmitted: controller.submitSearch,
               ),
             ),
-            SizedBox(
-              height: 56,
-              child: ListView(
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.md,
+                0,
+                AppSpacing.md,
+                AppSpacing.sm,
+              ),
+              child: Wrap(
                 key: const Key('orders-status-filters'),
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
                 children: [
                   _FilterChip(
                     id: null,

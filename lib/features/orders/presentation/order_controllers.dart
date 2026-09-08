@@ -148,7 +148,11 @@ class OrderListController extends Notifier<OrderListState> {
     }
     final nextQ = trimmed.isEmpty ? null : trimmed;
     if (state.query.q == nextQ &&
-        (state.hasContent || state.phase == OrderListPhase.empty)) {
+        !state.searchTooShort &&
+        (state.hasContent ||
+            state.phase == OrderListPhase.empty ||
+            state.phase == OrderListPhase.loading ||
+            state.phase == OrderListPhase.refreshing)) {
       state = _copyState(searchInput: clamped, searchTooShort: false);
       return;
     }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
 import 'package:indirimgo_mobile/core/localization/locale_controller.dart';
 import 'package:indirimgo_mobile/core/storage/locale_preference_store.dart';
-import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 
 class LanguageSelector extends ConsumerWidget {
   const LanguageSelector({
@@ -29,9 +28,12 @@ class LanguageSelector extends ConsumerWidget {
       button: true,
       label: l10n.languagePreferenceTitle,
       child: PopupMenuButton<LocalePreference>(
-        key: const Key('language-toggle'),
+        key: compact
+            ? const Key('language-toggle')
+            : const Key('account-language-menu'),
         enabled: enabled,
         tooltip: l10n.languagePreferenceTitle,
+        padding: compact ? EdgeInsets.zero : const EdgeInsets.all(8),
         initialValue: settings.preference,
         onSelected: (value) {
           ref.read(localeControllerProvider.notifier).setPreference(value);
@@ -47,28 +49,7 @@ class LanguageSelector extends ConsumerWidget {
           ];
         },
         child: compact
-            ? ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.language, size: 20),
-                      const SizedBox(width: AppSpacing.xs),
-                      Flexible(
-                        child: Text(
-                          _labelFor(l10n, settings.preference),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
+            ? const SizedBox(width: 48, height: 48, child: Icon(Icons.language))
             : ListTile(
                 key: const Key('account-language'),
                 contentPadding: EdgeInsets.zero,

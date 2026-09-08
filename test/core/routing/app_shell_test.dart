@@ -51,7 +51,7 @@ void main() {
     await tester.pump();
     expect(_selectedIndex(tester), 1);
 
-    await tester.tap(find.byKey(const Key('package-card-42')));
+    await tester.tap(find.byKey(const Key('package-card-42')).hitTestable());
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('package-detail')), findsOneWidget);
     expect(_selectedIndex(tester), 1);
@@ -130,7 +130,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('logout-button')), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('language-toggle')));
+    await tester.tap(find.byKey(const Key('account-language')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('language-option-ar')));
     await tester.pumpAndSettle();

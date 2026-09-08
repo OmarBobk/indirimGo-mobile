@@ -10,6 +10,16 @@ class LocaleSettings {
 
   final LocalePreference preference;
   final Locale resolved;
+
+  @override
+  bool operator ==(Object other) {
+    return other is LocaleSettings &&
+        other.preference == preference &&
+        other.resolved == resolved;
+  }
+
+  @override
+  int get hashCode => Object.hash(preference, resolved);
 }
 
 Locale resolveSupportedLocale(Iterable<Locale>? preferredLocales) {
@@ -73,10 +83,13 @@ class LocaleController extends Notifier<LocaleSettings>
       if (_userSet) {
         return;
       }
-      state = LocaleSettings(
+      final next = LocaleSettings(
         preference: stored,
         resolved: _resolvedFor(stored),
       );
+      if (next != state) {
+        state = next;
+      }
     } on Object {
       state = LocaleSettings(
         preference: LocalePreference.system,

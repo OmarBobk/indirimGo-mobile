@@ -20,19 +20,19 @@ class _AppShellState extends ConsumerState<AppShell>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _reportVisibility());
+    _scheduleReport();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _reportVisibility();
+    _scheduleReport();
   }
 
   @override
   void didUpdateWidget(covariant AppShell oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _reportVisibility();
+    _scheduleReport();
   }
 
   @override
@@ -45,11 +45,22 @@ class _AppShellState extends ConsumerState<AppShell>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    ref.read(shellVisibilityProvider.notifier).clearShell();
     super.dispose();
   }
 
+  void _scheduleReport() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _reportVisibility();
+    });
+  }
+
   void _reportVisibility() {
+    if (!mounted) {
+      return;
+    }
     final location = GoRouterState.of(context).matchedLocation;
     ref
         .read(shellVisibilityProvider.notifier)

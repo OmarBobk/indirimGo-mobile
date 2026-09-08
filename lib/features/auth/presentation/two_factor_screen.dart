@@ -75,7 +75,6 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
               : ref.read(authControllerProvider.notifier).returnToLogin,
           icon: const BackButtonIcon(),
         ),
-        actions: [LanguageSelector(compact: true, enabled: !isLoading)],
       ),
       body: SafeArea(
         child: Center(
@@ -88,6 +87,13 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: LanguageSelector(
+                        compact: true,
+                        enabled: !isLoading,
+                      ),
+                    ),
                     Container(
                       width: 68,
                       height: 68,

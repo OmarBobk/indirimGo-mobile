@@ -8,6 +8,7 @@ import 'package:indirimgo_mobile/core/storage/locale_preference_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   test(
     'restore reads the persisted preference and survives later writes',
     () async {
@@ -81,11 +82,11 @@ void main() {
           .clearLocalesTestValue,
     );
     final container = ProviderContainer(
-        overrides: [
-          localePreferenceStoreProvider.overrideWithValue(
-            InMemoryLocalePreferenceStore(),
-          ),
-        ],
+      overrides: [
+        localePreferenceStoreProvider.overrideWithValue(
+          InMemoryLocalePreferenceStore(),
+        ),
+      ],
     );
     addTearDown(container.dispose);
     await container
@@ -112,11 +113,11 @@ void main() {
           .clearLocalesTestValue,
     );
     final container = ProviderContainer(
-        overrides: [
-          localePreferenceStoreProvider.overrideWithValue(
-            InMemoryLocalePreferenceStore(),
-          ),
-        ],
+      overrides: [
+        localePreferenceStoreProvider.overrideWithValue(
+          InMemoryLocalePreferenceStore(),
+        ),
+      ],
     );
     addTearDown(container.dispose);
     container.read(localeControllerProvider);

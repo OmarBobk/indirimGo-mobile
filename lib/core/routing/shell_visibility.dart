@@ -59,6 +59,11 @@ class ShellVisibilityController extends Notifier<ShellVisibility> {
   }
 
   void reportShell({required int branchIndex, required String location}) {
+    if (state.shellReported &&
+        state.selectedBranchIndex == branchIndex &&
+        state.matchedLocation == location) {
+      return;
+    }
     state = state.copyWith(
       shellReported: true,
       selectedBranchIndex: branchIndex,

@@ -109,21 +109,34 @@ class CatalogDetailArtwork extends StatelessWidget {
   final Uri? imageUrl;
   final String? semanticLabel;
 
+  static const double maxLogicalSize = 280;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return AspectRatio(
-      aspectRatio: 1,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final side = constraints.biggest.shortestSide;
-          return CatalogMediaFrame(
-            imageUrl: imageUrl,
-            size: side,
-            semanticLabel: semanticLabel ?? l10n.packageImageLabel,
-            borderRadius: BorderRadius.circular(AppRadii.card),
-          );
-        },
+    final media = MediaQuery.sizeOf(context);
+    final maxSide = [
+      maxLogicalSize,
+      media.width,
+      media.height * 0.4,
+    ].reduce((a, b) => a < b ? a : b);
+    return Align(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxSide, maxHeight: maxSide),
+        child: AspectRatio(
+          aspectRatio: 1,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final side = constraints.biggest.shortestSide;
+              return CatalogMediaFrame(
+                imageUrl: imageUrl,
+                size: side,
+                semanticLabel: semanticLabel ?? l10n.packageImageLabel,
+                borderRadius: BorderRadius.circular(AppRadii.card),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

@@ -177,8 +177,8 @@ void main() {
     container.read(routerProvider).go(AppRoutes.packageDetail(42));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('package-detail')), findsOneWidget);
-    expect(find.text('100 Coins'), findsOneWidget);
-    expect(find.text('سعر ثابت'), findsOneWidget);
+    expect(find.text('100 Coins', skipOffstage: false), findsOneWidget);
+    expect(find.text('سعر ثابت', skipOffstage: false), findsOneWidget);
     final custom = find.text('Custom amount', skipOffstage: false);
     await tester.ensureVisible(custom);
     await tester.pumpAndSettle();
