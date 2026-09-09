@@ -39,6 +39,15 @@ const stableApiErrorCodes = {
   'checkout_retry_required',
   'checkout_failed',
   'order_not_found',
+  'topup_request_pending',
+  'topup_not_found',
+  'topup_attempt_not_found',
+  'topup_in_progress',
+  'topup_retry_required',
+  'payment_method_unavailable',
+  'proof_not_found',
+  'invalid_topup_amount',
+  'topup_conversion_unavailable',
 };
 
 /// Stable API codes that prove the current mobile session cannot continue.

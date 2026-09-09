@@ -1,9 +1,9 @@
 # İndirimGo Mobile
 
-Customer-only Android application for İndirimGo. Milestone **M4.5.2** adds
-app-wide navigation, persistent language selection, Orders API 1.4.0 search
-and status presentation, and catalog image/layout work on top of the M4.2
-order-history slice.
+Customer-only Android application for İndirimGo. Milestone **M5** adds a
+dedicated Wallet screen, posted transaction history, and manual top-up
+requests against Laravel Mobile API **1.5.0**. Submission stays pending until
+existing admin approval and never credits the wallet on the client.
 
 ## Requirements
 
@@ -76,6 +76,9 @@ Authenticated destinations:
 - `/app/orders` — Orders (search + status filters)
 - `/app/orders/:orderNumber` — owned order detail (Orders remains selected)
 - `/app/account` — identity, language, wallet available-to-spend, logout
+- `/app/account/wallet` — wallet summary, top-up history, posted activity
+- `/app/account/wallet/topup` — submit a manual top-up (optional proof)
+- `/app/account/wallet/topups/:publicRef` — owned top-up detail
 
 A Material 3 `NavigationBar` (or `NavigationRail` from 840 logical pixels)
 preserves each destination’s navigation stack. Re-tapping a selected
@@ -88,6 +91,12 @@ Consumed endpoints:
 - `GET /api/v1/packages`
 - `GET /api/v1/packages/{id}`
 - `GET /api/v1/wallet/summary`
+- `GET /api/v1/wallet/transactions`
+- `GET /api/v1/wallet/payment-methods`
+- `GET /api/v1/wallet/topups`
+- `POST /api/v1/wallet/topups` (multipart, requires `Idempotency-Key`)
+- `GET /api/v1/wallet/topups/status` (requires `Idempotency-Key`)
+- `GET /api/v1/wallet/topups/{public_ref}`
 - `POST /api/v1/checkout/quote`
 - `POST /api/v1/checkout` (requires `Idempotency-Key`)
 - `GET /api/v1/checkout/status` (requires `Idempotency-Key`)
@@ -100,8 +109,9 @@ price × quantity, and never computes affordability. `meta.prices_visible=false`
 hides purchase CTAs and maps quote/checkout to `purchasing_unavailable`
 without ending the session.
 
-The authoritative contract is Laravel `docs/api/v1/openapi.yaml` on
-`origin/staging` (API **1.4.0**, including merged backend PR `#50`).
+The authoritative contract is Laravel `docs/api/v1/openapi.yaml` on the Mobile
+M5 backend branch (API **1.5.0**). After that backend merges, `origin/staging`
+is authoritative.
 
 ## Localization and accessibility
 
@@ -146,11 +156,13 @@ from API 1.4.0, status badges, and contained catalog artwork.
 Omar accepted the earlier M4.3 walkthrough after backend `#48` and mobile `#7`
 merged. This M4.5.2 UX slice is not claimed as accepted yet.
 
-Refund/retry/cancel actions, cart, wallet top-up, push, Reverb, persistent
+Refund/retry/cancel actions, cart, push, Reverb, persistent
 order-body caching, client-side pricing, Laravel/CDN/image-contract changes,
 and deployment are excluded.
 
-See [`docs/architecture/m4.5.2-ux-foundation.md`](docs/architecture/m4.5.2-ux-foundation.md)
+See [`docs/architecture/m5-wallet-topup.md`](docs/architecture/m5-wallet-topup.md)
+for wallet and manual top-up architecture,
+[`docs/architecture/m4.5.2-ux-foundation.md`](docs/architecture/m4.5.2-ux-foundation.md)
 for navigation, language, Orders 1.4.0, images, and a local walkthrough,
 [`docs/architecture/m4.2-orders-status.md`](docs/architecture/m4.2-orders-status.md)
 for order-history architecture,

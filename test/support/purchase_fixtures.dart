@@ -52,10 +52,12 @@ Map<String, Object?> checkoutQuoteJson({
 Map<String, Object?> walletSummaryJson({
   String amount = '42.50',
   bool pricesVisible = true,
+  String? pendingTopupPublicRef,
 }) {
   return {
     'data': {
       'available_to_spend': moneyJson(amount: amount, formatted: '\$$amount'),
+      'pending_topup_public_ref': pendingTopupPublicRef,
     },
     'meta': {'prices_visible': pricesVisible},
   };

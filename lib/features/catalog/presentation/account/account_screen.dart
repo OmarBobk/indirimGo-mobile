@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
+import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
 import 'package:indirimgo_mobile/core/widgets/language_selector.dart';
@@ -44,6 +46,15 @@ class AccountScreen extends ConsumerWidget {
                           const LanguageSelector(),
                           const SizedBox(height: AppSpacing.md),
                           const WalletSummarySection(),
+                          const SizedBox(height: AppSpacing.sm),
+                          FilledButton.icon(
+                            key: const Key('open-wallet'),
+                            onPressed: () => context.push(AppRoutes.wallet),
+                            icon: const Icon(
+                              Icons.account_balance_wallet_outlined,
+                            ),
+                            label: Text(l10n.openWalletAction),
+                          ),
                           if (auth.error != null) ...[
                             const SizedBox(height: AppSpacing.md),
                             Semantics(
