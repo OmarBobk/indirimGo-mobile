@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
+import 'package:indirimgo_mobile/core/widgets/catalog_media_frame.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
 
 /// Renders server-formatted prices only. Never formats [Money.amount] locally.
@@ -55,87 +56,6 @@ class CatalogPriceText extends StatelessWidget {
   }
 }
 
-class PackageImage extends StatelessWidget {
-  const PackageImage({
-    super.key,
-    required this.imageUrl,
-    this.width,
-    this.height = 96,
-    this.borderRadius,
-    this.semanticLabel,
-  });
-
-  final Uri? imageUrl;
-  final double? width;
-  final double height;
-  final BorderRadius? borderRadius;
-  final String? semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = borderRadius ?? BorderRadius.circular(AppRadii.input);
-    final placeholder = _PackageImagePlaceholder(height: height, width: width);
-
-    Widget child;
-    if (imageUrl == null) {
-      child = placeholder;
-    } else {
-      child = Image.network(
-        imageUrl.toString(),
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => placeholder,
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) {
-            return child;
-          }
-          return SizedBox(
-            width: width,
-            height: height,
-            child: const Center(
-              child: SizedBox.square(
-                dimension: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    return Semantics(
-      label: semanticLabel,
-      image: semanticLabel != null,
-      excludeSemantics: semanticLabel == null,
-      child: ClipRRect(borderRadius: radius, child: child),
-    );
-  }
-}
-
-class _PackageImagePlaceholder extends StatelessWidget {
-  const _PackageImagePlaceholder({required this.height, this.width});
-
-  final double height;
-  final double? width;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: width,
-      height: height,
-      color: scheme.onSurface.withValues(alpha: 0.06),
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.inventory_2_outlined,
-        color: scheme.onSurface.withValues(alpha: 0.35),
-        size: height * 0.35,
-      ),
-    );
-  }
-}
-
 class PackageCard extends StatelessWidget {
   const PackageCard({
     super.key,
@@ -175,74 +95,138 @@ class PackageCard extends StatelessWidget {
         child: InkWell(
           key: Key('package-card-${package.id}'),
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PackageImage(imageUrl: package.imageUrl, width: 72, height: 72),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        package.name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (category != null) ...[
-                        const SizedBox(height: 4),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 88),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.all(AppSpacing.sm),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CatalogMediaFrame(
+                    imageUrl: package.imageUrl,
+                    size: 72,
+                    semanticLabel: l10n.packageImageLabel,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          category,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.7,
+                          package.name,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            height: 1.35,
+                          ),
+                        ),
+                        if (category != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            category,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
+                              ),
+                              height: 1.4,
                             ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      if (timesOrdered != null) ...[
-                        const SizedBox(height: 4),
-                        ExcludeSemantics(
-                          child: Text(
-                            l10n.timesOrdered(timesOrdered!),
-                            key: Key('times-ordered-${package.id}'),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.75,
+                        ],
+                        if (timesOrdered != null) ...[
+                          const SizedBox(height: 4),
+                          ExcludeSemantics(
+                            child: Text(
+                              l10n.timesOrdered(timesOrdered!),
+                              key: Key('times-ordered-${package.id}'),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.75,
+                                ),
                               ),
                             ),
                           ),
+                        ],
+                        const SizedBox(height: AppSpacing.xs),
+                        CatalogPriceText(
+                          pricesVisible: pricesVisible,
+                          money: package.fromPrice,
+                          prefix: pricesVisible && package.fromPrice != null
+                              ? '${l10n.fromPriceLabel} '
+                              : null,
                         ),
                       ],
-                      const SizedBox(height: AppSpacing.xs),
-                      CatalogPriceText(
-                        pricesVisible: pricesVisible,
-                        money: package.fromPrice,
-                        prefix: pricesVisible && package.fromPrice != null
-                            ? '${l10n.fromPriceLabel} '
-                            : null,
+                    ),
+                  ),
+                  Transform.scale(
+                    key: const Key('package-card-chevron-mirror'),
+                    scaleX: Directionality.of(context) == TextDirection.rtl
+                        ? -1.0
+                        : 1.0,
+                    child: const Icon(
+                      Icons.chevron_right,
+                      key: Key('package-card-chevron'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CategoryDiscoveryTile extends StatelessWidget {
+  const CategoryDiscoveryTile({
+    super.key,
+    required this.category,
+    required this.onTap,
+  });
+
+  final CategoryChip category;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Semantics(
+      button: true,
+      label: category.name,
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadii.input),
+        child: InkWell(
+          key: Key('category-chip-${category.id}'),
+          borderRadius: BorderRadius.circular(AppRadii.input),
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48, minWidth: 88),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.all(AppSpacing.xs),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CatalogMediaFrame(
+                    imageUrl: category.imageUrl,
+                    size: 56,
+                    semanticLabel: l10n.categoryImageLabel,
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: 88,
+                    child: Text(
+                      category.name,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        height: 1.3,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                Transform.scale(
-                  key: const Key('package-card-chevron-mirror'),
-                  scaleX: Directionality.of(context) == TextDirection.rtl
-                      ? -1.0
-                      : 1.0,
-                  child: const Icon(
-                    Icons.chevron_right,
-                    key: Key('package-card-chevron'),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

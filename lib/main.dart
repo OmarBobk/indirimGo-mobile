@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indirimgo_mobile/app.dart';
 import 'package:indirimgo_mobile/core/config/app_config.dart';
+import 'package:indirimgo_mobile/core/storage/locale_preference_store.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/data/remote_auth_repository.dart';
@@ -14,8 +15,15 @@ import 'package:indirimgo_mobile/features/purchase/domain/purchase_repository.da
 import 'package:indirimgo_mobile/features/wallet/data/remote_wallet_repository.dart';
 import 'package:indirimgo_mobile/features/wallet/domain/wallet_repository.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  LocalePreferenceStore localeStore = InMemoryLocalePreferenceStore();
+  try {
+    localeStore = await SharedPreferencesLocaleStore.create();
+  } on Object {
+    localeStore = InMemoryLocalePreferenceStore();
+  }
 
   try {
     const buildMode = kDebugMode
@@ -31,6 +39,7 @@ void main() {
         overrides: [
           appConfigProvider.overrideWithValue(config),
           tokenStorageProvider.overrideWithValue(storage),
+          localePreferenceStoreProvider.overrideWithValue(localeStore),
           pendingCheckoutStoreProvider.overrideWithValue(pendingCheckoutStore),
           authRepositoryProvider.overrideWith(
             (ref) => ref.watch(remoteAuthRepositoryProvider),

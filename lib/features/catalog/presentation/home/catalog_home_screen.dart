@@ -5,19 +5,45 @@ import 'package:indirimgo_mobile/core/localization/generated/app_localizations.d
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
+import 'package:indirimgo_mobile/core/widgets/catalog_media_frame.dart';
+import 'package:indirimgo_mobile/core/widgets/refresh_progress_slot.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/catalog_controllers.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/widgets/catalog_widgets.dart';
 
-class CatalogHomeScreen extends ConsumerWidget {
+class CatalogHomeScreen extends ConsumerStatefulWidget {
   const CatalogHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CatalogHomeScreen> createState() => _CatalogHomeScreenState();
+}
+
+class _CatalogHomeScreenState extends ConsumerState<CatalogHomeScreen> {
+  Object? _prefetched;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final auth = ref.watch(authControllerProvider);
     final homeState = ref.watch(catalogHomeControllerProvider);
     final user = auth.user;
+    final home = homeState.home;
+    if (home != null && !identical(_prefetched, home)) {
+      _prefetched = home;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        prefetchVisibleCatalogImages(
+          context,
+          urls: [
+            for (final package in home.frequentlyOrdered) package.imageUrl,
+            for (final package in home.featuredPackages) package.imageUrl,
+            for (final category in home.categories) category.imageUrl,
+          ],
+        );
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -26,20 +52,6 @@ class CatalogHomeScreen extends ConsumerWidget {
           textDirection: TextDirection.ltr,
           style: const TextStyle(fontWeight: FontWeight.w900),
         ),
-        backgroundColor: BrandColors.yellow,
-        foregroundColor: BrandColors.ink,
-        actions: [
-          Semantics(
-            button: true,
-            label: l10n.accountTitle,
-            child: IconButton(
-              key: const Key('account-button'),
-              tooltip: l10n.accountTitle,
-              onPressed: () => context.push(AppRoutes.account),
-              icon: const Icon(Icons.account_circle_outlined),
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: user == null
@@ -89,136 +101,138 @@ class _HomeBody extends ConsumerWidget {
       );
     }
 
-    return RefreshIndicator(
-      key: const Key('catalog-home-refresh'),
-      onRefresh: controller.refresh,
-      child: ListView(
-        key: const Key('authenticated-shell'),
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.md),
-        children: [
-          Text(
-            l10n.welcomeUser(userName),
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            l10n.homeBrowseSubtitle,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Semantics(
-            button: true,
-            label: l10n.searchPackagesHint,
-            child: Material(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(AppRadii.input),
-              child: InkWell(
-                key: const Key('home-search-entry'),
-                borderRadius: BorderRadius.circular(AppRadii.input),
-                onTap: () => context.push(AppRoutes.packages),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm + 4,
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.search),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          l10n.searchPackagesHint,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Semantics(
-            button: true,
-            label: l10n.browseAllPackages,
-            child: FilledButton.icon(
-              key: const Key('browse-all-packages'),
-              onPressed: () => context.push(AppRoutes.packages),
-              icon: const Icon(Icons.grid_view_rounded),
-              label: Text(l10n.browseAllPackages),
-            ),
-          ),
-          if (home.frequentlyOrdered.isNotEmpty) ...[
-            CatalogSectionHeader(l10n.frequentlyOrderedTitle),
-            ...home.frequentlyOrdered.map(
-              (package) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: PackageCard(
-                  package: package,
-                  pricesVisible: home.pricesVisible,
-                  timesOrdered: package.timesOrdered,
-                  onTap: () =>
-                      context.push(AppRoutes.packageDetail(package.id)),
-                ),
-              ),
-            ),
-          ],
-          CatalogSectionHeader(l10n.featuredPackagesTitle),
-          if (home.featuredPackages.isEmpty)
-            Text(l10n.featuredPackagesEmpty)
-          else ...[
-            for (final package in home.featuredPackages)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: PackageCard(
-                  package: package,
-                  pricesVisible: home.pricesVisible,
-                  onTap: () =>
-                      context.push(AppRoutes.packageDetail(package.id)),
-                ),
-              ),
-          ],
-          if (home.categories.isNotEmpty) ...[
-            CatalogSectionHeader(l10n.categoriesTitle),
-            Wrap(
-              spacing: AppSpacing.xs,
-              runSpacing: AppSpacing.xs,
+    return Column(
+      children: [
+        RefreshProgressSlot(active: state.phase == CatalogLoadPhase.refreshing),
+        Expanded(
+          child: RefreshIndicator(
+            key: const Key('catalog-home-refresh'),
+            onRefresh: controller.refresh,
+            child: ListView(
+              key: const Key('authenticated-shell'),
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsetsDirectional.all(AppSpacing.md),
               children: [
-                for (final category in home.categories)
-                  Semantics(
-                    button: true,
-                    label: category.name,
-                    child: ActionChip(
-                      key: Key('category-chip-${category.id}'),
-                      label: Text(category.name),
-                      onPressed: () => context.push(
-                        AppRoutes.packagesWithCategory(
-                          category.id,
-                          name: category.name,
+                Text(
+                  l10n.welcomeUser(userName),
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  l10n.homeBrowseSubtitle,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Semantics(
+                  button: true,
+                  label: l10n.searchPackagesLabel,
+                  child: Material(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(AppRadii.input),
+                    child: InkWell(
+                      key: const Key('home-search-entry'),
+                      borderRadius: BorderRadius.circular(AppRadii.input),
+                      onTap: () => context.go(AppRoutes.packages),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 48),
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.sm,
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.search),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                child: Text(
+                                  l10n.searchPackagesHint,
+                                  style: Theme.of(context).textTheme.bodyLarge
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.6),
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
+                ),
+                if (home.frequentlyOrdered.isNotEmpty) ...[
+                  CatalogSectionHeader(l10n.frequentlyOrderedTitle),
+                  ...home.frequentlyOrdered.map(
+                    (package) => Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        bottom: AppSpacing.sm,
+                      ),
+                      child: PackageCard(
+                        package: package,
+                        pricesVisible: home.pricesVisible,
+                        timesOrdered: package.timesOrdered,
+                        onTap: () =>
+                            context.go(AppRoutes.packageDetail(package.id)),
+                      ),
+                    ),
+                  ),
+                ],
+                CatalogSectionHeader(l10n.featuredPackagesTitle),
+                if (home.featuredPackages.isEmpty)
+                  Text(l10n.featuredPackagesEmpty)
+                else ...[
+                  for (final package in home.featuredPackages)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        bottom: AppSpacing.sm,
+                      ),
+                      child: PackageCard(
+                        package: package,
+                        pricesVisible: home.pricesVisible,
+                        onTap: () =>
+                            context.go(AppRoutes.packageDetail(package.id)),
+                      ),
+                    ),
+                ],
+                if (home.categories.isNotEmpty) ...[
+                  CatalogSectionHeader(l10n.categoriesTitle),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: [
+                      for (final category in home.categories)
+                        CategoryDiscoveryTile(
+                          category: category,
+                          onTap: () => context.go(
+                            AppRoutes.packagesWithCategory(
+                              category.id,
+                              name: category.name,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+                if (state.phase == CatalogLoadPhase.error &&
+                    state.hasContent) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    localizedApiError(l10n, state.error),
+                    key: const Key('catalog-home-refresh-error'),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.xl),
               ],
             ),
-          ],
-          if (state.phase == CatalogLoadPhase.error && state.hasContent) ...[
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              localizedApiError(l10n, state.error),
-              key: const Key('catalog-home-refresh-error'),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ],
-          const SizedBox(height: AppSpacing.xl),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 }

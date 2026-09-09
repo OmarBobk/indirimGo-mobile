@@ -43,6 +43,19 @@ void main() {
     expect(request.queryParameters, {'page': 2, 'per_page': 20});
   });
 
+  test('sends trimmed search and customer_state together', () async {
+    adapter.enqueue(200, orderListPageJson());
+    await repository.fetchOrders(
+      const OrderListQuery(q: 'coins', customerState: 'in_progress'),
+    );
+    expect(adapter.requests.single.queryParameters, {
+      'page': 1,
+      'per_page': 20,
+      'q': 'coins',
+      'customer_state': 'in_progress',
+    });
+  });
+
   test('uses owned detail path and CheckoutSuccess parsing', () async {
     adapter.enqueue(200, orderDetailJson());
     final result = await repository.fetchOrder('ORD-2026-000001');

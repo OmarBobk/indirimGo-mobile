@@ -65,6 +65,8 @@
   "packagesTitle": "الباقات",
   "packagesEmptyTitle": "لا توجد باقات",
   "packagesEmptyBody": "جرّب بحثاً أو تصنيفاً مختلفاً.",
+  "packagesCatalogEmptyTitle": "لا توجد باقات بعد",
+  "packagesCatalogEmptyBody": "لا تتوفر باقات للعرض حالياً.",
   "loadMorePackages": "تحميل المزيد",
   "categoryFilterActive": "تصفية حسب التصنيف",
   "clearCategoryFilter": "إزالة التصنيف",
@@ -330,5 +332,33 @@
   "customerStateInProgress": "قيد التنفيذ",
   "customerStateDelivered": "تم التسليم",
   "customerStateRefunded": "مسترد",
-  "statusOther": "أخرى"
+  "statusOther": "أخرى",
+  "navHome": "الرئيسية",
+  "navPackages": "الباقات",
+  "navOrders": "الطلبات",
+  "navAccount": "الحساب",
+  "languagePreferenceTitle": "اللغة",
+  "languagePreferenceSystem": "لغة الجهاز",
+  "languagePreferenceArabic": "العربية",
+  "languagePreferenceEnglish": "English",
+  "searchOrdersLabel": "البحث في الطلبات",
+  "searchOrdersHint": "رقم الطلب أو اسم العنصر",
+  "ordersSearchTooShort": "أدخل حرفين على الأقل للبحث.",
+  "ordersNoMatchesTitle": "لا توجد طلبات مطابقة",
+  "ordersNoMatchesBody": "جرّب رقم طلب أو اسم عنصر أو حالة مختلفة.",
+  "filterAll": "الكل",
+  "filterNeedsAttention": "يتطلب انتباهاً",
+  "filterInProgress": "قيد التنفيذ",
+  "filterDelivered": "تم التسليم",
+  "filterRefunded": "مسترد",
+  "customerStateBadgeSemantics": "حالة الطلب: {state}",
+  "@customerStateBadgeSemantics": {
+    "placeholders": {
+      "state": {"type": "String"}
+    }
+  },
+  "receiptDoneAction": "تم",
+  "packageImageLabel": "صورة الباقة",
+  "categoryImageLabel": "صورة التصنيف",
+  "imageUnavailable": "تعذّر عرض الصورة"
 }

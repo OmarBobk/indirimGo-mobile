@@ -1,24 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
+import 'package:indirimgo_mobile/core/widgets/customer_state_badge.dart';
+import 'package:indirimgo_mobile/core/widgets/refresh_progress_slot.dart';
 import 'package:indirimgo_mobile/features/orders/domain/order_models.dart';
 import 'package:indirimgo_mobile/features/orders/presentation/order_controllers.dart';
 import 'package:indirimgo_mobile/features/orders/presentation/order_status_labels.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/widgets/purchase_widgets.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
-class OrdersListScreen extends ConsumerWidget {
+class OrdersListScreen extends ConsumerStatefulWidget {
   const OrdersListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OrdersListScreen> createState() => _OrdersListScreenState();
+}
+
+class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
+  late final TextEditingController _searchController;
+  final FocusNode _searchFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(
+      text: ref.read(orderListControllerProvider).searchInput,
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(orderListControllerProvider);
     final controller = ref.read(orderListControllerProvider.notifier);
+    ref.listen<String>(
+      orderListControllerProvider.select((value) => value.searchInput),
+      (previous, next) {
+        if (next != _searchController.text) {
+          _searchController.text = next;
+        }
+      },
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -26,7 +60,113 @@ class OrdersListScreen extends ConsumerWidget {
         backgroundColor: BrandColors.yellow,
         foregroundColor: BrandColors.ink,
       ),
-      body: SafeArea(child: _body(context, state, controller, l10n)),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.sm,
+              ),
+              child: TextField(
+                key: const Key('orders-search-field'),
+                controller: _searchController,
+                focusNode: _searchFocus,
+                textInputAction: TextInputAction.search,
+                maxLength: orderSearchQueryMaxLength,
+                maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                buildCounter:
+                    (
+                      context, {
+                      required currentLength,
+                      required isFocused,
+                      required maxLength,
+                    }) => null,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(orderSearchQueryMaxLength),
+                ],
+                decoration: InputDecoration(
+                  labelText: l10n.searchOrdersLabel,
+                  hintText: l10n.searchOrdersHint,
+                  prefixIcon: const Icon(Icons.search),
+                  errorText: state.searchTooShort
+                      ? l10n.ordersSearchTooShort
+                      : null,
+                  suffixIcon: state.searchInput.isEmpty
+                      ? null
+                      : IconButton(
+                          key: const Key('orders-clear-search'),
+                          tooltip: l10n.clearSearch,
+                          onPressed: () {
+                            _searchController.clear();
+                            controller.submitSearch('');
+                          },
+                          icon: const Icon(Icons.clear),
+                        ),
+                ),
+                onChanged: controller.onSearchChanged,
+                onSubmitted: controller.submitSearch,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.md,
+                0,
+                AppSpacing.md,
+                AppSpacing.sm,
+              ),
+              child: Wrap(
+                key: const Key('orders-status-filters'),
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
+                children: [
+                  _FilterChip(
+                    id: null,
+                    label: l10n.filterAll,
+                    selected: state.query.customerState == null,
+                    onSelected: () => controller.setCustomerState(null),
+                  ),
+                  _FilterChip(
+                    id: 'needs_attention',
+                    label: l10n.filterNeedsAttention,
+                    selected: state.query.customerState == 'needs_attention',
+                    onSelected: () =>
+                        controller.setCustomerState('needs_attention'),
+                  ),
+                  _FilterChip(
+                    id: 'in_progress',
+                    label: l10n.filterInProgress,
+                    selected: state.query.customerState == 'in_progress',
+                    onSelected: () =>
+                        controller.setCustomerState('in_progress'),
+                  ),
+                  _FilterChip(
+                    id: 'delivered',
+                    label: l10n.filterDelivered,
+                    selected: state.query.customerState == 'delivered',
+                    onSelected: () => controller.setCustomerState('delivered'),
+                  ),
+                  _FilterChip(
+                    id: 'refunded',
+                    label: l10n.filterRefunded,
+                    selected: state.query.customerState == 'refunded',
+                    onSelected: () => controller.setCustomerState('refunded'),
+                  ),
+                ],
+              ),
+            ),
+            RefreshProgressSlot(
+              key: const Key('orders-progress-slot'),
+              active:
+                  state.phase == OrderListPhase.refreshing ||
+                  state.phase == OrderListPhase.loadingMore,
+            ),
+            Expanded(child: _body(context, state, controller, l10n)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -36,6 +176,14 @@ class OrdersListScreen extends ConsumerWidget {
     OrderListController controller,
     AppLocalizations l10n,
   ) {
+    if (state.searchTooShort) {
+      return PurchaseStatusView(
+        key: const Key('orders-search-too-short'),
+        title: l10n.ordersSearchTooShort,
+        body: l10n.searchOrdersHint,
+        icon: Icons.search,
+      );
+    }
     if (state.phase == OrderListPhase.loading && !state.hasContent) {
       return Semantics(
         liveRegion: true,
@@ -60,14 +208,20 @@ class OrdersListScreen extends ConsumerWidget {
       return RefreshIndicator(
         onRefresh: controller.refresh,
         child: ListView(
-          key: const Key('orders-empty'),
+          key: state.isNarrowed
+              ? const Key('orders-no-matches')
+              : const Key('orders-empty'),
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.65,
+              height: MediaQuery.sizeOf(context).height * 0.5,
               child: PurchaseStatusView(
-                title: l10n.ordersEmptyTitle,
-                body: l10n.ordersEmptyBody,
+                title: state.isNarrowed
+                    ? l10n.ordersNoMatchesTitle
+                    : l10n.ordersEmptyTitle,
+                body: state.isNarrowed
+                    ? l10n.ordersNoMatchesBody
+                    : l10n.ordersEmptyBody,
                 icon: Icons.receipt_long_outlined,
               ),
             ),
@@ -150,6 +304,36 @@ class OrdersListScreen extends ConsumerWidget {
   }
 }
 
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.id,
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final String? id;
+  final String label;
+  final bool selected;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: AppSpacing.xs),
+      child: FilterChip(
+        key: Key('orders-filter-${id ?? 'all'}'),
+        label: Text(label),
+        selected: selected,
+        showCheckmark: false,
+        visualDensity: VisualDensity.standard,
+        materialTapTargetSize: MaterialTapTargetSize.padded,
+        onSelected: (_) => onSelected(),
+      ),
+    );
+  }
+}
+
 class _OrderCard extends StatelessWidget {
   const _OrderCard({required this.order, required this.onTap});
 
@@ -197,6 +381,7 @@ class _OrderCard extends StatelessWidget {
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
+                      height: 1.35,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
@@ -212,8 +397,11 @@ class _OrderCard extends StatelessWidget {
                   Text(l10n.orderCreatedLabel(created)),
                   const SizedBox(height: AppSpacing.sm),
                   PurchaseMoneyText(money: order.total),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(l10n.customerStateLabel(customerState)),
+                  const SizedBox(height: AppSpacing.sm),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: CustomerStateBadge(state: order.customerState),
+                  ),
                   if (order.itemCount > 0) ...[
                     const SizedBox(height: AppSpacing.xs),
                     Text(l10n.orderItemCount(order.itemCount)),

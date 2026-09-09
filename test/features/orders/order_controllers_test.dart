@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
+import 'package:indirimgo_mobile/core/routing/shell_visibility.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_models.dart';
@@ -272,4 +273,127 @@ void main() {
       );
     },
   );
+
+  test('search debounce, too-short input, filters, and stale pages', () async {
+    final orders = FakeOrderRepository();
+    final slow = Completer<OrderListPage>();
+    orders.listHandler = (query, _) {
+      if (query.q == 'aa') {
+        return slow.future;
+      }
+      if (query.q == 'bb') {
+        return Future.value(
+          OrderListPage.fromJson(
+            orderListPageJson(
+              orders: [
+                orderListItemJson(
+                  orderNumber: 'ORD-2026-000099',
+                  title: 'Beta Pack',
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      return Future.value(orders.firstPage);
+    };
+    final env = await createContainer(orders);
+    env.container.read(orderListControllerProvider);
+    await pump();
+    final initialCalls = orders.listCalls;
+    final controller = env.container.read(orderListControllerProvider.notifier);
+
+    controller.onSearchChanged('x');
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+    expect(orders.listCalls, initialCalls);
+    expect(
+      env.container.read(orderListControllerProvider).searchTooShort,
+      isTrue,
+    );
+
+    controller.submitSearch('aa');
+    controller.submitSearch('bb');
+    slow.complete(OrderListPage.fromJson(orderListPageJson()));
+    await pump(8);
+    final state = env.container.read(orderListControllerProvider);
+    expect(state.query.q, 'bb');
+    expect(state.orders.single.orderNumber, 'ORD-2026-000099');
+    expect(state.orders.single.title, 'Beta Pack');
+
+    controller.setCustomerState('delivered');
+    await pump();
+    expect(
+      env.container.read(orderListControllerProvider).query.customerState,
+      'delivered',
+    );
+    expect(env.container.read(orderListControllerProvider).query.page, 1);
+    expect(
+      orders.queries.last.toQueryParameters()['customer_state'],
+      'delivered',
+    );
+    expect(orders.queries.last.toQueryParameters().containsKey('q'), isTrue);
+
+    controller.setCustomerState('all');
+    await pump();
+    expect(
+      env.container.read(orderListControllerProvider).query.customerState,
+      isNull,
+    );
+    expect(
+      orders.queries.last.toQueryParameters().containsKey('customer_state'),
+      isFalse,
+    );
+  });
+
+  test('customer switch clears search and list memory', () async {
+    final orders = FakeOrderRepository();
+    final env = await createContainer(orders);
+    env.container.read(orderListControllerProvider);
+    await pump();
+    env.container
+        .read(orderListControllerProvider.notifier)
+        .submitSearch('coins');
+    await pump();
+    expect(env.container.read(orderListControllerProvider).query.q, 'coins');
+
+    env.auth.loginHandler = (_, _) async => LoginAuthenticated(sampleSessionB);
+    await env.container.read(authControllerProvider.notifier).logout();
+    await pump();
+    expect(env.container.read(orderListControllerProvider).orders, isEmpty);
+
+    await env.container
+        .read(authControllerProvider.notifier)
+        .login(username: 'other', password: 'ignored');
+    await pump(8);
+    final next = env.container.read(orderListControllerProvider);
+    expect(next.query.q, isNull);
+    expect(next.searchInput, isEmpty);
+    expect(next.customerId, sampleUserB.id);
+  });
+
+  test('polling stops when the retained shell hides the detail', () async {
+    final orders = FakeOrderRepository()
+      ..detail = CheckoutResult.fromJson(
+        orderDetailJson(fulfillmentStatus: 'processing'),
+      );
+    final env = await createContainer(orders);
+    env.container
+        .read(shellVisibilityProvider.notifier)
+        .reportShell(branchIndex: 2, location: '/app/orders/ORD-2026-000001');
+    final subscription = env.container.listen(
+      orderDetailControllerProvider('ORD-2026-000001'),
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    final callsWhileVisible = orders.detailCalls;
+    expect(callsWhileVisible, greaterThanOrEqualTo(1));
+
+    env.container
+        .read(shellVisibilityProvider.notifier)
+        .reportShell(branchIndex: 0, location: '/app');
+    await Future<void>.delayed(const Duration(milliseconds: 40));
+    expect(orders.detailCalls, callsWhileVisible);
+  });
 }

@@ -7,17 +7,21 @@ import 'package:indirimgo_mobile/app.dart';
 import 'package:indirimgo_mobile/core/config/app_config.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
+import 'package:indirimgo_mobile/core/storage/locale_preference_store.dart';
+import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_repository.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/catalog_controllers.dart';
+import 'package:indirimgo_mobile/features/orders/domain/order_repository.dart';
 import 'package:indirimgo_mobile/features/purchase/domain/purchase_repository.dart';
 import 'package:indirimgo_mobile/features/wallet/domain/wallet_repository.dart';
 
 import '../../support/catalog_fixtures.dart';
 import '../../support/fake_catalog_repository.dart';
+import '../../support/fake_order_repository.dart';
 import '../../support/fake_purchase_repository.dart';
 import '../../support/fake_wallet_repository.dart';
 import '../../support/fakes.dart';
@@ -36,13 +40,16 @@ void main() {
         .clearLocalesTestValue();
   });
 
-  testWidgets('Arabic RTL home shows shelves and browse-all', (tester) async {
+  testWidgets('Arabic RTL home shows shelves and destination navigation', (
+    tester,
+  ) async {
     await _pumpAuthenticated(tester);
     expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
     expect(find.text('طلبتها كثيراً'), findsOneWidget);
     expect(find.text('باقات مميزة'), findsOneWidget);
     expect(find.text('Example Game Top-up'), findsWidgets);
-    expect(find.byKey(const Key('browse-all-packages')), findsOneWidget);
+    expect(find.byKey(const Key('nav-packages')), findsOneWidget);
+    expect(find.byKey(const Key('browse-all-packages')), findsNothing);
     expect(
       tester
           .widget<Directionality>(
@@ -170,8 +177,8 @@ void main() {
     container.read(routerProvider).go(AppRoutes.packageDetail(42));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('package-detail')), findsOneWidget);
-    expect(find.text('100 Coins'), findsOneWidget);
-    expect(find.text('سعر ثابت'), findsOneWidget);
+    expect(find.text('100 Coins', skipOffstage: false), findsOneWidget);
+    expect(find.text('سعر ثابت', skipOffstage: false), findsOneWidget);
     final custom = find.text('Custom amount', skipOffstage: false);
     await tester.ensureVisible(custom);
     await tester.pumpAndSettle();
@@ -277,12 +284,13 @@ void main() {
     ];
     await _pumpAuthenticated(tester);
     expect(find.text('Featured packages'), findsOneWidget);
-    expect(find.text('Browse all packages'), findsOneWidget);
+    expect(find.byKey(const Key('nav-packages')), findsOneWidget);
+    expect(find.text('Browse all packages'), findsNothing);
   });
 
   testWidgets('account logout remains available from home', (tester) async {
     await _pumpAuthenticated(tester);
-    await tester.tap(find.byKey(const Key('account-button')));
+    await tester.tap(find.byKey(const Key('nav-account')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('logout-button')), findsOneWidget);
     await tester.tap(find.byKey(const Key('logout-button')));
@@ -323,7 +331,7 @@ void main() {
     await _pumpAuthenticated(tester, dark: true);
     expect(tester.takeException(), isNull);
     expect(find.byKey(const Key('authenticated-shell')), findsOneWidget);
-    expect(find.byKey(const Key('browse-all-packages')), findsOneWidget);
+    expect(find.byKey(const Key('nav-home')), findsOneWidget);
   });
 
   testWidgets('session restoration opens home without login flash', (
@@ -394,8 +402,15 @@ Future<ProviderContainer> _pumpApp(
         ),
       ),
       tokenStorageProvider.overrideWithValue(tokenStorage),
+      pendingCheckoutStoreProvider.overrideWithValue(
+        InMemoryPendingCheckoutStore(),
+      ),
+      localePreferenceStoreProvider.overrideWithValue(
+        InMemoryLocalePreferenceStore(),
+      ),
       authRepositoryProvider.overrideWithValue(auth),
       catalogRepositoryProvider.overrideWithValue(catalog),
+      orderRepositoryProvider.overrideWithValue(FakeOrderRepository()),
       purchaseRepositoryProvider.overrideWithValue(FakePurchaseRepository()),
       walletRepositoryProvider.overrideWithValue(FakeWalletRepository()),
     ],

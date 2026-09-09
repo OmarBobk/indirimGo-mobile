@@ -6,6 +6,7 @@ import 'package:indirimgo_mobile/core/localization/generated/app_localizations.d
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
+import 'package:indirimgo_mobile/core/widgets/refresh_progress_slot.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/catalog_controllers.dart';
 import 'package:indirimgo_mobile/features/catalog/presentation/widgets/catalog_widgets.dart';
 
@@ -76,6 +77,14 @@ class _PackageListScreenState extends ConsumerState<PackageListScreen> {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(packageListControllerProvider);
     final controller = ref.read(packageListControllerProvider.notifier);
+    ref.listen<String>(
+      packageListControllerProvider.select((value) => value.searchInput),
+      (previous, next) {
+        if (next != _searchController.text) {
+          _searchController.text = next;
+        }
+      },
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -87,7 +96,7 @@ class _PackageListScreenState extends ConsumerState<PackageListScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(
+              padding: const EdgeInsetsDirectional.fromSTEB(
                 AppSpacing.md,
                 AppSpacing.md,
                 AppSpacing.md,
@@ -147,7 +156,18 @@ class _PackageListScreenState extends ConsumerState<PackageListScreen> {
                   ),
                 ),
               ),
-            Expanded(child: _buildBody(context, state, controller, l10n)),
+            Expanded(
+              child: Column(
+                children: [
+                  RefreshProgressSlot(
+                    active:
+                        state.phase == PackageListPhase.refreshing ||
+                        state.phase == PackageListPhase.loadingMore,
+                  ),
+                  Expanded(child: _buildBody(context, state, controller, l10n)),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -180,10 +200,15 @@ class _PackageListScreenState extends ConsumerState<PackageListScreen> {
 
     if (state.phase == PackageListPhase.empty ||
         (state.phase == PackageListPhase.ready && !state.hasContent)) {
+      final narrowed =
+          (state.query.q != null && state.query.q!.isNotEmpty) ||
+          state.query.categoryId != null;
       return CatalogStatusView(
         key: const Key('package-list-empty'),
-        title: l10n.packagesEmptyTitle,
-        body: l10n.packagesEmptyBody,
+        title: narrowed
+            ? l10n.packagesEmptyTitle
+            : l10n.packagesCatalogEmptyTitle,
+        body: narrowed ? l10n.packagesEmptyBody : l10n.packagesCatalogEmptyBody,
         icon: Icons.inventory_2_outlined,
         onRetry: null,
       );

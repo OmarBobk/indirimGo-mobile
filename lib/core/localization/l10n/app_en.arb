@@ -65,6 +65,8 @@
   "packagesTitle": "Packages",
   "packagesEmptyTitle": "No packages found",
   "packagesEmptyBody": "Try a different search or category.",
+  "packagesCatalogEmptyTitle": "No packages yet",
+  "packagesCatalogEmptyBody": "There are no packages to show right now.",
   "loadMorePackages": "Load more",
   "categoryFilterActive": "Category filter",
   "clearCategoryFilter": "Clear category",
@@ -330,5 +332,33 @@
   "customerStateInProgress": "In progress",
   "customerStateDelivered": "Delivered",
   "customerStateRefunded": "Refunded",
-  "statusOther": "Other"
+  "statusOther": "Other",
+  "navHome": "Home",
+  "navPackages": "Packages",
+  "navOrders": "Orders",
+  "navAccount": "Account",
+  "languagePreferenceTitle": "Language",
+  "languagePreferenceSystem": "Device language",
+  "languagePreferenceArabic": "العربية",
+  "languagePreferenceEnglish": "English",
+  "searchOrdersLabel": "Search orders",
+  "searchOrdersHint": "Order number or item name",
+  "ordersSearchTooShort": "Enter at least 2 characters to search.",
+  "ordersNoMatchesTitle": "No matching orders",
+  "ordersNoMatchesBody": "Try a different order number, item name, or status filter.",
+  "filterAll": "All",
+  "filterNeedsAttention": "Needs attention",
+  "filterInProgress": "In progress",
+  "filterDelivered": "Delivered",
+  "filterRefunded": "Refunded",
+  "customerStateBadgeSemantics": "Order status: {state}",
+  "@customerStateBadgeSemantics": {
+    "placeholders": {
+      "state": {"type": "String"}
+    }
+  },
+  "receiptDoneAction": "Done",
+  "packageImageLabel": "Package image",
+  "categoryImageLabel": "Category image",
+  "imageUnavailable": "Image unavailable"
 }

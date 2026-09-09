@@ -11,7 +11,7 @@ class IndirimGoApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final locale = ref.watch(localeControllerProvider);
+    final locale = ref.watch(localeControllerProvider).resolved;
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(

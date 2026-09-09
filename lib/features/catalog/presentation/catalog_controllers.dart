@@ -296,9 +296,8 @@ class PackageListController extends Notifier<PackageListState> {
       }
       state = PackageListState(
         phase: PackageListPhase.loading,
-        query: state.query.copyWith(page: 1),
-        searchInput: state.searchInput,
-        categoryName: state.categoryName,
+        query: const PackageListQuery(),
+        searchInput: '',
         customerId: next,
       );
       unawaited(_fetch(reset: true));

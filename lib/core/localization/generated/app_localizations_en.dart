@@ -216,6 +216,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packagesEmptyBody => 'Try a different search or category.';
 
   @override
+  String get packagesCatalogEmptyTitle => 'No packages yet';
+
+  @override
+  String get packagesCatalogEmptyBody =>
+      'There are no packages to show right now.';
+
+  @override
   String get loadMorePackages => 'Load more';
 
   @override
@@ -760,4 +767,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statusOther => 'Other';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navPackages => 'Packages';
+
+  @override
+  String get navOrders => 'Orders';
+
+  @override
+  String get navAccount => 'Account';
+
+  @override
+  String get languagePreferenceTitle => 'Language';
+
+  @override
+  String get languagePreferenceSystem => 'Device language';
+
+  @override
+  String get languagePreferenceArabic => 'العربية';
+
+  @override
+  String get languagePreferenceEnglish => 'English';
+
+  @override
+  String get searchOrdersLabel => 'Search orders';
+
+  @override
+  String get searchOrdersHint => 'Order number or item name';
+
+  @override
+  String get ordersSearchTooShort => 'Enter at least 2 characters to search.';
+
+  @override
+  String get ordersNoMatchesTitle => 'No matching orders';
+
+  @override
+  String get ordersNoMatchesBody =>
+      'Try a different order number, item name, or status filter.';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterNeedsAttention => 'Needs attention';
+
+  @override
+  String get filterInProgress => 'In progress';
+
+  @override
+  String get filterDelivered => 'Delivered';
+
+  @override
+  String get filterRefunded => 'Refunded';
+
+  @override
+  String customerStateBadgeSemantics(String state) {
+    return 'Order status: $state';
+  }
+
+  @override
+  String get receiptDoneAction => 'Done';
+
+  @override
+  String get packageImageLabel => 'Package image';
+
+  @override
+  String get categoryImageLabel => 'Category image';
+
+  @override
+  String get imageUnavailable => 'Image unavailable';
 }

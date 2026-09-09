@@ -9,6 +9,7 @@ import 'package:indirimgo_mobile/core/config/app_config.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
+import 'package:indirimgo_mobile/core/storage/locale_preference_store.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
@@ -83,7 +84,7 @@ void main() {
     final container = await _pumpAuthenticated(tester, FakeOrderRepository());
     container.read(routerProvider).go(AppRoutes.orders);
     await tester.pumpAndSettle();
-    expect(find.text('Orders'), findsOneWidget);
+    expect(find.text('Orders'), findsWidgets);
 
     await tester.tap(find.byKey(const Key('order-card-ORD-2026-000001')));
     await tester.pumpAndSettle();
@@ -132,6 +133,46 @@ void main() {
     expect(find.byKey(const Key('order-detail')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'orders search and filters reset pagination and skip one letter',
+    (tester) async {
+      final orders = FakeOrderRepository();
+      await _pumpAuthenticated(tester, orders);
+      tester.view.physicalSize = const Size(400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.tap(find.byKey(const Key('nav-orders')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('orders-search-field')), findsOneWidget);
+
+      await tester.enterText(find.byKey(const Key('orders-search-field')), 'x');
+      await tester.pump(const Duration(milliseconds: 450));
+      expect(find.byKey(const Key('orders-search-too-short')), findsOneWidget);
+      expect(orders.queries.where((query) => query.q == 'x'), isEmpty);
+
+      await tester.enterText(
+        find.byKey(const Key('orders-search-field')),
+        'coins',
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      expect(orders.queries.last.q, 'coins');
+      expect(orders.queries.last.page, 1);
+
+      await tester.tap(find.byKey(const Key('orders-filter-delivered')));
+      await tester.pumpAndSettle();
+      expect(orders.queries.last.customerState, 'delivered');
+      expect(orders.queries.last.q, 'coins');
+      expect(
+        orders.queries.map((query) => query.customerState),
+        isNot(contains('all')),
+      );
+    },
+  );
 }
 
 Future<void> _pumpOrdersScreen(
@@ -175,6 +216,9 @@ Future<ProviderContainer> _pumpAuthenticated(
       tokenStorageProvider.overrideWithValue(storage),
       pendingCheckoutStoreProvider.overrideWithValue(
         InMemoryPendingCheckoutStore(),
+      ),
+      localePreferenceStoreProvider.overrideWithValue(
+        InMemoryLocalePreferenceStore(),
       ),
       authRepositoryProvider.overrideWithValue(
         FakeAuthRepository(tokenStorage: storage)..restoreResult = sampleUser,

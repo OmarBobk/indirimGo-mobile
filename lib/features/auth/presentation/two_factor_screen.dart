@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indirimgo_mobile/core/localization/generated/app_localizations.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
+import 'package:indirimgo_mobile/core/widgets/language_selector.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 
 enum _TwoFactorMode { authenticator, recovery }
@@ -72,7 +73,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
           onPressed: isLoading
               ? null
               : ref.read(authControllerProvider.notifier).returnToLogin,
-          icon: const Icon(Icons.arrow_back),
+          icon: const BackButtonIcon(),
         ),
       ),
       body: SafeArea(
@@ -86,6 +87,13 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: LanguageSelector(
+                        compact: true,
+                        enabled: !isLoading,
+                      ),
+                    ),
                     Container(
                       width: 68,
                       height: 68,

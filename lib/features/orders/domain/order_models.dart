@@ -1,4 +1,4 @@
-/// Manual OpenAPI 1.3.0 models for customer-owned order history.
+/// Manual OpenAPI 1.4.0 models for customer-owned order history.
 ///
 /// Money remains server-provided decimal strings through the shared [Money]
 /// model. These models never persist or log order response bodies.
@@ -7,6 +7,17 @@ library;
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
 
 const int ordersPerPage = 20;
+
+const int orderSearchQueryMinLength = 2;
+
+const int orderSearchQueryMaxLength = 100;
+
+const supportedOrderCustomerStateFilters = <String>{
+  'needs_attention',
+  'in_progress',
+  'delivered',
+  'refunded',
+};
 
 const supportedPaymentStatuses = <String>{
   'paid',
@@ -39,15 +50,58 @@ bool isUnfinishedFulfillmentStatus(String status) =>
     status == 'pending' || status == 'queued' || status == 'processing';
 
 class OrderListQuery {
-  const OrderListQuery({this.page = 1, this.perPage = ordersPerPage});
+  const OrderListQuery({
+    this.page = 1,
+    this.perPage = ordersPerPage,
+    this.q,
+    this.customerState,
+  });
 
   final int page;
   final int perPage;
+  final String? q;
+  final String? customerState;
+
+  bool get hasSearch => q != null && q!.isNotEmpty;
+
+  bool get hasFilter => customerState != null;
 
   Map<String, Object?> toQueryParameters() => {
     'page': page,
     'per_page': perPage,
+    if (hasSearch) 'q': q,
+    if (hasFilter) 'customer_state': customerState,
   };
+
+  OrderListQuery copyWith({
+    int? page,
+    int? perPage,
+    String? q,
+    bool clearQ = false,
+    String? customerState,
+    bool clearCustomerState = false,
+  }) {
+    return OrderListQuery(
+      page: page ?? this.page,
+      perPage: perPage ?? this.perPage,
+      q: clearQ ? null : q ?? this.q,
+      customerState: clearCustomerState
+          ? null
+          : customerState ?? this.customerState,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is OrderListQuery &&
+        other.page == page &&
+        other.perPage == perPage &&
+        other.q == q &&
+        other.customerState == customerState;
+  }
+
+  @override
+  int get hashCode => Object.hash(page, perPage, q, customerState);
 }
 
 class OrderListItem {

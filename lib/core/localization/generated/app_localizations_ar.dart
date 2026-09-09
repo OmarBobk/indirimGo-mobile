@@ -212,6 +212,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get packagesEmptyBody => 'جرّب بحثاً أو تصنيفاً مختلفاً.';
 
   @override
+  String get packagesCatalogEmptyTitle => 'لا توجد باقات بعد';
+
+  @override
+  String get packagesCatalogEmptyBody => 'لا تتوفر باقات للعرض حالياً.';
+
+  @override
   String get loadMorePackages => 'تحميل المزيد';
 
   @override
@@ -753,4 +759,75 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get statusOther => 'أخرى';
+
+  @override
+  String get navHome => 'الرئيسية';
+
+  @override
+  String get navPackages => 'الباقات';
+
+  @override
+  String get navOrders => 'الطلبات';
+
+  @override
+  String get navAccount => 'الحساب';
+
+  @override
+  String get languagePreferenceTitle => 'اللغة';
+
+  @override
+  String get languagePreferenceSystem => 'لغة الجهاز';
+
+  @override
+  String get languagePreferenceArabic => 'العربية';
+
+  @override
+  String get languagePreferenceEnglish => 'English';
+
+  @override
+  String get searchOrdersLabel => 'البحث في الطلبات';
+
+  @override
+  String get searchOrdersHint => 'رقم الطلب أو اسم العنصر';
+
+  @override
+  String get ordersSearchTooShort => 'أدخل حرفين على الأقل للبحث.';
+
+  @override
+  String get ordersNoMatchesTitle => 'لا توجد طلبات مطابقة';
+
+  @override
+  String get ordersNoMatchesBody => 'جرّب رقم طلب أو اسم عنصر أو حالة مختلفة.';
+
+  @override
+  String get filterAll => 'الكل';
+
+  @override
+  String get filterNeedsAttention => 'يتطلب انتباهاً';
+
+  @override
+  String get filterInProgress => 'قيد التنفيذ';
+
+  @override
+  String get filterDelivered => 'تم التسليم';
+
+  @override
+  String get filterRefunded => 'مسترد';
+
+  @override
+  String customerStateBadgeSemantics(String state) {
+    return 'حالة الطلب: $state';
+  }
+
+  @override
+  String get receiptDoneAction => 'تم';
+
+  @override
+  String get packageImageLabel => 'صورة الباقة';
+
+  @override
+  String get categoryImageLabel => 'صورة التصنيف';
+
+  @override
+  String get imageUnavailable => 'تعذّر عرض الصورة';
 }

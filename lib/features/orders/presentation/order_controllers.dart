@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
+import 'package:indirimgo_mobile/core/routing/shell_visibility.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/features/auth/presentation/auth_controller.dart';
 import 'package:indirimgo_mobile/features/catalog/domain/catalog_models.dart';
@@ -37,6 +38,9 @@ class OrderListState {
     this.error,
     this.loadMoreError,
     this.customerId,
+    this.query = const OrderListQuery(),
+    this.searchInput = '',
+    this.searchTooShort = false,
   });
 
   const OrderListState.initial() : this(phase: OrderListPhase.idle);
@@ -47,8 +51,13 @@ class OrderListState {
   final ApiException? error;
   final ApiException? loadMoreError;
   final int? customerId;
+  final OrderListQuery query;
+  final String searchInput;
+  final bool searchTooShort;
 
   bool get hasContent => orders.isNotEmpty;
+
+  bool get isNarrowed => query.hasSearch || query.hasFilter;
 
   bool get canLoadMore =>
       pagination?.hasNextPage == true &&
@@ -69,18 +78,21 @@ class OrderListController extends Notifier<OrderListState> {
   CancelToken? _cancelToken;
   bool _disposed = false;
   bool _loadMoreInFlight = false;
+  Timer? _debounce;
 
   @override
   OrderListState build() {
     _disposed = false;
     ref.onDispose(() {
       _disposed = true;
+      _debounce?.cancel();
       _cancelInFlight('dispose');
     });
     ref.listen<int?>(orderCustomerIdProvider, (previous, next) {
       if (previous == next) {
         return;
       }
+      _debounce?.cancel();
       _cancelInFlight('customer-switch');
       if (next == null) {
         state = const OrderListState.initial();
@@ -105,18 +117,87 @@ class OrderListController extends Notifier<OrderListState> {
     );
   }
 
+  String clampOrderSearchInput(String value) {
+    final runes = value.runes;
+    if (runes.length <= orderSearchQueryMaxLength) {
+      return value;
+    }
+    return String.fromCharCodes(runes.take(orderSearchQueryMaxLength));
+  }
+
+  void onSearchChanged(String value) {
+    final clamped = clampOrderSearchInput(value);
+    state = _copyState(searchInput: clamped, searchTooShort: false);
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      submitSearch(clamped, fromDebounce: true);
+    });
+  }
+
+  void submitSearch(String value, {bool fromDebounce = false}) {
+    if (!fromDebounce) {
+      _debounce?.cancel();
+    }
+    final clamped = clampOrderSearchInput(value);
+    final trimmed = clamped.trim();
+    if (trimmed.length == 1) {
+      _debounce?.cancel();
+      _cancelInFlight('search-too-short');
+      state = _copyState(searchInput: clamped, searchTooShort: true);
+      return;
+    }
+    final nextQ = trimmed.isEmpty ? null : trimmed;
+    if (state.query.q == nextQ &&
+        !state.searchTooShort &&
+        (state.hasContent ||
+            state.phase == OrderListPhase.empty ||
+            state.phase == OrderListPhase.loading ||
+            state.phase == OrderListPhase.refreshing)) {
+      state = _copyState(searchInput: clamped, searchTooShort: false);
+      return;
+    }
+    state = OrderListState(
+      phase: OrderListPhase.loading,
+      customerId: ref.read(orderCustomerIdProvider),
+      query: state.query.copyWith(page: 1, q: nextQ, clearQ: nextQ == null),
+      searchInput: clamped,
+    );
+    unawaited(_fetchFirstPage(preserveOnError: false));
+  }
+
+  void setCustomerState(String? customerState) {
+    final next =
+        customerState != null &&
+            supportedOrderCustomerStateFilters.contains(customerState)
+        ? customerState
+        : null;
+    if (state.query.customerState == next) {
+      return;
+    }
+    _debounce?.cancel();
+    state = OrderListState(
+      phase: OrderListPhase.loading,
+      customerId: ref.read(orderCustomerIdProvider),
+      query: state.query.copyWith(
+        page: 1,
+        customerState: next,
+        clearCustomerState: next == null,
+      ),
+      searchInput: state.searchInput,
+      searchTooShort: state.searchTooShort,
+    );
+    unawaited(_fetchFirstPage(preserveOnError: false));
+  }
+
   Future<void> refresh() async {
     if (state.phase == OrderListPhase.loading ||
         state.phase == OrderListPhase.refreshing) {
       return;
     }
-    state = OrderListState(
+    state = _copyState(
       phase: state.hasContent
           ? OrderListPhase.refreshing
           : OrderListPhase.loading,
-      orders: state.orders,
-      pagination: state.pagination,
-      customerId: ref.read(orderCustomerIdProvider),
     );
     await _fetchFirstPage(preserveOnError: true);
   }
@@ -137,15 +218,11 @@ class OrderListController extends Notifier<OrderListState> {
     _cancelToken?.cancel('superseded');
     final token = CancelToken();
     _cancelToken = token;
-    state = OrderListState(
-      phase: OrderListPhase.loadingMore,
-      orders: state.orders,
-      pagination: pagination,
-      customerId: customerId,
-    );
+    final requestQuery = state.query.copyWith(page: pagination.page + 1);
+    state = _copyState(phase: OrderListPhase.loadingMore);
     try {
       final page = await _repository.fetchOrders(
-        OrderListQuery(page: pagination.page + 1),
+        requestQuery,
         cancelToken: token,
       );
       if (!_isCurrent(operation, customerId)) {
@@ -157,11 +234,13 @@ class OrderListController extends Notifier<OrderListState> {
         for (final order in page.orders)
           if (known.add(order.orderNumber)) order,
       ];
-      state = OrderListState(
+      state = _copyState(
         phase: combined.isEmpty ? OrderListPhase.empty : OrderListPhase.ready,
         orders: combined,
         pagination: page.pagination,
-        customerId: customerId,
+        query: state.query.copyWith(page: page.pagination.page),
+        loadMoreError: null,
+        error: null,
       );
     } on ApiException catch (error) {
       if (error.kind == ApiErrorKind.cancelled) {
@@ -176,21 +255,17 @@ class OrderListController extends Notifier<OrderListState> {
       if (!_isCurrent(operation, customerId)) {
         return;
       }
-      state = OrderListState(
+      state = _copyState(
         phase: OrderListPhase.ready,
-        orders: state.orders,
         pagination: pagination,
         loadMoreError: error,
-        customerId: customerId,
       );
     } on Object {
       if (_isCurrent(operation, customerId)) {
-        state = OrderListState(
+        state = _copyState(
           phase: OrderListPhase.ready,
-          orders: state.orders,
           pagination: pagination,
           loadMoreError: const ApiException(kind: ApiErrorKind.unknown),
-          customerId: customerId,
         );
       }
     } finally {
@@ -209,6 +284,7 @@ class OrderListController extends Notifier<OrderListState> {
       state = const OrderListState.initial();
       return;
     }
+    final requestQuery = state.query.copyWith(page: 1);
     final operation = ++_epoch;
     _cancelToken?.cancel('superseded');
     final token = CancelToken();
@@ -221,11 +297,14 @@ class OrderListController extends Notifier<OrderListState> {
       state = OrderListState(
         phase: OrderListPhase.loading,
         customerId: customerId,
+        query: requestQuery,
+        searchInput: state.searchInput,
+        searchTooShort: state.searchTooShort,
       );
     }
     try {
       final page = await _repository.fetchOrders(
-        const OrderListQuery(),
+        requestQuery,
         cancelToken: token,
       );
       if (!_isCurrent(operation, customerId)) {
@@ -238,6 +317,9 @@ class OrderListController extends Notifier<OrderListState> {
         orders: page.orders,
         pagination: page.pagination,
         customerId: customerId,
+        query: requestQuery.copyWith(page: page.pagination.page),
+        searchInput: state.searchInput,
+        searchTooShort: state.searchTooShort,
       );
     } on ApiException catch (error) {
       if (error.kind == ApiErrorKind.cancelled) {
@@ -258,6 +340,9 @@ class OrderListController extends Notifier<OrderListState> {
         pagination: preservedPagination,
         error: error,
         customerId: customerId,
+        query: requestQuery,
+        searchInput: state.searchInput,
+        searchTooShort: state.searchTooShort,
       );
     } on Object {
       if (_isCurrent(operation, customerId)) {
@@ -267,6 +352,9 @@ class OrderListController extends Notifier<OrderListState> {
           pagination: preservedPagination,
           error: const ApiException(kind: ApiErrorKind.unknown),
           customerId: customerId,
+          query: requestQuery,
+          searchInput: state.searchInput,
+          searchTooShort: state.searchTooShort,
         );
       }
     } finally {
@@ -274,6 +362,30 @@ class OrderListController extends Notifier<OrderListState> {
         _cancelToken = null;
       }
     }
+  }
+
+  OrderListState _copyState({
+    OrderListPhase? phase,
+    List<OrderListItem>? orders,
+    OffsetPagination? pagination,
+    ApiException? error,
+    ApiException? loadMoreError,
+    int? customerId,
+    OrderListQuery? query,
+    String? searchInput,
+    bool? searchTooShort,
+  }) {
+    return OrderListState(
+      phase: phase ?? state.phase,
+      orders: orders ?? state.orders,
+      pagination: pagination ?? state.pagination,
+      error: error ?? state.error,
+      loadMoreError: loadMoreError,
+      customerId: customerId ?? state.customerId,
+      query: query ?? state.query,
+      searchInput: searchInput ?? state.searchInput,
+      searchTooShort: searchTooShort ?? state.searchTooShort,
+    );
   }
 
   bool _isCurrent(int operation, int customerId) =>
@@ -369,6 +481,12 @@ class OrderDetailController extends Notifier<OrderDetailState> {
         unawaited(load());
       }
     });
+    ref.listen<ShellVisibility>(shellVisibilityProvider, (previous, next) {
+      setForeground(next.allowsOrderPolling(orderNumber));
+    });
+    _foreground = ref
+        .read(shellVisibilityProvider)
+        .allowsOrderPolling(orderNumber);
     scheduleMicrotask(() {
       if (!_disposed) {
         unawaited(load());

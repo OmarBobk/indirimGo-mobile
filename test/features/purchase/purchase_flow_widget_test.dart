@@ -5,6 +5,7 @@ import 'package:indirimgo_mobile/app.dart';
 import 'package:indirimgo_mobile/core/config/app_config.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
 import 'package:indirimgo_mobile/core/routing/app_router.dart';
+import 'package:indirimgo_mobile/core/storage/locale_preference_store.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
@@ -343,6 +344,8 @@ void main() {
     await tester.tap(find.byKey(const Key('receipt-done')));
     await tester.pumpAndSettle();
     expect(await pending.readForCustomer(sampleUser.id), isNull);
+    expect(find.byKey(const Key('orders-list')), findsOneWidget);
+    expect(find.byKey(const Key('authenticated-shell')), findsNothing);
   });
 }
 
@@ -385,6 +388,9 @@ Future<ProviderContainer> _pumpApp(
       tokenStorageProvider.overrideWithValue(storage ?? InMemoryTokenStorage()),
       pendingCheckoutStoreProvider.overrideWithValue(
         pending ?? InMemoryPendingCheckoutStore(),
+      ),
+      localePreferenceStoreProvider.overrideWithValue(
+        InMemoryLocalePreferenceStore(),
       ),
       authRepositoryProvider.overrideWithValue(auth),
       catalogRepositoryProvider.overrideWithValue(catalog),
