@@ -74,6 +74,7 @@ class FakeWalletRepository implements WalletRepository {
   Object? statusError;
   int statusCalls = 0;
   String? lastStatusKey;
+  Duration? submitDelay;
 
   @override
   Future<WalletSummary> fetchSummary({CancelToken? cancelToken}) async {
@@ -157,7 +158,11 @@ class FakeWalletRepository implements WalletRepository {
     lastPaymentMethodId = paymentMethodId;
     lastIdempotencyKey = idempotencyKey;
     lastProof = proof;
-    await _wait(cancelToken);
+    if (submitDelay != null) {
+      await Future<void>.delayed(submitDelay!);
+    } else {
+      await _wait(cancelToken);
+    }
     if (submitError != null) {
       throw submitError!;
     }

@@ -46,7 +46,7 @@ void main() {
       transactions: sampleTransactionPage(),
       topups: sampleTopupPage(pendingTopupPublicRef: 'TUP-ABC123'),
     )..details['TUP-ABC123'] = samplePendingTopup();
-    final container = await _pumpAuthenticated(tester, wallet);
+    await _pumpAuthenticated(tester, wallet);
 
     await tester.tap(find.byKey(const Key('nav-account')));
     await tester.pumpAndSettle();
@@ -58,7 +58,7 @@ void main() {
     expect(find.textContaining('waiting for staff approval'), findsOneWidget);
     expect(find.text(r'$42.50'), findsWidgets);
 
-    await tester.tap(find.byKey(const Key('wallet-topup-TUP-ABC123')));
+    await tester.tap(find.byKey(const Key('wallet-view-pending')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('topup-detail-status')), findsOneWidget);
     expect(find.textContaining('does not add funds yet'), findsOneWidget);
@@ -68,18 +68,24 @@ void main() {
     tester,
   ) async {
     final wallet = FakeWalletRepository(
-      transactions: sampleTransactionPage(lastPage: 1),
       topups: TopupListPage.fromJson(topupListPageJson(items: [])),
+      paymentMethods: [
+        PaymentMethod.fromJson(paymentMethodJson(instructions: 'IBAN')),
+      ],
     );
-    final container = await _pumpAuthenticated(tester, wallet);
-    container.read(routerProvider).go(AppRoutes.walletTopup);
+    await _pumpAuthenticated(tester, wallet);
+    await tester.tap(find.byKey(const Key('nav-account')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-wallet')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('wallet-add-funds')));
     await tester.pumpAndSettle();
 
     await tester.enterText(
       find.byKey(const Key('topup-amount-field')),
       '100.00',
     );
-    await tester.tap(find.text('TRY'));
+    await tester.tap(find.byKey(const Key('topup-currency-try')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('topup-submit')));
     await tester.pumpAndSettle();

@@ -51,7 +51,12 @@ class WalletScreen extends ConsumerWidget {
                     .refresh(),
                 child: ListView(
                   key: const Key('wallet-screen'),
-                  padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.xl,
+                  ),
                   children: [
                     _SummaryCard(summary: summary),
                     const SizedBox(height: AppSpacing.md),
@@ -224,24 +229,15 @@ class _TopupTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final status = localizedTopupStatus(l10n, item);
     return Card(
-      child: Semantics(
-        button: true,
-        label: l10n.topupCardSemantics(
-          item.publicRef,
-          status,
+      child: ListTile(
+        key: Key('wallet-topup-${item.publicRef}'),
+        title: Text(item.publicRef, textDirection: TextDirection.ltr),
+        subtitle: Text(status),
+        trailing: Text(
           item.walletAmount.display.formatted,
+          textDirection: TextDirection.ltr,
         ),
-        child: ListTile(
-          key: Key('wallet-topup-${item.publicRef}'),
-          title: Text(item.publicRef, textDirection: TextDirection.ltr),
-          subtitle: Text(status),
-          trailing: Text(
-            item.walletAmount.display.formatted,
-            textDirection: TextDirection.ltr,
-          ),
-          onTap: () =>
-              context.push(AppRoutes.walletTopupDetail(item.publicRef)),
-        ),
+        onTap: () => context.push(AppRoutes.walletTopupDetail(item.publicRef)),
       ),
     );
   }
@@ -263,23 +259,15 @@ class _TransactionList extends ConsumerWidget {
       children: [
         for (final item in workspace.transactions)
           Card(
-            child: Semantics(
-              label: l10n.transactionCardSemantics(
-                localizedTransactionType(l10n, item.type),
-                localizedTransactionDirection(l10n, item.direction),
-                item.amount.display.formatted,
-                dateFormat.format(item.occurredAt.toLocal()),
+            child: ListTile(
+              key: Key('wallet-tx-${item.publicRef}'),
+              title: Text(localizedTransactionType(l10n, item.type)),
+              subtitle: Text(
+                '${localizedTransactionDirection(l10n, item.direction)} · ${dateFormat.format(item.occurredAt.toLocal())}',
               ),
-              child: ListTile(
-                key: Key('wallet-tx-${item.publicRef}'),
-                title: Text(localizedTransactionType(l10n, item.type)),
-                subtitle: Text(
-                  '${localizedTransactionDirection(l10n, item.direction)} · ${dateFormat.format(item.occurredAt.toLocal())}',
-                ),
-                trailing: Text(
-                  item.amount.display.formatted,
-                  textDirection: TextDirection.ltr,
-                ),
+              trailing: Text(
+                item.amount.display.formatted,
+                textDirection: TextDirection.ltr,
               ),
             ),
           ),

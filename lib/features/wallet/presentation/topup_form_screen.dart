@@ -59,7 +59,12 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
       body: SafeArea(
         child: ListView(
           key: const Key('topup-form-screen'),
-          padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.xl,
+          ),
           children: [
             Text(l10n.topupPendingNotice),
             const SizedBox(height: AppSpacing.md),
@@ -111,7 +116,13 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
             SegmentedButton<String>(
               segments: [
                 ButtonSegment(value: 'USD', label: Text(l10n.topupCurrencyUsd)),
-                ButtonSegment(value: 'TRY', label: Text(l10n.topupCurrencyTry)),
+                ButtonSegment(
+                  value: 'TRY',
+                  label: Text(
+                    l10n.topupCurrencyTry,
+                    key: const Key('topup-currency-try'),
+                  ),
+                ),
               ],
               selected: {state.currency},
               onSelectionChanged: state.isBusy
@@ -124,21 +135,21 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
             Text(l10n.paymentMethodLabel),
             const SizedBox(height: AppSpacing.sm),
             for (final method in state.paymentMethods)
-              RadioListTile<int>(
+              ListTile(
                 key: Key('topup-method-${method.id}'),
-                value: method.id,
-                groupValue: state.selectedPaymentMethodId,
-                onChanged: state.isBusy
-                    ? null
-                    : (value) {
-                        if (value != null) {
-                          controller.selectPaymentMethod(value);
-                        }
-                      },
+                leading: Icon(
+                  state.selectedPaymentMethodId == method.id
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                ),
                 title: Text(method.name),
                 subtitle: method.instructions == null
                     ? null
                     : Text(method.instructions!),
+                enabled: !state.isBusy,
+                onTap: state.isBusy
+                    ? null
+                    : () => controller.selectPaymentMethod(method.id),
               ),
             if (state.methodError)
               Text(
@@ -150,32 +161,43 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
             const SizedBox(height: AppSpacing.sm),
             if (state.proof != null)
               Text(l10n.proofSelectedLabel(state.proof!.filename)),
-            Row(
-              children: [
-                OutlinedButton(
-                  key: const Key('topup-choose-proof'),
-                  onPressed: state.isBusy ? null : controller.pickProof,
-                  child: Text(l10n.chooseProofAction),
-                ),
-                if (state.proof != null)
-                  TextButton(
-                    key: const Key('topup-remove-proof'),
-                    onPressed: state.isBusy
-                        ? null
-                        : () => controller.setProof(null),
-                    child: Text(l10n.removeProofAction),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton(
-              key: const Key('topup-submit'),
-              onPressed: state.isBusy ? null : controller.submit,
-              child: Text(
-                state.isBusy ? l10n.submittingTopup : l10n.submitTopupAction,
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: OutlinedButton(
+                key: const Key('topup-choose-proof'),
+                onPressed: state.isBusy ? null : controller.pickProof,
+                child: Text(l10n.chooseProofAction),
               ),
             ),
+            if (state.proof != null)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton(
+                  key: const Key('topup-remove-proof'),
+                  onPressed: state.isBusy
+                      ? null
+                      : () => controller.setProof(null),
+                  child: Text(l10n.removeProofAction),
+                ),
+              ),
           ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+            AppSpacing.sm,
+          ),
+          child: FilledButton(
+            key: const Key('topup-submit'),
+            onPressed: state.isBusy ? null : controller.submit,
+            child: Text(
+              state.isBusy ? l10n.submittingTopup : l10n.submitTopupAction,
+            ),
+          ),
         ),
       ),
     );

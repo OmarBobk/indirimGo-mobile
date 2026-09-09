@@ -139,7 +139,7 @@ void main() {
     'duplicate in-flight submit is ignored and pending error is kept',
     () async {
       final wallet = FakeWalletRepository()
-        ..delay = const Duration(milliseconds: 20);
+        ..submitDelay = const Duration(milliseconds: 20);
       final env = await createContainer(wallet: wallet);
       final sub = env.container.listen(
         topupFormControllerProvider,
@@ -147,7 +147,13 @@ void main() {
         fireImmediately: true,
       );
       addTearDown(sub.close);
-      await pump();
+      for (var i = 0; i < 40; i++) {
+        await pump();
+        if (env.container.read(topupFormControllerProvider).phase ==
+            TopupFormPhase.ready) {
+          break;
+        }
+      }
       env.container
           .read(topupFormControllerProvider.notifier)
           .setAmount('25.00');
@@ -161,7 +167,7 @@ void main() {
       expect(wallet.submitCalls, 1);
 
       wallet
-        ..delay = null
+        ..submitDelay = null
         ..submitError = const ApiException(
           kind: ApiErrorKind.validation,
           code: 'topup_request_pending',

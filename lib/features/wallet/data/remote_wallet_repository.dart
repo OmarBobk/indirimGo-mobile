@@ -118,7 +118,7 @@ class RemoteWalletRepository implements WalletRepository {
     final response = await apiClient.postMultipart(
       'wallet/topups',
       fields: fields,
-      files: {if (proofFile != null) 'proof': proofFile},
+      files: {'proof': ?proofFile},
       headers: {'Idempotency-Key': idempotencyKey},
       cancelToken: cancelToken,
     );
