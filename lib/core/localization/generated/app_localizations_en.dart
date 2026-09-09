@@ -839,4 +839,227 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageUnavailable => 'Image unavailable';
+
+  @override
+  String get openWalletAction => 'Open wallet';
+
+  @override
+  String get walletTitle => 'Wallet';
+
+  @override
+  String get walletLoading => 'Loading wallet';
+
+  @override
+  String get walletRefreshing => 'Refreshing wallet';
+
+  @override
+  String get addFundsAction => 'Add funds';
+
+  @override
+  String get pendingTopupBanner =>
+      'A top-up is waiting for staff approval. Your wallet is not credited yet.';
+
+  @override
+  String get viewPendingTopupAction => 'View pending top-up';
+
+  @override
+  String get transactionsTitle => 'Activity';
+
+  @override
+  String get transactionsEmptyTitle => 'No wallet activity yet';
+
+  @override
+  String get transactionsEmptyBody =>
+      'Purchases, approved top-ups, and other posted activity will appear here.';
+
+  @override
+  String get loadMoreTransactions => 'Load more activity';
+
+  @override
+  String get topupsTitle => 'Top-up requests';
+
+  @override
+  String get topupsEmptyTitle => 'No top-up requests yet';
+
+  @override
+  String get topupsEmptyBody =>
+      'Manual top-up requests stay pending until staff approval.';
+
+  @override
+  String get loadMoreTopups => 'Load more top-ups';
+
+  @override
+  String get topupFormTitle => 'Add funds';
+
+  @override
+  String get topupAmountLabel => 'Amount';
+
+  @override
+  String get topupAmountHint => '0.00';
+
+  @override
+  String get topupCurrencyLabel => 'Currency';
+
+  @override
+  String get topupCurrencyUsd => 'USD';
+
+  @override
+  String get topupCurrencyTry => 'TRY';
+
+  @override
+  String get topupCurrencyHelp =>
+      'Enter the amount you will send. Do not convert it yourself.';
+
+  @override
+  String get paymentMethodLabel => 'Payment method';
+
+  @override
+  String get paymentInstructionsTitle => 'Payment instructions';
+
+  @override
+  String get attachProofLabel => 'Attach proof (optional)';
+
+  @override
+  String get chooseProofAction => 'Choose file';
+
+  @override
+  String get removeProofAction => 'Remove proof';
+
+  @override
+  String proofSelectedLabel(String filename) {
+    return 'Selected: $filename';
+  }
+
+  @override
+  String get submitTopupAction => 'Submit top-up request';
+
+  @override
+  String get submittingTopup => 'Submitting top-up';
+
+  @override
+  String get topupPendingNotice =>
+      'This request stays pending until staff approval. Submitting does not add funds yet.';
+
+  @override
+  String get recoveringTopup => 'Checking your top-up request';
+
+  @override
+  String get topupDetailTitle => 'Top-up details';
+
+  @override
+  String topupReferenceLabel(String reference) {
+    return 'Reference $reference';
+  }
+
+  @override
+  String get enteredAmountLabel => 'You entered';
+
+  @override
+  String get walletCreditLabel => 'Wallet amount after approval';
+
+  @override
+  String get topupStatusPending => 'Waiting for approval';
+
+  @override
+  String get topupStatusApproved => 'Approved';
+
+  @override
+  String get topupStatusCredited => 'Credited to wallet';
+
+  @override
+  String get topupStatusRejected => 'Rejected';
+
+  @override
+  String get topupStatusCancelled => 'Cancelled';
+
+  @override
+  String get topupHasProof => 'Proof attached';
+
+  @override
+  String get topupNoProof => 'No proof attached';
+
+  @override
+  String get retryTopupAction => 'Submit a new request';
+
+  @override
+  String get refreshWalletAction => 'Refresh wallet';
+
+  @override
+  String get refreshTopupAction => 'Refresh top-up';
+
+  @override
+  String get transactionTypePurchase => 'Purchase';
+
+  @override
+  String get transactionTypeTopup => 'Top-up';
+
+  @override
+  String get transactionTypeRefund => 'Refund';
+
+  @override
+  String get transactionTypeAdjustment => 'Adjustment';
+
+  @override
+  String get transactionTypeCommission => 'Commission';
+
+  @override
+  String get transactionDirectionCredit => 'Credit';
+
+  @override
+  String get transactionDirectionDebit => 'Debit';
+
+  @override
+  String get topupRequestPending =>
+      'You already have a pending top-up request.';
+
+  @override
+  String get topupNotFound => 'This top-up request is not available.';
+
+  @override
+  String get topupAttemptNotFoundBody =>
+      'No pending top-up was found for this account.';
+
+  @override
+  String get topupInProgress => 'This top-up is still processing.';
+
+  @override
+  String get topupRetryRequired =>
+      'This top-up must be retried with the same request.';
+
+  @override
+  String get paymentMethodUnavailable => 'This payment method is unavailable.';
+
+  @override
+  String get proofNotFound => 'Payment proof was not found.';
+
+  @override
+  String get invalidTopupAmount => 'That top-up amount is not valid.';
+
+  @override
+  String get topupConversionUnavailable =>
+      'This currency cannot be converted right now. Enter USD or try later.';
+
+  @override
+  String get topupAmountRequired => 'Enter an amount.';
+
+  @override
+  String get paymentMethodRequired => 'Choose a payment method.';
+
+  @override
+  String get walletUnavailableTitle => 'Wallet unavailable';
+
+  @override
+  String topupCardSemantics(String reference, String status, String amount) {
+    return 'Top-up $reference, $status, $amount';
+  }
+
+  @override
+  String transactionCardSemantics(
+    String type,
+    String direction,
+    String amount,
+    String date,
+  ) {
+    return '$type $direction, $amount, $date';
+  }
 }

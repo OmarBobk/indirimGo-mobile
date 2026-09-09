@@ -28,7 +28,8 @@
   detail, account access) with manual OpenAPI models and a focused repository.
 - `lib/features/purchase`: buy-now draft, quote, checkout, recovery, and
   receipt UI with manual OpenAPI models.
-- `lib/features/wallet`: wallet summary for Account/checkout surfaces.
+- `lib/features/wallet`: wallet summary, transaction history, and manual
+  top-up request/recovery UI. Never convert TRY↔USD or credit locally.
 - Prefer feature-first code and small manual immutable models. Avoid code
   generation and generic clean-architecture layers.
 - Never recalculate Laravel prices or parse money amounts into `double`.
@@ -41,8 +42,9 @@
   session value.
 - Pending checkout recovery is per-customer and may store only customer id,
   unresolved Idempotency-Key, optional completed `order_number` anchor, and
-  timestamp. Never persist requirement values, quote bodies, fingerprints,
-  prices, or receipt bodies.
+  timestamp. Pending top-up recovery may store only customer id, unresolved
+  Idempotency-Key, and timestamp. Never persist requirement values, quote
+  bodies, fingerprints, prices, receipt bodies, proof bytes, or amounts.
 - Keep password, 2FA codes, recovery codes, challenge tokens, requirement
   values, and idempotency keys out of logs and exception strings.
 - A 401 is authoritative. Connectivity, timeout, and 5xx failures must retain

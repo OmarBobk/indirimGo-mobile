@@ -360,5 +360,97 @@
   "receiptDoneAction": "Done",
   "packageImageLabel": "Package image",
   "categoryImageLabel": "Category image",
-  "imageUnavailable": "Image unavailable"
+  "imageUnavailable": "Image unavailable",
+  "openWalletAction": "Open wallet",
+  "walletTitle": "Wallet",
+  "walletLoading": "Loading wallet",
+  "walletRefreshing": "Refreshing wallet",
+  "addFundsAction": "Add funds",
+  "pendingTopupBanner": "A top-up is waiting for staff approval. Your wallet is not credited yet.",
+  "viewPendingTopupAction": "View pending top-up",
+  "transactionsTitle": "Activity",
+  "transactionsEmptyTitle": "No wallet activity yet",
+  "transactionsEmptyBody": "Purchases, approved top-ups, and other posted activity will appear here.",
+  "loadMoreTransactions": "Load more activity",
+  "topupsTitle": "Top-up requests",
+  "topupsEmptyTitle": "No top-up requests yet",
+  "topupsEmptyBody": "Manual top-up requests stay pending until staff approval.",
+  "loadMoreTopups": "Load more top-ups",
+  "topupFormTitle": "Add funds",
+  "topupAmountLabel": "Amount",
+  "topupAmountHint": "0.00",
+  "topupCurrencyLabel": "Currency",
+  "topupCurrencyUsd": "USD",
+  "topupCurrencyTry": "TRY",
+  "topupCurrencyHelp": "Enter the amount you will send. Do not convert it yourself.",
+  "paymentMethodLabel": "Payment method",
+  "paymentInstructionsTitle": "Payment instructions",
+  "attachProofLabel": "Attach proof (optional)",
+  "chooseProofAction": "Choose file",
+  "removeProofAction": "Remove proof",
+  "proofSelectedLabel": "Selected: {filename}",
+  "@proofSelectedLabel": {
+    "placeholders": {
+      "filename": {"type": "String"}
+    }
+  },
+  "submitTopupAction": "Submit top-up request",
+  "submittingTopup": "Submitting top-up",
+  "topupPendingNotice": "This request stays pending until staff approval. Submitting does not add funds yet.",
+  "recoveringTopup": "Checking your top-up request",
+  "topupDetailTitle": "Top-up details",
+  "topupReferenceLabel": "Reference {reference}",
+  "@topupReferenceLabel": {
+    "placeholders": {
+      "reference": {"type": "String"}
+    }
+  },
+  "enteredAmountLabel": "You entered",
+  "walletCreditLabel": "Wallet amount after approval",
+  "topupStatusPending": "Waiting for approval",
+  "topupStatusApproved": "Approved",
+  "topupStatusCredited": "Credited to wallet",
+  "topupStatusRejected": "Rejected",
+  "topupStatusCancelled": "Cancelled",
+  "topupHasProof": "Proof attached",
+  "topupNoProof": "No proof attached",
+  "retryTopupAction": "Submit a new request",
+  "refreshWalletAction": "Refresh wallet",
+  "refreshTopupAction": "Refresh top-up",
+  "transactionTypePurchase": "Purchase",
+  "transactionTypeTopup": "Top-up",
+  "transactionTypeRefund": "Refund",
+  "transactionTypeAdjustment": "Adjustment",
+  "transactionTypeCommission": "Commission",
+  "transactionDirectionCredit": "Credit",
+  "transactionDirectionDebit": "Debit",
+  "topupRequestPending": "You already have a pending top-up request.",
+  "topupNotFound": "This top-up request is not available.",
+  "topupAttemptNotFoundBody": "No pending top-up was found for this account.",
+  "topupInProgress": "This top-up is still processing.",
+  "topupRetryRequired": "This top-up must be retried with the same request.",
+  "paymentMethodUnavailable": "This payment method is unavailable.",
+  "proofNotFound": "Payment proof was not found.",
+  "invalidTopupAmount": "That top-up amount is not valid.",
+  "topupConversionUnavailable": "This currency cannot be converted right now. Enter USD or try later.",
+  "topupAmountRequired": "Enter an amount.",
+  "paymentMethodRequired": "Choose a payment method.",
+  "walletUnavailableTitle": "Wallet unavailable",
+  "topupCardSemantics": "Top-up {reference}, {status}, {amount}",
+  "@topupCardSemantics": {
+    "placeholders": {
+      "reference": {"type": "String"},
+      "status": {"type": "String"},
+      "amount": {"type": "String"}
+    }
+  },
+  "transactionCardSemantics": "{type} {direction}, {amount}, {date}",
+  "@transactionCardSemantics": {
+    "placeholders": {
+      "type": {"type": "String"},
+      "direction": {"type": "String"},
+      "amount": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  }
 }

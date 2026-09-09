@@ -830,4 +830,224 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get imageUnavailable => 'تعذّر عرض الصورة';
+
+  @override
+  String get openWalletAction => 'فتح المحفظة';
+
+  @override
+  String get walletTitle => 'المحفظة';
+
+  @override
+  String get walletLoading => 'جارٍ تحميل المحفظة';
+
+  @override
+  String get walletRefreshing => 'جارٍ تحديث المحفظة';
+
+  @override
+  String get addFundsAction => 'إضافة رصيد';
+
+  @override
+  String get pendingTopupBanner =>
+      'طلب شحن بانتظار موافقة الموظفين. لم يُضف الرصيد بعد.';
+
+  @override
+  String get viewPendingTopupAction => 'عرض طلب الشحن المعلّق';
+
+  @override
+  String get transactionsTitle => 'النشاط';
+
+  @override
+  String get transactionsEmptyTitle => 'لا يوجد نشاط في المحفظة بعد';
+
+  @override
+  String get transactionsEmptyBody =>
+      'ستظهر هنا المشتريات وطلبات الشحن المعتمدة والأنشطة الأخرى.';
+
+  @override
+  String get loadMoreTransactions => 'تحميل المزيد من النشاط';
+
+  @override
+  String get topupsTitle => 'طلبات الشحن';
+
+  @override
+  String get topupsEmptyTitle => 'لا توجد طلبات شحن بعد';
+
+  @override
+  String get topupsEmptyBody =>
+      'تبقى طلبات الشحن اليدوي معلّقة حتى موافقة الموظفين.';
+
+  @override
+  String get loadMoreTopups => 'تحميل المزيد من طلبات الشحن';
+
+  @override
+  String get topupFormTitle => 'إضافة رصيد';
+
+  @override
+  String get topupAmountLabel => 'المبلغ';
+
+  @override
+  String get topupAmountHint => '0.00';
+
+  @override
+  String get topupCurrencyLabel => 'العملة';
+
+  @override
+  String get topupCurrencyUsd => 'USD';
+
+  @override
+  String get topupCurrencyTry => 'TRY';
+
+  @override
+  String get topupCurrencyHelp => 'أدخل المبلغ الذي سترسله. لا تحوّله بنفسك.';
+
+  @override
+  String get paymentMethodLabel => 'طريقة الدفع';
+
+  @override
+  String get paymentInstructionsTitle => 'تعليمات الدفع';
+
+  @override
+  String get attachProofLabel => 'إرفاق إثبات (اختياري)';
+
+  @override
+  String get chooseProofAction => 'اختيار ملف';
+
+  @override
+  String get removeProofAction => 'إزالة الإثبات';
+
+  @override
+  String proofSelectedLabel(String filename) {
+    return 'المحدد: $filename';
+  }
+
+  @override
+  String get submitTopupAction => 'إرسال طلب الشحن';
+
+  @override
+  String get submittingTopup => 'جارٍ إرسال طلب الشحن';
+
+  @override
+  String get topupPendingNotice =>
+      'يبقى هذا الطلب معلّقاً حتى موافقة الموظفين. الإرسال لا يضيف رصيداً الآن.';
+
+  @override
+  String get recoveringTopup => 'جارٍ التحقق من طلب الشحن';
+
+  @override
+  String get topupDetailTitle => 'تفاصيل الشحن';
+
+  @override
+  String topupReferenceLabel(String reference) {
+    return 'المرجع $reference';
+  }
+
+  @override
+  String get enteredAmountLabel => 'أدخلت';
+
+  @override
+  String get walletCreditLabel => 'مبلغ المحفظة بعد الموافقة';
+
+  @override
+  String get topupStatusPending => 'بانتظار الموافقة';
+
+  @override
+  String get topupStatusApproved => 'تمت الموافقة';
+
+  @override
+  String get topupStatusCredited => 'أُضيف إلى المحفظة';
+
+  @override
+  String get topupStatusRejected => 'مرفوض';
+
+  @override
+  String get topupStatusCancelled => 'ملغى';
+
+  @override
+  String get topupHasProof => 'تم إرفاق إثبات';
+
+  @override
+  String get topupNoProof => 'لا يوجد إثبات';
+
+  @override
+  String get retryTopupAction => 'إرسال طلب جديد';
+
+  @override
+  String get refreshWalletAction => 'تحديث المحفظة';
+
+  @override
+  String get refreshTopupAction => 'تحديث طلب الشحن';
+
+  @override
+  String get transactionTypePurchase => 'شراء';
+
+  @override
+  String get transactionTypeTopup => 'شحن';
+
+  @override
+  String get transactionTypeRefund => 'استرداد';
+
+  @override
+  String get transactionTypeAdjustment => 'تعديل';
+
+  @override
+  String get transactionTypeCommission => 'عمولة';
+
+  @override
+  String get transactionDirectionCredit => 'إضافة';
+
+  @override
+  String get transactionDirectionDebit => 'خصم';
+
+  @override
+  String get topupRequestPending => 'لديك طلب شحن معلّق بالفعل.';
+
+  @override
+  String get topupNotFound => 'طلب الشحن هذا غير متاح.';
+
+  @override
+  String get topupAttemptNotFoundBody =>
+      'لم يتم العثور على طلب شحن معلّق لهذا الحساب.';
+
+  @override
+  String get topupInProgress => 'طلب الشحن هذا ما زال قيد المعالجة.';
+
+  @override
+  String get topupRetryRequired => 'يجب إعادة محاولة طلب الشحن بنفس الطلب.';
+
+  @override
+  String get paymentMethodUnavailable => 'طريقة الدفع هذه غير متاحة.';
+
+  @override
+  String get proofNotFound => 'إثبات الدفع غير موجود.';
+
+  @override
+  String get invalidTopupAmount => 'مبلغ الشحن هذا غير صالح.';
+
+  @override
+  String get topupConversionUnavailable =>
+      'لا يمكن تحويل هذه العملة الآن. أدخل المبلغ بالدولار أو حاول لاحقاً.';
+
+  @override
+  String get topupAmountRequired => 'أدخل مبلغاً.';
+
+  @override
+  String get paymentMethodRequired => 'اختر طريقة دفع.';
+
+  @override
+  String get walletUnavailableTitle => 'المحفظة غير متاحة';
+
+  @override
+  String topupCardSemantics(String reference, String status, String amount) {
+    return 'شحن $reference، $status، $amount';
+  }
+
+  @override
+  String transactionCardSemantics(
+    String type,
+    String direction,
+    String amount,
+    String date,
+  ) {
+    return '$type $direction، $amount، $date';
+  }
 }
