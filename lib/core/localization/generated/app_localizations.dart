@@ -1544,6 +1544,413 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّر عرض الصورة'**
   String get imageUnavailable;
+
+  /// No description provided for @openWalletAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح المحفظة'**
+  String get openWalletAction;
+
+  /// No description provided for @walletTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحفظة'**
+  String get walletTitle;
+
+  /// No description provided for @walletLoading.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحميل المحفظة'**
+  String get walletLoading;
+
+  /// No description provided for @walletRefreshing.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحديث المحفظة'**
+  String get walletRefreshing;
+
+  /// No description provided for @addFundsAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة رصيد'**
+  String get addFundsAction;
+
+  /// No description provided for @pendingTopupBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب شحن بانتظار موافقة الموظفين. لم يُضف الرصيد بعد.'**
+  String get pendingTopupBanner;
+
+  /// No description provided for @viewPendingTopupAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض طلب الشحن المعلّق'**
+  String get viewPendingTopupAction;
+
+  /// No description provided for @transactionsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'النشاط'**
+  String get transactionsTitle;
+
+  /// No description provided for @transactionsEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد نشاط في المحفظة بعد'**
+  String get transactionsEmptyTitle;
+
+  /// No description provided for @transactionsEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستظهر هنا المشتريات وطلبات الشحن المعتمدة والأنشطة الأخرى.'**
+  String get transactionsEmptyBody;
+
+  /// No description provided for @loadMoreTransactions.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحميل المزيد من النشاط'**
+  String get loadMoreTransactions;
+
+  /// No description provided for @topupsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات الشحن'**
+  String get topupsTitle;
+
+  /// No description provided for @topupsEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد طلبات شحن بعد'**
+  String get topupsEmptyTitle;
+
+  /// No description provided for @topupsEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تبقى طلبات الشحن اليدوي معلّقة حتى موافقة الموظفين.'**
+  String get topupsEmptyBody;
+
+  /// No description provided for @loadMoreTopups.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحميل المزيد من طلبات الشحن'**
+  String get loadMoreTopups;
+
+  /// No description provided for @topupFormTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة رصيد'**
+  String get topupFormTitle;
+
+  /// No description provided for @topupAmountLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ'**
+  String get topupAmountLabel;
+
+  /// No description provided for @topupAmountHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'0.00'**
+  String get topupAmountHint;
+
+  /// No description provided for @topupCurrencyLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'العملة'**
+  String get topupCurrencyLabel;
+
+  /// No description provided for @topupCurrencyUsd.
+  ///
+  /// In ar, this message translates to:
+  /// **'USD'**
+  String get topupCurrencyUsd;
+
+  /// No description provided for @topupCurrencyTry.
+  ///
+  /// In ar, this message translates to:
+  /// **'TRY'**
+  String get topupCurrencyTry;
+
+  /// No description provided for @topupCurrencyHelp.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل المبلغ الذي سترسله. لا تحوّله بنفسك.'**
+  String get topupCurrencyHelp;
+
+  /// No description provided for @paymentMethodLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'طريقة الدفع'**
+  String get paymentMethodLabel;
+
+  /// No description provided for @paymentInstructionsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعليمات الدفع'**
+  String get paymentInstructionsTitle;
+
+  /// No description provided for @attachProofLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرفاق إثبات (اختياري)'**
+  String get attachProofLabel;
+
+  /// No description provided for @chooseProofAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار ملف'**
+  String get chooseProofAction;
+
+  /// No description provided for @removeProofAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة الإثبات'**
+  String get removeProofAction;
+
+  /// No description provided for @proofSelectedLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحدد: {filename}'**
+  String proofSelectedLabel(String filename);
+
+  /// No description provided for @submitTopupAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال طلب الشحن'**
+  String get submitTopupAction;
+
+  /// No description provided for @submittingTopup.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ إرسال طلب الشحن'**
+  String get submittingTopup;
+
+  /// No description provided for @topupPendingNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'يبقى هذا الطلب معلّقاً حتى موافقة الموظفين. الإرسال لا يضيف رصيداً الآن.'**
+  String get topupPendingNotice;
+
+  /// No description provided for @recoveringTopup.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ التحقق من طلب الشحن'**
+  String get recoveringTopup;
+
+  /// No description provided for @topupDetailTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل الشحن'**
+  String get topupDetailTitle;
+
+  /// No description provided for @topupReferenceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المرجع {reference}'**
+  String topupReferenceLabel(String reference);
+
+  /// No description provided for @enteredAmountLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخلت'**
+  String get enteredAmountLabel;
+
+  /// No description provided for @walletCreditLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'مبلغ المحفظة بعد الموافقة'**
+  String get walletCreditLabel;
+
+  /// No description provided for @topupStatusPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار الموافقة'**
+  String get topupStatusPending;
+
+  /// No description provided for @topupStatusApproved.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت الموافقة'**
+  String get topupStatusApproved;
+
+  /// No description provided for @topupStatusCredited.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُضيف إلى المحفظة'**
+  String get topupStatusCredited;
+
+  /// No description provided for @topupStatusRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get topupStatusRejected;
+
+  /// No description provided for @topupStatusCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملغى'**
+  String get topupStatusCancelled;
+
+  /// No description provided for @topupHasProof.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إرفاق إثبات'**
+  String get topupHasProof;
+
+  /// No description provided for @topupNoProof.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد إثبات'**
+  String get topupNoProof;
+
+  /// No description provided for @retryTopupAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال طلب جديد'**
+  String get retryTopupAction;
+
+  /// No description provided for @refreshWalletAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث المحفظة'**
+  String get refreshWalletAction;
+
+  /// No description provided for @refreshTopupAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث طلب الشحن'**
+  String get refreshTopupAction;
+
+  /// No description provided for @transactionTypePurchase.
+  ///
+  /// In ar, this message translates to:
+  /// **'شراء'**
+  String get transactionTypePurchase;
+
+  /// No description provided for @transactionTypeTopup.
+  ///
+  /// In ar, this message translates to:
+  /// **'شحن'**
+  String get transactionTypeTopup;
+
+  /// No description provided for @transactionTypeRefund.
+  ///
+  /// In ar, this message translates to:
+  /// **'استرداد'**
+  String get transactionTypeRefund;
+
+  /// No description provided for @transactionTypeAdjustment.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل'**
+  String get transactionTypeAdjustment;
+
+  /// No description provided for @transactionTypeCommission.
+  ///
+  /// In ar, this message translates to:
+  /// **'عمولة'**
+  String get transactionTypeCommission;
+
+  /// No description provided for @transactionDirectionCredit.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة'**
+  String get transactionDirectionCredit;
+
+  /// No description provided for @transactionDirectionDebit.
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم'**
+  String get transactionDirectionDebit;
+
+  /// No description provided for @topupRequestPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'لديك طلب شحن معلّق بالفعل.'**
+  String get topupRequestPending;
+
+  /// No description provided for @topupNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب الشحن هذا غير متاح.'**
+  String get topupNotFound;
+
+  /// No description provided for @topupAttemptNotFoundBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتم العثور على طلب شحن معلّق لهذا الحساب.'**
+  String get topupAttemptNotFoundBody;
+
+  /// No description provided for @topupInProgress.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب الشحن هذا ما زال قيد المعالجة.'**
+  String get topupInProgress;
+
+  /// No description provided for @topupRetryRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'يجب إعادة محاولة طلب الشحن بنفس الطلب.'**
+  String get topupRetryRequired;
+
+  /// No description provided for @paymentMethodUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'طريقة الدفع هذه غير متاحة.'**
+  String get paymentMethodUnavailable;
+
+  /// No description provided for @proofNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'إثبات الدفع غير موجود.'**
+  String get proofNotFound;
+
+  /// No description provided for @invalidTopupAmount.
+  ///
+  /// In ar, this message translates to:
+  /// **'مبلغ الشحن هذا غير صالح.'**
+  String get invalidTopupAmount;
+
+  /// No description provided for @topupConversionUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكن تحويل هذه العملة الآن. أدخل المبلغ بالدولار أو حاول لاحقاً.'**
+  String get topupConversionUnavailable;
+
+  /// No description provided for @topupAmountRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل مبلغاً.'**
+  String get topupAmountRequired;
+
+  /// No description provided for @paymentMethodRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر طريقة دفع.'**
+  String get paymentMethodRequired;
+
+  /// No description provided for @walletUnavailableTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحفظة غير متاحة'**
+  String get walletUnavailableTitle;
+
+  /// No description provided for @topupCardSemantics.
+  ///
+  /// In ar, this message translates to:
+  /// **'شحن {reference}، {status}، {amount}'**
+  String topupCardSemantics(String reference, String status, String amount);
+
+  /// No description provided for @transactionCardSemantics.
+  ///
+  /// In ar, this message translates to:
+  /// **'{type} {direction}، {amount}، {date}'**
+  String transactionCardSemantics(
+    String type,
+    String direction,
+    String amount,
+    String date,
+  );
 }
 
 class _AppLocalizationsDelegate

@@ -26,6 +26,17 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
     if (error.code == 'order_not_found') {
       return l10n.orderNotFound;
     }
+    if (error.code == 'topup_not_found' ||
+        error.code == 'topup_attempt_not_found' ||
+        error.code == 'proof_not_found') {
+      if (error.code == 'topup_attempt_not_found') {
+        return l10n.topupAttemptNotFoundBody;
+      }
+      if (error.code == 'proof_not_found') {
+        return l10n.proofNotFound;
+      }
+      return l10n.topupNotFound;
+    }
     if (error.code == 'checkout_attempt_not_found') {
       return l10n.checkoutAttemptNotFoundBody;
     }
@@ -34,6 +45,18 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
   if (error.kind == ApiErrorKind.validation) {
     if (error.code == 'insufficient_wallet_balance') {
       return l10n.insufficientWalletBalance;
+    }
+    if (error.code == 'invalid_topup_amount') {
+      return l10n.invalidTopupAmount;
+    }
+    if (error.code == 'topup_request_pending') {
+      return l10n.topupRequestPending;
+    }
+    if (error.code == 'payment_method_unavailable') {
+      return l10n.paymentMethodUnavailable;
+    }
+    if (error.code == 'topup_conversion_unavailable') {
+      return l10n.topupConversionUnavailable;
     }
     if (error.code == 'invalid_custom_amount') {
       return l10n.invalidCustomAmount;
@@ -71,6 +94,15 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
     'checkout_failed' => l10n.checkoutFailed,
     'checkout_attempt_not_found' => l10n.checkoutAttemptNotFoundBody,
     'order_not_found' => l10n.orderNotFound,
+    'topup_request_pending' => l10n.topupRequestPending,
+    'topup_not_found' => l10n.topupNotFound,
+    'topup_attempt_not_found' => l10n.topupAttemptNotFoundBody,
+    'topup_in_progress' => l10n.topupInProgress,
+    'topup_retry_required' => l10n.topupRetryRequired,
+    'payment_method_unavailable' => l10n.paymentMethodUnavailable,
+    'proof_not_found' => l10n.proofNotFound,
+    'invalid_topup_amount' => l10n.invalidTopupAmount,
+    'topup_conversion_unavailable' => l10n.topupConversionUnavailable,
     'unauthenticated' || 'missing_mobile_ability' => l10n.unauthenticated,
     _ => l10n.sessionFailure,
   };

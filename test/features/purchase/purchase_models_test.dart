@@ -112,6 +112,7 @@ void main() {
       final summary = WalletSummary.fromJson(walletSummaryJson());
       expect(summary.availableToSpend.amount, '42.50');
       expect(summary.pricesVisible, isTrue);
+      expect(summary.pendingTopupPublicRef, isNull);
     });
 
     test('parses receipt and status shapes', () {

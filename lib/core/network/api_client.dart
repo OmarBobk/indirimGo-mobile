@@ -116,13 +116,32 @@ class ApiClient {
     cancelToken: cancelToken,
   );
 
+  Future<ApiResponse> postMultipart(
+    String path, {
+    required Map<String, String> fields,
+    Map<String, MultipartFile> files = const {},
+    Map<String, String>? headers,
+    CancelToken? cancelToken,
+  }) {
+    final form = FormData.fromMap({...fields, ...files});
+    return _request(
+      path,
+      method: 'POST',
+      data: form,
+      headers: headers,
+      cancelToken: cancelToken,
+      sendTimeout: const Duration(seconds: 60),
+    );
+  }
+
   Future<ApiResponse> _request(
     String path, {
     required String method,
-    Map<String, Object?>? data,
+    Object? data,
     Map<String, Object?>? queryParameters,
     Map<String, String>? headers,
     CancelToken? cancelToken,
+    Duration? sendTimeout,
   }) async {
     try {
       final response = await _dio.request<Object?>(
@@ -130,7 +149,11 @@ class ApiClient {
         data: data,
         queryParameters: queryParameters,
         cancelToken: cancelToken,
-        options: Options(method: method, headers: headers),
+        options: Options(
+          method: method,
+          headers: headers,
+          sendTimeout: sendTimeout,
+        ),
       );
       final statusCode = response.statusCode;
       if (statusCode == null) {
@@ -326,4 +349,8 @@ const _validationFields = {
   'customer_state',
   'items',
   'quote_fingerprint',
+  'amount',
+  'currency',
+  'payment_method_id',
+  'proof',
 };

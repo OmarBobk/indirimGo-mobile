@@ -5,6 +5,7 @@ import 'package:indirimgo_mobile/app.dart';
 import 'package:indirimgo_mobile/core/config/app_config.dart';
 import 'package:indirimgo_mobile/core/storage/locale_preference_store.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
+import 'package:indirimgo_mobile/core/storage/pending_topup_store.dart';
 import 'package:indirimgo_mobile/core/storage/token_storage.dart';
 import 'package:indirimgo_mobile/features/auth/data/remote_auth_repository.dart';
 import 'package:indirimgo_mobile/features/auth/domain/auth_repository.dart';
@@ -34,6 +35,7 @@ void main() async {
     final config = AppConfig.fromEnvironment(buildMode: buildMode);
     final storage = SecureTokenStorage();
     final pendingCheckoutStore = SecurePendingCheckoutStore();
+    final pendingTopupStore = SecurePendingTopupStore();
     runApp(
       ProviderScope(
         overrides: [
@@ -41,6 +43,7 @@ void main() async {
           tokenStorageProvider.overrideWithValue(storage),
           localePreferenceStoreProvider.overrideWithValue(localeStore),
           pendingCheckoutStoreProvider.overrideWithValue(pendingCheckoutStore),
+          pendingTopupStoreProvider.overrideWithValue(pendingTopupStore),
           authRepositoryProvider.overrideWith(
             (ref) => ref.watch(remoteAuthRepositoryProvider),
           ),

@@ -360,5 +360,97 @@
   "receiptDoneAction": "تم",
   "packageImageLabel": "صورة الباقة",
   "categoryImageLabel": "صورة التصنيف",
-  "imageUnavailable": "تعذّر عرض الصورة"
+  "imageUnavailable": "تعذّر عرض الصورة",
+  "openWalletAction": "فتح المحفظة",
+  "walletTitle": "المحفظة",
+  "walletLoading": "جارٍ تحميل المحفظة",
+  "walletRefreshing": "جارٍ تحديث المحفظة",
+  "addFundsAction": "إضافة رصيد",
+  "pendingTopupBanner": "طلب شحن بانتظار موافقة الموظفين. لم يُضف الرصيد بعد.",
+  "viewPendingTopupAction": "عرض طلب الشحن المعلّق",
+  "transactionsTitle": "النشاط",
+  "transactionsEmptyTitle": "لا يوجد نشاط في المحفظة بعد",
+  "transactionsEmptyBody": "ستظهر هنا المشتريات وطلبات الشحن المعتمدة والأنشطة الأخرى.",
+  "loadMoreTransactions": "تحميل المزيد من النشاط",
+  "topupsTitle": "طلبات الشحن",
+  "topupsEmptyTitle": "لا توجد طلبات شحن بعد",
+  "topupsEmptyBody": "تبقى طلبات الشحن اليدوي معلّقة حتى موافقة الموظفين.",
+  "loadMoreTopups": "تحميل المزيد من طلبات الشحن",
+  "topupFormTitle": "إضافة رصيد",
+  "topupAmountLabel": "المبلغ",
+  "topupAmountHint": "0.00",
+  "topupCurrencyLabel": "العملة",
+  "topupCurrencyUsd": "USD",
+  "topupCurrencyTry": "TRY",
+  "topupCurrencyHelp": "أدخل المبلغ الذي سترسله. لا تحوّله بنفسك.",
+  "paymentMethodLabel": "طريقة الدفع",
+  "paymentInstructionsTitle": "تعليمات الدفع",
+  "attachProofLabel": "إرفاق إثبات (اختياري)",
+  "chooseProofAction": "اختيار ملف",
+  "removeProofAction": "إزالة الإثبات",
+  "proofSelectedLabel": "المحدد: {filename}",
+  "@proofSelectedLabel": {
+    "placeholders": {
+      "filename": {"type": "String"}
+    }
+  },
+  "submitTopupAction": "إرسال طلب الشحن",
+  "submittingTopup": "جارٍ إرسال طلب الشحن",
+  "topupPendingNotice": "يبقى هذا الطلب معلّقاً حتى موافقة الموظفين. الإرسال لا يضيف رصيداً الآن.",
+  "recoveringTopup": "جارٍ التحقق من طلب الشحن",
+  "topupDetailTitle": "تفاصيل الشحن",
+  "topupReferenceLabel": "المرجع {reference}",
+  "@topupReferenceLabel": {
+    "placeholders": {
+      "reference": {"type": "String"}
+    }
+  },
+  "enteredAmountLabel": "أدخلت",
+  "walletCreditLabel": "مبلغ المحفظة بعد الموافقة",
+  "topupStatusPending": "بانتظار الموافقة",
+  "topupStatusApproved": "تمت الموافقة",
+  "topupStatusCredited": "أُضيف إلى المحفظة",
+  "topupStatusRejected": "مرفوض",
+  "topupStatusCancelled": "ملغى",
+  "topupHasProof": "تم إرفاق إثبات",
+  "topupNoProof": "لا يوجد إثبات",
+  "retryTopupAction": "إرسال طلب جديد",
+  "refreshWalletAction": "تحديث المحفظة",
+  "refreshTopupAction": "تحديث طلب الشحن",
+  "transactionTypePurchase": "شراء",
+  "transactionTypeTopup": "شحن",
+  "transactionTypeRefund": "استرداد",
+  "transactionTypeAdjustment": "تعديل",
+  "transactionTypeCommission": "عمولة",
+  "transactionDirectionCredit": "إضافة",
+  "transactionDirectionDebit": "خصم",
+  "topupRequestPending": "لديك طلب شحن معلّق بالفعل.",
+  "topupNotFound": "طلب الشحن هذا غير متاح.",
+  "topupAttemptNotFoundBody": "لم يتم العثور على طلب شحن معلّق لهذا الحساب.",
+  "topupInProgress": "طلب الشحن هذا ما زال قيد المعالجة.",
+  "topupRetryRequired": "يجب إعادة محاولة طلب الشحن بنفس الطلب.",
+  "paymentMethodUnavailable": "طريقة الدفع هذه غير متاحة.",
+  "proofNotFound": "إثبات الدفع غير موجود.",
+  "invalidTopupAmount": "مبلغ الشحن هذا غير صالح.",
+  "topupConversionUnavailable": "لا يمكن تحويل هذه العملة الآن. أدخل المبلغ بالدولار أو حاول لاحقاً.",
+  "topupAmountRequired": "أدخل مبلغاً.",
+  "paymentMethodRequired": "اختر طريقة دفع.",
+  "walletUnavailableTitle": "المحفظة غير متاحة",
+  "topupCardSemantics": "شحن {reference}، {status}، {amount}",
+  "@topupCardSemantics": {
+    "placeholders": {
+      "reference": {"type": "String"},
+      "status": {"type": "String"},
+      "amount": {"type": "String"}
+    }
+  },
+  "transactionCardSemantics": "{type} {direction}، {amount}، {date}",
+  "@transactionCardSemantics": {
+    "placeholders": {
+      "type": {"type": "String"},
+      "direction": {"type": "String"},
+      "amount": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  }
 }

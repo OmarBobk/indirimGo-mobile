@@ -17,6 +17,9 @@ import 'package:indirimgo_mobile/features/purchase/presentation/buy/purchase_for
 import 'package:indirimgo_mobile/features/purchase/presentation/purchase_controllers.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/recovery/checkout_recovery_screen.dart';
 import 'package:indirimgo_mobile/features/purchase/presentation/review/checkout_review_screen.dart';
+import 'package:indirimgo_mobile/features/wallet/presentation/topup_detail_screen.dart';
+import 'package:indirimgo_mobile/features/wallet/presentation/topup_form_screen.dart';
+import 'package:indirimgo_mobile/features/wallet/presentation/wallet_screen.dart';
 
 abstract final class AppRoutes {
   static const startup = '/startup';
@@ -25,6 +28,8 @@ abstract final class AppRoutes {
   static const shell = '/app';
   static const packages = '/app/packages';
   static const account = '/app/account';
+  static const wallet = '/app/account/wallet';
+  static const walletTopup = '/app/account/wallet/topup';
   static const orders = '/app/orders';
   static const checkoutReview = '/app/checkout/review';
   static const checkoutRecovery = '/app/checkout/recovery';
@@ -35,6 +40,9 @@ abstract final class AppRoutes {
       '/app/packages/$packageId/buy?productId=$productId';
 
   static String orderReceipt(String orderNumber) => '/app/orders/$orderNumber';
+
+  static String walletTopupDetail(String publicRef) =>
+      '/app/account/wallet/topups/$publicRef';
 
   static String packagesWithCategory(int categoryId, {String? name}) {
     final params = <String, String>{'category_id': '$categoryId'};
@@ -235,6 +243,26 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.account,
                 builder: (context, state) => const AccountScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'wallet',
+                    builder: (context, state) => const WalletScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'topup',
+                        builder: (context, state) => const TopupFormScreen(),
+                      ),
+                      GoRoute(
+                        path: 'topups/:publicRef',
+                        builder: (context, state) {
+                          final publicRef =
+                              state.pathParameters['publicRef'] ?? '';
+                          return TopupDetailScreen(publicRef: publicRef);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
