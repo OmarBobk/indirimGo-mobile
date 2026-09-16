@@ -435,6 +435,9 @@
   "topupConversionUnavailable": "This currency cannot be converted right now. Enter USD or try later.",
   "topupAmountRequired": "Enter an amount.",
   "paymentMethodRequired": "Choose a payment method.",
+  "paymentMethodsEmptyTitle": "No payment methods",
+  "paymentMethodsEmptyBody": "No active payment methods are available right now.",
+  "paymentMethodsUnavailableTitle": "Payment methods unavailable",
   "walletUnavailableTitle": "Wallet unavailable",
   "topupCardSemantics": "Top-up {reference}, {status}, {amount}",
   "@topupCardSemantics": {

@@ -1929,6 +1929,24 @@ abstract class AppLocalizations {
   /// **'اختر طريقة دفع.'**
   String get paymentMethodRequired;
 
+  /// No description provided for @paymentMethodsEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد طرق دفع'**
+  String get paymentMethodsEmptyTitle;
+
+  /// No description provided for @paymentMethodsEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تتوفر طرق دفع نشطة حالياً.'**
+  String get paymentMethodsEmptyBody;
+
+  /// No description provided for @paymentMethodsUnavailableTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'طرق الدفع غير متاحة'**
+  String get paymentMethodsUnavailableTitle;
+
   /// No description provided for @walletUnavailableTitle.
   ///
   /// In ar, this message translates to:

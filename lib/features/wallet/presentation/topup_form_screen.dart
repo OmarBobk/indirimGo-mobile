@@ -79,7 +79,7 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
                   key: Key('topup-form-loading'),
                 ),
               ),
-            if (state.error != null) ...[
+            if (state.error != null && state.phase != TopupFormPhase.error) ...[
               Semantics(
                 liveRegion: true,
                 child: Text(
@@ -132,30 +132,7 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
             const SizedBox(height: AppSpacing.xs),
             Text(l10n.topupCurrencyHelp),
             const SizedBox(height: AppSpacing.md),
-            Text(l10n.paymentMethodLabel),
-            const SizedBox(height: AppSpacing.sm),
-            for (final method in state.paymentMethods)
-              ListTile(
-                key: Key('topup-method-${method.id}'),
-                leading: Icon(
-                  state.selectedPaymentMethodId == method.id
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
-                ),
-                title: Text(method.name),
-                subtitle: method.instructions == null
-                    ? null
-                    : Text(method.instructions!),
-                enabled: !state.isBusy,
-                onTap: state.isBusy
-                    ? null
-                    : () => controller.selectPaymentMethod(method.id),
-              ),
-            if (state.methodError)
-              Text(
-                l10n.paymentMethodRequired,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
+            ..._paymentMethodBlock(context, l10n, state, controller),
             const SizedBox(height: AppSpacing.md),
             Text(l10n.attachProofLabel),
             const SizedBox(height: AppSpacing.sm),
@@ -193,7 +170,7 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
           ),
           child: FilledButton(
             key: const Key('topup-submit'),
-            onPressed: state.isBusy ? null : controller.submit,
+            onPressed: state.canSubmit ? controller.submit : null,
             child: Text(
               state.isBusy ? l10n.submittingTopup : l10n.submitTopupAction,
             ),
@@ -201,5 +178,99 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
         ),
       ),
     );
+  }
+
+  List<Widget> _paymentMethodBlock(
+    BuildContext context,
+    AppLocalizations l10n,
+    TopupFormState state,
+    TopupFormController controller,
+  ) {
+    if (state.phase == TopupFormPhase.loadingMethods &&
+        state.paymentMethods.isEmpty) {
+      return const [];
+    }
+    if (state.phase == TopupFormPhase.error && state.paymentMethods.isEmpty) {
+      return [
+        Text(
+          l10n.paymentMethodsUnavailableTitle,
+          key: const Key('topup-methods-error'),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(localizedApiError(l10n, state.error)),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            key: const Key('topup-retry-methods'),
+            onPressed: controller.retryMethods,
+            child: Text(l10n.retryAction),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+      ];
+    }
+    if (state.phase == TopupFormPhase.noMethods ||
+        (state.phase == TopupFormPhase.ready && state.paymentMethods.isEmpty)) {
+      return [
+        Text(
+          l10n.paymentMethodsEmptyTitle,
+          key: const Key('topup-methods-empty'),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(l10n.paymentMethodsEmptyBody),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            key: const Key('topup-retry-methods'),
+            onPressed: controller.retryMethods,
+            child: Text(l10n.retryAction),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+      ];
+    }
+    if (state.paymentMethods.isEmpty) {
+      return const [];
+    }
+    return [
+      Text(l10n.paymentMethodLabel),
+      const SizedBox(height: AppSpacing.sm),
+      for (final method in state.paymentMethods)
+        ListTile(
+          key: Key('topup-method-${method.id}'),
+          leading: Icon(
+            state.selectedPaymentMethodId == method.id
+                ? Icons.radio_button_checked
+                : Icons.radio_button_off,
+          ),
+          title: Text(method.name),
+          subtitle: method.instructions == null
+              ? null
+              : Text(method.instructions!),
+          enabled: !state.isBusy,
+          onTap: state.isBusy
+              ? null
+              : () => controller.selectPaymentMethod(method.id),
+        ),
+      if (state.methodError)
+        Text(
+          l10n.paymentMethodRequired,
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
+      if (state.phase == TopupFormPhase.error) ...[
+        const SizedBox(height: AppSpacing.sm),
+        Text(localizedApiError(l10n, state.error)),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            key: const Key('topup-retry-methods'),
+            onPressed: controller.retryMethods,
+            child: Text(l10n.retryAction),
+          ),
+        ),
+      ],
+    ];
   }
 }

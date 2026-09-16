@@ -94,13 +94,94 @@ void main() {
         .read(walletWorkspaceControllerProvider.notifier)
         .refresh();
     final state = env.container.read(walletWorkspaceControllerProvider);
-    expect(state.phase, WalletListPhase.error);
+    expect(state.transactionSection.phase, WalletListPhase.error);
+    expect(state.topupSection.phase, WalletListPhase.ready);
     expect(state.topups.single.publicRef, 'TUP-ABC123');
+    expect(state.transactions.single.publicRef, 'WTX-1');
     expect(
       env.container.read(authControllerProvider).phase,
       AuthPhase.authenticated,
     );
   });
+
+  test('one history section can fail without emptying the other', () async {
+    final wallet =
+        FakeWalletRepository(
+            transactions: sampleTransactionPage(),
+            topups: sampleTopupPage(),
+          )
+          ..topupsError = const ApiException(
+            kind: ApiErrorKind.notFound,
+            statusCode: 404,
+          );
+    final env = await createContainer(wallet: wallet);
+    env.container.read(walletWorkspaceControllerProvider);
+    await pump();
+    final state = env.container.read(walletWorkspaceControllerProvider);
+    expect(state.topupSection.phase, WalletListPhase.error);
+    expect(state.topupSection.showError, isTrue);
+    expect(state.transactionSection.phase, WalletListPhase.ready);
+    expect(state.transactions, hasLength(1));
+    expect(state.topups, isEmpty);
+  });
+
+  test('parsing failures become recoverable section errors', () async {
+    final wallet = FakeWalletRepository()
+      ..transactionsError = const FormatException('malformed ledger');
+    final env = await createContainer(wallet: wallet);
+    env.container.read(walletWorkspaceControllerProvider);
+    await pump();
+    final state = env.container.read(walletWorkspaceControllerProvider);
+    expect(state.transactionSection.phase, WalletListPhase.error);
+    expect(state.transactionSection.error?.kind, ApiErrorKind.unknown);
+    expect(state.topupSection.phase, WalletListPhase.ready);
+  });
+
+  test(
+    'payment method selection is preserved across a failed refresh',
+    () async {
+      final first = PaymentMethod.fromJson(paymentMethodJson(id: 11));
+      final second = PaymentMethod.fromJson(
+        paymentMethodJson(id: 22, name: 'EFT Transfer'),
+      );
+      final wallet = FakeWalletRepository(paymentMethods: [first, second]);
+      final env = await createContainer(wallet: wallet);
+      final sub = env.container.listen(
+        topupFormControllerProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(sub.close);
+      await pump();
+      env.container
+          .read(topupFormControllerProvider.notifier)
+          .selectPaymentMethod(22);
+      expect(
+        env.container.read(topupFormControllerProvider).selectedPaymentMethodId,
+        22,
+      );
+
+      wallet.paymentMethodsError = const ApiException(
+        kind: ApiErrorKind.server,
+      );
+      await env.container
+          .read(topupFormControllerProvider.notifier)
+          .retryMethods();
+      await pump();
+      var state = env.container.read(topupFormControllerProvider);
+      expect(state.phase, TopupFormPhase.error);
+      expect(state.selectedPaymentMethodId, 22);
+
+      wallet.paymentMethodsError = null;
+      await env.container
+          .read(topupFormControllerProvider.notifier)
+          .retryMethods();
+      await pump();
+      state = env.container.read(topupFormControllerProvider);
+      expect(state.phase, TopupFormPhase.ready);
+      expect(state.selectedPaymentMethodId, 22);
+    },
+  );
 
   test('submit sends entered currency and does not credit locally', () async {
     final wallet = FakeWalletRepository();

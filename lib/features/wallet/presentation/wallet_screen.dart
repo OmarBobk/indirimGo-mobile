@@ -22,8 +22,7 @@ class WalletScreen extends ConsumerWidget {
     final summary = ref.watch(walletSummaryControllerProvider);
     final workspace = ref.watch(walletWorkspaceControllerProvider);
     final refreshing =
-        summary.phase == WalletLoadPhase.refreshing ||
-        workspace.phase == WalletListPhase.refreshing;
+        summary.phase == WalletLoadPhase.refreshing || workspace.isRefreshing;
 
     return Scaffold(
       appBar: AppBar(
@@ -80,7 +79,7 @@ class WalletScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    _TopupList(workspace: workspace),
+                    _TopupList(section: workspace.topupSection),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
                       l10n.transactionsTitle,
@@ -89,12 +88,7 @@ class WalletScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    _TransactionList(workspace: workspace),
-                    if (workspace.phase == WalletListPhase.error &&
-                        workspace.hasContent) ...[
-                      const SizedBox(height: AppSpacing.md),
-                      Text(localizedApiError(l10n, workspace.error)),
-                    ],
+                    _TransactionList(section: workspace.transactionSection),
                   ],
                 ),
               ),
@@ -186,27 +180,55 @@ class _PendingBanner extends StatelessWidget {
 }
 
 class _TopupList extends ConsumerWidget {
-  const _TopupList({required this.workspace});
+  const _TopupList({required this.section});
 
-  final WalletWorkspaceState workspace;
+  final WalletHistorySection<TopupListItem> section;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    if (workspace.phase == WalletListPhase.loading && !workspace.hasContent) {
+    if (section.isLoadingInitial) {
       return Semantics(
         liveRegion: true,
         label: l10n.walletLoading,
-        child: const LinearProgressIndicator(),
+        child: const LinearProgressIndicator(key: Key('wallet-topups-loading')),
       );
     }
-    if (workspace.topups.isEmpty) {
-      return Text(l10n.topupsEmptyBody);
+    if (section.showError) {
+      return _SectionError(
+        titleKey: const Key('wallet-topups-error'),
+        retryKey: const Key('wallet-retry-topups'),
+        title: l10n.walletUnavailableTitle,
+        body: localizedApiError(l10n, section.error),
+        onRetry: () =>
+            ref.read(walletWorkspaceControllerProvider.notifier).retryTopups(),
+      );
+    }
+    if (section.showEmpty) {
+      return Text(l10n.topupsEmptyBody, key: const Key('wallet-topups-empty'));
     }
     return Column(
       children: [
-        for (final item in workspace.topups) _TopupTile(item: item),
-        if (workspace.canLoadMoreTopups)
+        if (section.showRefreshError)
+          _SectionError(
+            titleKey: const Key('wallet-topups-refresh-error'),
+            retryKey: const Key('wallet-retry-topups'),
+            title: l10n.walletUnavailableTitle,
+            body: localizedApiError(l10n, section.error),
+            onRetry: () => ref
+                .read(walletWorkspaceControllerProvider.notifier)
+                .retryTopups(),
+          ),
+        for (final item in section.items) _TopupTile(item: item),
+        if (section.canRetryLoadMore)
+          TextButton(
+            key: const Key('wallet-retry-more-topups'),
+            onPressed: () => ref
+                .read(walletWorkspaceControllerProvider.notifier)
+                .loadMoreTopups(),
+            child: Text(l10n.retryAction),
+          )
+        else if (section.canLoadMore)
           TextButton(
             key: const Key('wallet-load-more-topups'),
             onPressed: () => ref
@@ -244,20 +266,53 @@ class _TopupTile extends StatelessWidget {
 }
 
 class _TransactionList extends ConsumerWidget {
-  const _TransactionList({required this.workspace});
+  const _TransactionList({required this.section});
 
-  final WalletWorkspaceState workspace;
+  final WalletHistorySection<WalletTransactionItem> section;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    if (workspace.transactions.isEmpty) {
-      return Text(l10n.transactionsEmptyBody);
+    if (section.isLoadingInitial) {
+      return Semantics(
+        liveRegion: true,
+        label: l10n.walletLoading,
+        child: const LinearProgressIndicator(
+          key: Key('wallet-transactions-loading'),
+        ),
+      );
+    }
+    if (section.showError) {
+      return _SectionError(
+        titleKey: const Key('wallet-transactions-error'),
+        retryKey: const Key('wallet-retry-transactions'),
+        title: l10n.walletUnavailableTitle,
+        body: localizedApiError(l10n, section.error),
+        onRetry: () => ref
+            .read(walletWorkspaceControllerProvider.notifier)
+            .retryTransactions(),
+      );
+    }
+    if (section.showEmpty) {
+      return Text(
+        l10n.transactionsEmptyBody,
+        key: const Key('wallet-transactions-empty'),
+      );
     }
     final dateFormat = DateFormat.yMMMd(l10n.localeName);
     return Column(
       children: [
-        for (final item in workspace.transactions)
+        if (section.showRefreshError)
+          _SectionError(
+            titleKey: const Key('wallet-transactions-refresh-error'),
+            retryKey: const Key('wallet-retry-transactions'),
+            title: l10n.walletUnavailableTitle,
+            body: localizedApiError(l10n, section.error),
+            onRetry: () => ref
+                .read(walletWorkspaceControllerProvider.notifier)
+                .retryTransactions(),
+          ),
+        for (final item in section.items)
           Card(
             child: ListTile(
               key: Key('wallet-tx-${item.publicRef}'),
@@ -271,7 +326,15 @@ class _TransactionList extends ConsumerWidget {
               ),
             ),
           ),
-        if (workspace.canLoadMoreTransactions)
+        if (section.canRetryLoadMore)
+          TextButton(
+            key: const Key('wallet-retry-more-transactions'),
+            onPressed: () => ref
+                .read(walletWorkspaceControllerProvider.notifier)
+                .loadMoreTransactions(),
+            child: Text(l10n.retryAction),
+          )
+        else if (section.canLoadMore)
           TextButton(
             key: const Key('wallet-load-more-transactions'),
             onPressed: () => ref
@@ -279,6 +342,47 @@ class _TransactionList extends ConsumerWidget {
                 .loadMoreTransactions(),
             child: Text(l10n.loadMoreTransactions),
           ),
+      ],
+    );
+  }
+}
+
+class _SectionError extends StatelessWidget {
+  const _SectionError({
+    required this.titleKey,
+    required this.retryKey,
+    required this.title,
+    required this.body,
+    required this.onRetry,
+  });
+
+  final Key titleKey;
+  final Key retryKey;
+  final String title;
+  final String body;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          title,
+          key: titleKey,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(body),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            key: retryKey,
+            onPressed: onRetry,
+            child: Text(l10n.retryAction),
+          ),
+        ),
       ],
     );
   }

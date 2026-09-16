@@ -123,18 +123,19 @@ class WalletSummaryController extends Notifier<WalletSummaryState> {
         summary: summary,
         customerId: customerId,
       );
-    } on ApiException catch (error) {
-      if (error.kind == ApiErrorKind.cancelled || operation != _epoch) {
+    } catch (error) {
+      final mapped = recoverableWalletError(error);
+      if (mapped.kind == ApiErrorKind.cancelled || operation != _epoch) {
         return;
       }
-      if (await _applyAuthoritativeRejection(error)) {
+      if (await _applyAuthoritativeRejection(mapped)) {
         state = const WalletSummaryState.initial();
         return;
       }
       state = WalletSummaryState(
         phase: WalletLoadPhase.error,
         summary: previous,
-        error: error,
+        error: mapped,
         customerId: customerId,
       );
     }
@@ -145,4 +146,11 @@ class WalletSummaryController extends Notifier<WalletSummaryState> {
         .read(authControllerProvider.notifier)
         .applyAuthoritativeRejection(error);
   }
+}
+
+ApiException recoverableWalletError(Object error) {
+  if (error is ApiException) {
+    return error;
+  }
+  return const ApiException(kind: ApiErrorKind.unknown);
 }

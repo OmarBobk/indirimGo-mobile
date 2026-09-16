@@ -10,6 +10,7 @@ import 'package:indirimgo_mobile/features/wallet/data/remote_wallet_repository.d
 import 'package:indirimgo_mobile/features/wallet/domain/wallet_models.dart';
 
 import '../../support/fakes.dart';
+import '../../support/laravel_wallet_envelopes.dart';
 import '../../support/wallet_fixtures.dart';
 
 void main() {
@@ -106,6 +107,28 @@ void main() {
     expect(status.topup?.pendingUntilAdminApproval, isTrue);
     expect(adapter.requests.single.path, 'wallet/topups/status');
     expect(adapter.requests.single.headers['Idempotency-Key'], 'ig-status');
+  });
+
+  test('parses captured Laravel list envelopes', () async {
+    adapter.enqueue(200, laravelWalletEnvelope('transactions'));
+    adapter.enqueue(200, laravelWalletEnvelope('topups'));
+    adapter.enqueue(200, laravelWalletEnvelope('payment_methods'));
+
+    final transactions = await wallet.fetchTransactions();
+    expect(transactions.items, hasLength(2));
+    expect(transactions.items.last.relatedTopupPublicRef, 'TUP-0A8B2AF3B9');
+
+    final topups = await wallet.fetchTopups();
+    expect(topups.items.first.publicRef, 'TUP-63C22699F0');
+    expect(topups.items.last.credited, isTrue);
+
+    final methods = await wallet.fetchPaymentMethods();
+    expect(methods.map((method) => method.id), [1, 2]);
+  });
+
+  test('malformed list bodies surface as format errors', () async {
+    adapter.enqueue(200, const {'data': 'nope'});
+    expect(wallet.fetchPaymentMethods(), throwsFormatException);
   });
 }
 
