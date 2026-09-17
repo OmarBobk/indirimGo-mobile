@@ -435,6 +435,9 @@
   "topupConversionUnavailable": "لا يمكن تحويل هذه العملة الآن. أدخل المبلغ بالدولار أو حاول لاحقاً.",
   "topupAmountRequired": "أدخل مبلغاً.",
   "paymentMethodRequired": "اختر طريقة دفع.",
+  "paymentMethodsEmptyTitle": "لا توجد طرق دفع",
+  "paymentMethodsEmptyBody": "لا تتوفر طرق دفع نشطة حالياً.",
+  "paymentMethodsUnavailableTitle": "طرق الدفع غير متاحة",
   "walletUnavailableTitle": "المحفظة غير متاحة",
   "topupCardSemantics": "شحن {reference}، {status}، {amount}",
   "@topupCardSemantics": {

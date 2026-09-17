@@ -16,6 +16,7 @@ enum TopupFormPhase {
   idle,
   loadingMethods,
   ready,
+  noMethods,
   submitting,
   recovering,
   submitted,
@@ -53,6 +54,9 @@ class TopupFormState {
 
   bool get isBusy =>
       phase == TopupFormPhase.submitting || phase == TopupFormPhase.recovering;
+
+  bool get canSubmit =>
+      phase == TopupFormPhase.ready && selectedMethod != null && !isBusy;
 
   PaymentMethod? get selectedMethod {
     final id = selectedPaymentMethodId;
@@ -140,6 +144,8 @@ class TopupFormController extends Notifier<TopupFormState> {
       phase: TopupFormPhase.loadingMethods,
       amount: state.amount,
       currency: state.currency,
+      paymentMethods: state.paymentMethods,
+      selectedPaymentMethodId: state.selectedPaymentMethodId,
       proof: state.proof,
       customerId: customerId,
     );
@@ -150,11 +156,14 @@ class TopupFormController extends Notifier<TopupFormState> {
       if (operation != _epoch) {
         return;
       }
-      final selected =
-          state.selectedPaymentMethodId ??
-          (methods.isNotEmpty ? methods.first.id : null);
+      final retained = state.selectedPaymentMethodId;
+      final selected = methods.any((method) => method.id == retained)
+          ? retained
+          : (methods.isNotEmpty ? methods.first.id : null);
       state = TopupFormState(
-        phase: TopupFormPhase.ready,
+        phase: methods.isEmpty
+            ? TopupFormPhase.noMethods
+            : TopupFormPhase.ready,
         amount: state.amount,
         currency: state.currency,
         paymentMethods: methods,
@@ -163,11 +172,12 @@ class TopupFormController extends Notifier<TopupFormState> {
         customerId: customerId,
       );
       await _recoverIfNeeded(customerId, operation);
-    } on ApiException catch (error) {
-      if (error.kind == ApiErrorKind.cancelled || operation != _epoch) {
+    } catch (error) {
+      final mapped = recoverableWalletError(error);
+      if (mapped.kind == ApiErrorKind.cancelled || operation != _epoch) {
         return;
       }
-      if (await _reject(error)) {
+      if (await _reject(mapped)) {
         state = const TopupFormState.initial();
         return;
       }
@@ -175,12 +185,16 @@ class TopupFormController extends Notifier<TopupFormState> {
         phase: TopupFormPhase.error,
         amount: state.amount,
         currency: state.currency,
+        paymentMethods: state.paymentMethods,
+        selectedPaymentMethodId: state.selectedPaymentMethodId,
         proof: state.proof,
-        error: error,
+        error: mapped,
         customerId: customerId,
       );
     }
   }
+
+  Future<void> retryMethods() => bootstrap();
 
   void setAmount(String value) {
     state = TopupFormState(
@@ -266,6 +280,12 @@ class TopupFormController extends Notifier<TopupFormState> {
   Future<TopupDetail?> submit() async {
     final customerId = ref.read(walletCustomerIdProvider);
     if (customerId == null || state.isBusy) {
+      return null;
+    }
+    if (state.phase == TopupFormPhase.loadingMethods ||
+        state.phase == TopupFormPhase.error ||
+        state.phase == TopupFormPhase.noMethods ||
+        state.phase == TopupFormPhase.idle) {
       return null;
     }
     final amount = state.amount.trim();
@@ -368,6 +388,22 @@ class TopupFormController extends Notifier<TopupFormState> {
         selectedPaymentMethodId: methodId,
         proof: state.proof,
         error: error,
+        customerId: customerId,
+      );
+      return null;
+    } catch (error) {
+      final mapped = recoverableWalletError(error);
+      if (mapped.kind == ApiErrorKind.cancelled || operation != _epoch) {
+        return null;
+      }
+      state = TopupFormState(
+        phase: TopupFormPhase.ready,
+        amount: state.amount,
+        currency: state.currency,
+        paymentMethods: state.paymentMethods,
+        selectedPaymentMethodId: methodId,
+        proof: state.proof,
+        error: mapped,
         customerId: customerId,
       );
       return null;

@@ -59,6 +59,10 @@ jobs:
           cmdline-tools-version: '14742923'
           accept-android-sdk-licenses: true
           log-accepted-android-sdk-licenses: false
+          # Google removed the legacy `tools` package that this action
+          # otherwise installs by default; cmdline-tools already provide
+          # apkanalyzer for the security-policy check.
+          packages: platform-tools
 
       - name: Verify effective Android security policy
         run: |

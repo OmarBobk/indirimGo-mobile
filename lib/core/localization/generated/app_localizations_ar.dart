@@ -1034,6 +1034,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get paymentMethodRequired => 'اختر طريقة دفع.';
 
   @override
+  String get paymentMethodsEmptyTitle => 'لا توجد طرق دفع';
+
+  @override
+  String get paymentMethodsEmptyBody => 'لا تتوفر طرق دفع نشطة حالياً.';
+
+  @override
+  String get paymentMethodsUnavailableTitle => 'طرق الدفع غير متاحة';
+
+  @override
   String get walletUnavailableTitle => 'المحفظة غير متاحة';
 
   @override

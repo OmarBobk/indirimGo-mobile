@@ -11,40 +11,79 @@ import 'package:indirimgo_mobile/features/wallet/presentation/wallet_controllers
 
 enum WalletListPhase { idle, loading, refreshing, loadingMore, ready, error }
 
+class WalletHistorySection<T> {
+  const WalletHistorySection({
+    required this.phase,
+    this.items = const [],
+    this.pagination,
+    this.error,
+    this.loadMoreError,
+  });
+
+  final WalletListPhase phase;
+  final List<T> items;
+  final OffsetPagination? pagination;
+  final ApiException? error;
+  final ApiException? loadMoreError;
+
+  bool get hasContent => items.isNotEmpty;
+
+  bool get isLoadingInitial =>
+      (phase == WalletListPhase.idle || phase == WalletListPhase.loading) &&
+      !hasContent;
+
+  bool get showEmpty =>
+      phase == WalletListPhase.ready && items.isEmpty && error == null;
+
+  bool get showError => phase == WalletListPhase.error && !hasContent;
+
+  bool get showRefreshError => error != null && hasContent;
+
+  bool get canLoadMore =>
+      pagination?.hasNextPage == true &&
+      phase != WalletListPhase.loading &&
+      phase != WalletListPhase.refreshing &&
+      phase != WalletListPhase.loadingMore &&
+      loadMoreError == null;
+
+  bool get canRetryLoadMore =>
+      pagination?.hasNextPage == true &&
+      loadMoreError != null &&
+      phase != WalletListPhase.loadingMore;
+}
+
 class WalletWorkspaceState {
   const WalletWorkspaceState({
-    required this.phase,
-    this.transactions = const [],
-    this.topups = const [],
-    this.transactionPagination,
-    this.topupPagination,
-    this.error,
+    required this.topupSection,
+    required this.transactionSection,
     this.customerId,
   });
 
-  const WalletWorkspaceState.initial() : this(phase: WalletListPhase.idle);
+  const WalletWorkspaceState.initial()
+    : topupSection = const WalletHistorySection(phase: WalletListPhase.idle),
+      transactionSection = const WalletHistorySection(
+        phase: WalletListPhase.idle,
+      ),
+      customerId = null;
 
-  final WalletListPhase phase;
-  final List<WalletTransactionItem> transactions;
-  final List<TopupListItem> topups;
-  final OffsetPagination? transactionPagination;
-  final OffsetPagination? topupPagination;
-  final ApiException? error;
+  final WalletHistorySection<TopupListItem> topupSection;
+  final WalletHistorySection<WalletTransactionItem> transactionSection;
   final int? customerId;
 
-  bool get hasContent => transactions.isNotEmpty || topups.isNotEmpty;
+  List<TopupListItem> get topups => topupSection.items;
 
-  bool get canLoadMoreTransactions =>
-      transactionPagination?.hasNextPage == true &&
-      phase != WalletListPhase.loading &&
-      phase != WalletListPhase.refreshing &&
-      phase != WalletListPhase.loadingMore;
+  List<WalletTransactionItem> get transactions => transactionSection.items;
 
-  bool get canLoadMoreTopups =>
-      topupPagination?.hasNextPage == true &&
-      phase != WalletListPhase.loading &&
-      phase != WalletListPhase.refreshing &&
-      phase != WalletListPhase.loadingMore;
+  bool get hasContent =>
+      topupSection.hasContent || transactionSection.hasContent;
+
+  bool get isRefreshing =>
+      topupSection.phase == WalletListPhase.refreshing ||
+      transactionSection.phase == WalletListPhase.refreshing;
+
+  bool get canLoadMoreTransactions => transactionSection.canLoadMore;
+
+  bool get canLoadMoreTopups => topupSection.canLoadMore;
 }
 
 final walletWorkspaceControllerProvider =
@@ -55,32 +94,41 @@ final walletWorkspaceControllerProvider =
 class WalletWorkspaceController extends Notifier<WalletWorkspaceState> {
   WalletRepository get _repository => ref.read(walletRepositoryProvider);
 
-  int _epoch = 0;
-  CancelToken? _cancelToken;
+  int _topupEpoch = 0;
+  int _transactionEpoch = 0;
+  CancelToken? _topupCancelToken;
+  CancelToken? _transactionCancelToken;
   bool _disposed = false;
-  bool _loadMoreInFlight = false;
+  bool _topupLoadMoreInFlight = false;
+  bool _transactionLoadMoreInFlight = false;
 
   @override
   WalletWorkspaceState build() {
     ref.onDispose(() {
       _disposed = true;
-      _epoch += 1;
-      _cancelToken?.cancel();
-      _cancelToken = null;
+      _topupEpoch += 1;
+      _transactionEpoch += 1;
+      _topupCancelToken?.cancel();
+      _transactionCancelToken?.cancel();
+      _topupCancelToken = null;
+      _transactionCancelToken = null;
     });
     ref.listen<int?>(walletCustomerIdProvider, (previous, next) {
       if (previous == next) {
         return;
       }
-      _cancelToken?.cancel();
-      _cancelToken = null;
-      _epoch += 1;
+      _cancelAll();
       if (next == null) {
         state = const WalletWorkspaceState.initial();
         return;
       }
       state = WalletWorkspaceState(
-        phase: WalletListPhase.loading,
+        topupSection: const WalletHistorySection(
+          phase: WalletListPhase.loading,
+        ),
+        transactionSection: const WalletHistorySection(
+          phase: WalletListPhase.loading,
+        ),
         customerId: next,
       );
       scheduleMicrotask(() {
@@ -99,170 +147,321 @@ class WalletWorkspaceController extends Notifier<WalletWorkspaceState> {
       }
     });
     return WalletWorkspaceState(
-      phase: WalletListPhase.loading,
+      topupSection: const WalletHistorySection(phase: WalletListPhase.loading),
+      transactionSection: const WalletHistorySection(
+        phase: WalletListPhase.loading,
+      ),
       customerId: customerId,
     );
   }
 
-  Future<void> load() => _fetch(refreshing: false);
+  Future<void> load() => Future.wait([
+    _fetchTopups(refreshing: false),
+    _fetchTransactions(refreshing: false),
+  ]);
 
   Future<void> refresh() async {
     await Future.wait([
-      _fetch(refreshing: true),
+      _fetchTopups(refreshing: true),
+      _fetchTransactions(refreshing: true),
       ref.read(walletSummaryControllerProvider.notifier).refresh(),
     ]);
   }
 
+  Future<void> retryTopups() =>
+      _fetchTopups(refreshing: state.topupSection.hasContent);
+
+  Future<void> retryTransactions() =>
+      _fetchTransactions(refreshing: state.transactionSection.hasContent);
+
   Future<void> loadMoreTransactions() async {
-    final pagination = state.transactionPagination;
-    if (!state.canLoadMoreTransactions || pagination == null) {
+    final pagination = state.transactionSection.pagination;
+    if (pagination == null ||
+        !pagination.hasNextPage ||
+        _transactionLoadMoreInFlight ||
+        state.transactionSection.phase == WalletListPhase.loading ||
+        state.transactionSection.phase == WalletListPhase.refreshing) {
       return;
     }
-    await _loadMore(
-      nextTransactionPage: pagination.page + 1,
-      nextTopupPage: null,
-    );
+    await _loadMoreTransactions(pagination.page + 1);
   }
 
   Future<void> loadMoreTopups() async {
-    final pagination = state.topupPagination;
-    if (!state.canLoadMoreTopups || pagination == null) {
+    final pagination = state.topupSection.pagination;
+    if (pagination == null ||
+        !pagination.hasNextPage ||
+        _topupLoadMoreInFlight ||
+        state.topupSection.phase == WalletListPhase.loading ||
+        state.topupSection.phase == WalletListPhase.refreshing) {
       return;
     }
-    await _loadMore(
-      nextTransactionPage: null,
-      nextTopupPage: pagination.page + 1,
-    );
+    await _loadMoreTopups(pagination.page + 1);
   }
 
-  Future<void> _fetch({required bool refreshing}) async {
+  Future<void> _fetchTopups({required bool refreshing}) async {
     final customerId = ref.read(walletCustomerIdProvider);
     if (customerId == null) {
       state = const WalletWorkspaceState.initial();
       return;
     }
-    final operation = ++_epoch;
-    _cancelToken?.cancel();
+    final operation = ++_topupEpoch;
+    _topupCancelToken?.cancel();
     final cancelToken = CancelToken();
-    _cancelToken = cancelToken;
-    final previousTransactions = state.transactions;
-    final previousTopups = state.topups;
+    _topupCancelToken = cancelToken;
+    final previous = state.topupSection;
     state = WalletWorkspaceState(
-      phase: refreshing && state.hasContent
-          ? WalletListPhase.refreshing
-          : WalletListPhase.loading,
-      transactions: previousTransactions,
-      topups: previousTopups,
-      transactionPagination: state.transactionPagination,
-      topupPagination: state.topupPagination,
+      topupSection: WalletHistorySection(
+        phase: refreshing && previous.hasContent
+            ? WalletListPhase.refreshing
+            : WalletListPhase.loading,
+        items: previous.items,
+        pagination: previous.pagination,
+      ),
+      transactionSection: state.transactionSection,
       customerId: customerId,
     );
     try {
-      final results = await Future.wait([
-        _repository.fetchTransactions(page: 1, cancelToken: cancelToken),
-        _repository.fetchTopups(page: 1, cancelToken: cancelToken),
-      ]);
-      if (operation != _epoch) {
+      final page = await _repository.fetchTopups(
+        page: 1,
+        cancelToken: cancelToken,
+      );
+      if (operation != _topupEpoch) {
         return;
       }
-      final transactions = results[0] as WalletTransactionPage;
-      final topups = results[1] as TopupListPage;
       state = WalletWorkspaceState(
-        phase: WalletListPhase.ready,
-        transactions: transactions.items,
-        topups: topups.items,
-        transactionPagination: transactions.pagination,
-        topupPagination: topups.pagination,
+        topupSection: WalletHistorySection(
+          phase: WalletListPhase.ready,
+          items: page.items,
+          pagination: page.pagination,
+        ),
+        transactionSection: state.transactionSection,
         customerId: customerId,
       );
-    } on ApiException catch (error) {
-      if (error.kind == ApiErrorKind.cancelled || operation != _epoch) {
-        return;
-      }
-      if (await _applyAuthoritativeRejection(error)) {
-        state = const WalletWorkspaceState.initial();
-        return;
-      }
-      state = WalletWorkspaceState(
-        phase: WalletListPhase.error,
-        transactions: previousTransactions,
-        topups: previousTopups,
-        transactionPagination: state.transactionPagination,
-        topupPagination: state.topupPagination,
+    } catch (error) {
+      await _applySectionFailure(
         error: error,
+        operation: operation,
+        epoch: _topupEpoch,
+        previous: previous,
         customerId: customerId,
+        update: (section) => state = WalletWorkspaceState(
+          topupSection: section,
+          transactionSection: state.transactionSection,
+          customerId: customerId,
+        ),
       );
     }
   }
 
-  Future<void> _loadMore({
-    required int? nextTransactionPage,
-    required int? nextTopupPage,
-  }) async {
+  Future<void> _fetchTransactions({required bool refreshing}) async {
     final customerId = ref.read(walletCustomerIdProvider);
-    if (customerId == null || _loadMoreInFlight) {
+    if (customerId == null) {
+      state = const WalletWorkspaceState.initial();
       return;
     }
-    _loadMoreInFlight = true;
-    final operation = _epoch;
+    final operation = ++_transactionEpoch;
+    _transactionCancelToken?.cancel();
     final cancelToken = CancelToken();
+    _transactionCancelToken = cancelToken;
+    final previous = state.transactionSection;
     state = WalletWorkspaceState(
-      phase: WalletListPhase.loadingMore,
-      transactions: state.transactions,
-      topups: state.topups,
-      transactionPagination: state.transactionPagination,
-      topupPagination: state.topupPagination,
+      topupSection: state.topupSection,
+      transactionSection: WalletHistorySection(
+        phase: refreshing && previous.hasContent
+            ? WalletListPhase.refreshing
+            : WalletListPhase.loading,
+        items: previous.items,
+        pagination: previous.pagination,
+      ),
       customerId: customerId,
     );
     try {
-      final nextTransactions = nextTransactionPage == null
-          ? null
-          : await _repository.fetchTransactions(
-              page: nextTransactionPage,
-              cancelToken: cancelToken,
-            );
-      final nextTopups = nextTopupPage == null
-          ? null
-          : await _repository.fetchTopups(
-              page: nextTopupPage,
-              cancelToken: cancelToken,
-            );
-      if (operation != _epoch) {
+      final page = await _repository.fetchTransactions(
+        page: 1,
+        cancelToken: cancelToken,
+      );
+      if (operation != _transactionEpoch) {
         return;
       }
       state = WalletWorkspaceState(
-        phase: WalletListPhase.ready,
-        transactions: nextTransactions == null
-            ? state.transactions
-            : _mergeTransactions(state.transactions, nextTransactions.items),
-        topups: nextTopups == null
-            ? state.topups
-            : _mergeTopups(state.topups, nextTopups.items),
-        transactionPagination:
-            nextTransactions?.pagination ?? state.transactionPagination,
-        topupPagination: nextTopups?.pagination ?? state.topupPagination,
+        topupSection: state.topupSection,
+        transactionSection: WalletHistorySection(
+          phase: WalletListPhase.ready,
+          items: page.items,
+          pagination: page.pagination,
+        ),
         customerId: customerId,
       );
-    } on ApiException catch (error) {
-      if (error.kind == ApiErrorKind.cancelled || operation != _epoch) {
-        return;
-      }
-      if (await _applyAuthoritativeRejection(error)) {
-        state = const WalletWorkspaceState.initial();
+    } catch (error) {
+      await _applySectionFailure(
+        error: error,
+        operation: operation,
+        epoch: _transactionEpoch,
+        previous: previous,
+        customerId: customerId,
+        update: (section) => state = WalletWorkspaceState(
+          topupSection: state.topupSection,
+          transactionSection: section,
+          customerId: customerId,
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadMoreTopups(int nextPage) async {
+    final customerId = ref.read(walletCustomerIdProvider);
+    if (customerId == null || _topupLoadMoreInFlight) {
+      return;
+    }
+    _topupLoadMoreInFlight = true;
+    final operation = _topupEpoch;
+    final cancelToken = CancelToken();
+    state = WalletWorkspaceState(
+      topupSection: WalletHistorySection(
+        phase: WalletListPhase.loadingMore,
+        items: state.topupSection.items,
+        pagination: state.topupSection.pagination,
+      ),
+      transactionSection: state.transactionSection,
+      customerId: customerId,
+    );
+    try {
+      final next = await _repository.fetchTopups(
+        page: nextPage,
+        cancelToken: cancelToken,
+      );
+      if (operation != _topupEpoch) {
         return;
       }
       state = WalletWorkspaceState(
-        phase: WalletListPhase.ready,
-        transactions: state.transactions,
-        topups: state.topups,
-        transactionPagination: state.transactionPagination,
-        topupPagination: state.topupPagination,
-        error: error,
+        topupSection: WalletHistorySection(
+          phase: WalletListPhase.ready,
+          items: _mergeTopups(state.topupSection.items, next.items),
+          pagination: next.pagination,
+        ),
+        transactionSection: state.transactionSection,
         customerId: customerId,
+      );
+    } catch (error) {
+      await _applyLoadMoreFailure(
+        error: error,
+        operation: operation,
+        epoch: _topupEpoch,
+        customerId: customerId,
+        update: (loadMoreError) => state = WalletWorkspaceState(
+          topupSection: WalletHistorySection(
+            phase: WalletListPhase.ready,
+            items: state.topupSection.items,
+            pagination: state.topupSection.pagination,
+            loadMoreError: loadMoreError,
+          ),
+          transactionSection: state.transactionSection,
+          customerId: customerId,
+        ),
       );
     } finally {
-      _loadMoreInFlight = false;
+      _topupLoadMoreInFlight = false;
     }
+  }
+
+  Future<void> _loadMoreTransactions(int nextPage) async {
+    final customerId = ref.read(walletCustomerIdProvider);
+    if (customerId == null || _transactionLoadMoreInFlight) {
+      return;
+    }
+    _transactionLoadMoreInFlight = true;
+    final operation = _transactionEpoch;
+    final cancelToken = CancelToken();
+    state = WalletWorkspaceState(
+      topupSection: state.topupSection,
+      transactionSection: WalletHistorySection(
+        phase: WalletListPhase.loadingMore,
+        items: state.transactionSection.items,
+        pagination: state.transactionSection.pagination,
+      ),
+      customerId: customerId,
+    );
+    try {
+      final next = await _repository.fetchTransactions(
+        page: nextPage,
+        cancelToken: cancelToken,
+      );
+      if (operation != _transactionEpoch) {
+        return;
+      }
+      state = WalletWorkspaceState(
+        topupSection: state.topupSection,
+        transactionSection: WalletHistorySection(
+          phase: WalletListPhase.ready,
+          items: _mergeTransactions(state.transactionSection.items, next.items),
+          pagination: next.pagination,
+        ),
+        customerId: customerId,
+      );
+    } catch (error) {
+      await _applyLoadMoreFailure(
+        error: error,
+        operation: operation,
+        epoch: _transactionEpoch,
+        customerId: customerId,
+        update: (loadMoreError) => state = WalletWorkspaceState(
+          topupSection: state.topupSection,
+          transactionSection: WalletHistorySection(
+            phase: WalletListPhase.ready,
+            items: state.transactionSection.items,
+            pagination: state.transactionSection.pagination,
+            loadMoreError: loadMoreError,
+          ),
+          customerId: customerId,
+        ),
+      );
+    } finally {
+      _transactionLoadMoreInFlight = false;
+    }
+  }
+
+  Future<void> _applySectionFailure<T>({
+    required Object error,
+    required int operation,
+    required int epoch,
+    required WalletHistorySection<T> previous,
+    required int customerId,
+    required void Function(WalletHistorySection<T> section) update,
+  }) async {
+    final mapped = recoverableWalletError(error);
+    if (mapped.kind == ApiErrorKind.cancelled || operation != epoch) {
+      return;
+    }
+    if (await _applyAuthoritativeRejection(mapped)) {
+      state = const WalletWorkspaceState.initial();
+      return;
+    }
+    update(
+      WalletHistorySection(
+        phase: WalletListPhase.error,
+        items: previous.items,
+        pagination: previous.pagination,
+        error: mapped,
+      ),
+    );
+  }
+
+  Future<void> _applyLoadMoreFailure({
+    required Object error,
+    required int operation,
+    required int epoch,
+    required int customerId,
+    required void Function(ApiException loadMoreError) update,
+  }) async {
+    final mapped = recoverableWalletError(error);
+    if (mapped.kind == ApiErrorKind.cancelled || operation != epoch) {
+      return;
+    }
+    if (await _applyAuthoritativeRejection(mapped)) {
+      state = const WalletWorkspaceState.initial();
+      return;
+    }
+    update(mapped);
   }
 
   List<WalletTransactionItem> _mergeTransactions(
@@ -287,6 +486,15 @@ class WalletWorkspaceController extends Notifier<WalletWorkspaceState> {
       for (final item in incoming)
         if (seen.add(item.publicRef)) item,
     ];
+  }
+
+  void _cancelAll() {
+    _topupCancelToken?.cancel();
+    _transactionCancelToken?.cancel();
+    _topupCancelToken = null;
+    _transactionCancelToken = null;
+    _topupEpoch += 1;
+    _transactionEpoch += 1;
   }
 
   Future<bool> _applyAuthoritativeRejection(ApiException error) {

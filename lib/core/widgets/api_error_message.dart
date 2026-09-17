@@ -22,25 +22,31 @@ String localizedApiError(AppLocalizations l10n, ApiException? error) {
   }
 
   if (error.kind == ApiErrorKind.notFound ||
-      error.code == 'package_not_found') {
+      error.code == 'package_not_found' ||
+      error.code == 'order_not_found' ||
+      error.code == 'topup_not_found' ||
+      error.code == 'topup_attempt_not_found' ||
+      error.code == 'proof_not_found' ||
+      error.code == 'checkout_attempt_not_found') {
     if (error.code == 'order_not_found') {
       return l10n.orderNotFound;
     }
-    if (error.code == 'topup_not_found' ||
-        error.code == 'topup_attempt_not_found' ||
-        error.code == 'proof_not_found') {
-      if (error.code == 'topup_attempt_not_found') {
-        return l10n.topupAttemptNotFoundBody;
-      }
-      if (error.code == 'proof_not_found') {
-        return l10n.proofNotFound;
-      }
+    if (error.code == 'topup_attempt_not_found') {
+      return l10n.topupAttemptNotFoundBody;
+    }
+    if (error.code == 'proof_not_found') {
+      return l10n.proofNotFound;
+    }
+    if (error.code == 'topup_not_found') {
       return l10n.topupNotFound;
     }
     if (error.code == 'checkout_attempt_not_found') {
       return l10n.checkoutAttemptNotFoundBody;
     }
-    return l10n.packageNotFound;
+    if (error.code == 'package_not_found') {
+      return l10n.packageNotFound;
+    }
+    return l10n.sessionFailure;
   }
   if (error.kind == ApiErrorKind.validation) {
     if (error.code == 'insufficient_wallet_balance') {

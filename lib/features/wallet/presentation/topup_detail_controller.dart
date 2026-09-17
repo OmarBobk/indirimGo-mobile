@@ -116,20 +116,21 @@ class TopupDetailController extends Notifier<TopupDetailState> {
         customerId: customerId,
         publicRef: publicRef,
       );
-    } on ApiException catch (error) {
-      if (error.kind == ApiErrorKind.cancelled || operation != _epoch) {
+    } catch (error) {
+      final mapped = recoverableWalletError(error);
+      if (mapped.kind == ApiErrorKind.cancelled || operation != _epoch) {
         return;
       }
       if (await ref
           .read(authControllerProvider.notifier)
-          .applyAuthoritativeRejection(error)) {
+          .applyAuthoritativeRejection(mapped)) {
         state = const TopupDetailState.initial();
         return;
       }
       state = TopupDetailState(
         phase: TopupDetailPhase.error,
         detail: previous,
-        error: error,
+        error: mapped,
         customerId: customerId,
         publicRef: publicRef,
       );

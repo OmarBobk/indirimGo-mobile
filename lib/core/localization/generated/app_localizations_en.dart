@@ -1046,6 +1046,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentMethodRequired => 'Choose a payment method.';
 
   @override
+  String get paymentMethodsEmptyTitle => 'No payment methods';
+
+  @override
+  String get paymentMethodsEmptyBody =>
+      'No active payment methods are available right now.';
+
+  @override
+  String get paymentMethodsUnavailableTitle => 'Payment methods unavailable';
+
+  @override
   String get walletUnavailableTitle => 'Wallet unavailable';
 
   @override
