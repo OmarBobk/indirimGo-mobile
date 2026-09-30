@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
@@ -226,10 +224,14 @@ class BankOptionCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Radio<int>(
-                      value: method.id,
+                    RadioGroup<int>(
                       groupValue: selected ? method.id : null,
-                      onChanged: enabled ? (_) => onTap() : null,
+                      onChanged: (_) {
+                        if (enabled) {
+                          onTap();
+                        }
+                      },
+                      child: Radio<int>(value: method.id, enabled: enabled),
                     ),
                   ],
                 ),

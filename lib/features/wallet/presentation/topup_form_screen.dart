@@ -256,11 +256,9 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
           ],
         ),
         child: SafeArea(
-          minimum: const EdgeInsetsDirectional.fromSTEB(
-            AppSpacing.md,
-            AppSpacing.sm,
-            AppSpacing.md,
-            AppSpacing.sm,
+          minimum: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
           ),
           child: FilledButton(
             key: const Key('topup-submit'),
