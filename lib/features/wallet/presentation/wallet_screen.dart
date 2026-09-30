@@ -210,6 +210,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
                     const SizedBox(height: AppSpacing.lg),
                     Text(
                       l10n.transactionsTitle,
+                      key: const Key('wallet-transactions-title'),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),

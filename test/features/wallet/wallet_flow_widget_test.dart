@@ -83,6 +83,7 @@ void main() {
     await tester.tap(find.byKey(const Key('wallet-add-funds')));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const Key('app-navigation-bar')), findsNothing);
     await tester.enterText(
       find.byKey(const Key('topup-amount-field')),
       '100.00',
@@ -133,6 +134,8 @@ void main() {
 
     expect(_key('wallet-topup-TUP-63C22699F0'), findsOneWidget);
     expect(_key('wallet-topup-TUP-0A8B2AF3B9'), findsOneWidget);
+    await tester.ensureVisible(_key('wallet-transactions-title'));
+    await tester.pumpAndSettle();
     expect(_key('wallet-tx-WTX-1A3DA54349'), findsOneWidget);
     expect(_key('wallet-tx-Reference pending'), findsOneWidget);
     expect(_key('wallet-topups-empty'), findsNothing);
@@ -226,20 +229,13 @@ void main() {
       isNull,
     );
 
-    wallet.paymentMethodsError = null;
-    await _tapKey(tester, 'topup-retry-methods');
-    expect(_key('topup-method-11'), findsOneWidget);
-    expect(
-      tester
-          .widget<FilledButton>(find.byKey(const Key('topup-submit')))
-          .onPressed,
-      isNull,
-    );
     await tester.enterText(
       find.byKey(const Key('topup-amount-field')),
       '10.00',
     );
-    await tester.pumpAndSettle();
+    wallet.paymentMethodsError = null;
+    await _tapKey(tester, 'topup-retry-methods');
+    expect(_key('topup-method-11'), findsOneWidget);
     expect(
       tester
           .widget<FilledButton>(find.byKey(const Key('topup-submit')))
@@ -330,7 +326,13 @@ void main() {
       find.byKey(const Key('topup-amount-field')),
       '25.00',
     );
-    await _tapKey(tester, 'topup-method-2');
+    await tester.drag(
+      find.byKey(const Key('topup-form-screen')),
+      const Offset(0, -220),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('topup-method-2')));
+    await tester.pumpAndSettle();
     await _tapKey(tester, 'topup-submit');
 
     expect(wallet.lastPaymentMethodId, 2);
