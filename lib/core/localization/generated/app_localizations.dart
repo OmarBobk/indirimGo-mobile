@@ -1557,6 +1557,30 @@ abstract class AppLocalizations {
   /// **'المحفظة'**
   String get walletTitle;
 
+  /// No description provided for @availableBalanceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرصيد المتاح'**
+  String get availableBalanceLabel;
+
+  /// No description provided for @showBalanceAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إظهار الرصيد'**
+  String get showBalanceAction;
+
+  /// No description provided for @hideBalanceAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إخفاء الرصيد'**
+  String get hideBalanceAction;
+
+  /// No description provided for @walletHistoryAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'السجل'**
+  String get walletHistoryAction;
+
   /// No description provided for @walletLoading.
   ///
   /// In ar, this message translates to:
@@ -1635,6 +1659,36 @@ abstract class AppLocalizations {
   /// **'تحميل المزيد من طلبات الشحن'**
   String get loadMoreTopups;
 
+  /// No description provided for @walletFilterAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get walletFilterAll;
+
+  /// No description provided for @walletFilterPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'معلّق'**
+  String get walletFilterPending;
+
+  /// No description provided for @walletFilterCompleted.
+  ///
+  /// In ar, this message translates to:
+  /// **'مكتمل'**
+  String get walletFilterCompleted;
+
+  /// No description provided for @walletFilterRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get walletFilterRejected;
+
+  /// No description provided for @walletTodayAt.
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم، {time}'**
+  String walletTodayAt(String time);
+
   /// No description provided for @topupFormTitle.
   ///
   /// In ar, this message translates to:
@@ -1674,7 +1728,7 @@ abstract class AppLocalizations {
   /// No description provided for @topupCurrencyHelp.
   ///
   /// In ar, this message translates to:
-  /// **'أدخل المبلغ الذي سترسله. لا تحوّله بنفسك.'**
+  /// **'أدخل المبلغ المرسل بدقة. لا حاجة إلى التحويل.'**
   String get topupCurrencyHelp;
 
   /// No description provided for @paymentMethodLabel.
@@ -1689,6 +1743,24 @@ abstract class AppLocalizations {
   /// **'تعليمات الدفع'**
   String get paymentInstructionsTitle;
 
+  /// No description provided for @transferAccountLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'حساب التحويل'**
+  String get transferAccountLabel;
+
+  /// No description provided for @copyAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسخ'**
+  String get copyAction;
+
+  /// No description provided for @copiedToClipboard.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم النسخ إلى الحافظة'**
+  String get copiedToClipboard;
+
   /// No description provided for @attachProofLabel.
   ///
   /// In ar, this message translates to:
@@ -1700,6 +1772,30 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'اختيار ملف'**
   String get chooseProofAction;
+
+  /// No description provided for @proofDropzoneTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفع إثبات التحويل'**
+  String get proofDropzoneTitle;
+
+  /// No description provided for @proofDropzoneBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'JPG أو PNG أو WEBP أو PDF'**
+  String get proofDropzoneBody;
+
+  /// No description provided for @takePhotoAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقاط صورة'**
+  String get takePhotoAction;
+
+  /// No description provided for @chooseFromLibraryAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار من المكتبة'**
+  String get chooseFromLibraryAction;
 
   /// No description provided for @removeProofAction.
   ///
@@ -1730,6 +1826,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'يبقى هذا الطلب معلّقاً حتى موافقة الموظفين. الإرسال لا يضيف رصيداً الآن.'**
   String get topupPendingNotice;
+
+  /// No description provided for @topupVerificationNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'تتطلب التحويلات تحققاً يدوياً. سيُضاف الرصيد بعد الموافقة على إثبات الدفع.'**
+  String get topupVerificationNotice;
 
   /// No description provided for @recoveringTopup.
   ///
@@ -1790,6 +1892,24 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'ملغى'**
   String get topupStatusCancelled;
+
+  /// No description provided for @topupRejectedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'رُفض طلب الشحن'**
+  String get topupRejectedTitle;
+
+  /// No description provided for @topupRejectedReasonUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُذكر سبب إضافي. افتح الطلب للاطلاع على التفاصيل الكاملة.'**
+  String get topupRejectedReasonUnavailable;
+
+  /// No description provided for @viewTopupDetailsAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض تفاصيل الطلب'**
+  String get viewTopupDetailsAction;
 
   /// No description provided for @topupHasProof.
   ///

@@ -847,6 +847,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get walletTitle => 'Wallet';
 
   @override
+  String get availableBalanceLabel => 'Available balance';
+
+  @override
+  String get showBalanceAction => 'Show balance';
+
+  @override
+  String get hideBalanceAction => 'Hide balance';
+
+  @override
+  String get walletHistoryAction => 'History';
+
+  @override
   String get walletLoading => 'Loading wallet';
 
   @override
@@ -889,6 +901,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadMoreTopups => 'Load more top-ups';
 
   @override
+  String get walletFilterAll => 'All';
+
+  @override
+  String get walletFilterPending => 'Pending';
+
+  @override
+  String get walletFilterCompleted => 'Completed';
+
+  @override
+  String get walletFilterRejected => 'Rejected';
+
+  @override
+  String walletTodayAt(String time) {
+    return 'Today, $time';
+  }
+
+  @override
   String get topupFormTitle => 'Add funds';
 
   @override
@@ -908,7 +937,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get topupCurrencyHelp =>
-      'Enter the amount you will send. Do not convert it yourself.';
+      'Enter the exact amount sent. No conversion needed.';
 
   @override
   String get paymentMethodLabel => 'Payment method';
@@ -917,10 +946,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentInstructionsTitle => 'Payment instructions';
 
   @override
+  String get transferAccountLabel => 'Transfer account';
+
+  @override
+  String get copyAction => 'Copy';
+
+  @override
+  String get copiedToClipboard => 'Copied to clipboard';
+
+  @override
   String get attachProofLabel => 'Attach proof (optional)';
 
   @override
   String get chooseProofAction => 'Choose file';
+
+  @override
+  String get proofDropzoneTitle => 'Upload transfer proof';
+
+  @override
+  String get proofDropzoneBody => 'JPG, PNG, WEBP or PDF';
+
+  @override
+  String get takePhotoAction => 'Take photo';
+
+  @override
+  String get chooseFromLibraryAction => 'Choose from library';
 
   @override
   String get removeProofAction => 'Remove proof';
@@ -939,6 +989,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get topupPendingNotice =>
       'This request stays pending until staff approval. Submitting does not add funds yet.';
+
+  @override
+  String get topupVerificationNotice =>
+      'Transfers require manual verification. Funds will be credited once payment proof is approved.';
 
   @override
   String get recoveringTopup => 'Checking your top-up request';
@@ -971,6 +1025,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get topupStatusCancelled => 'Cancelled';
+
+  @override
+  String get topupRejectedTitle => 'Top-up rejected';
+
+  @override
+  String get topupRejectedReasonUnavailable =>
+      'No additional reason was provided. Open the request for full details.';
+
+  @override
+  String get viewTopupDetailsAction => 'View request details';
 
   @override
   String get topupHasProof => 'Proof attached';

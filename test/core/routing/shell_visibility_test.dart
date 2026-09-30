@@ -42,10 +42,16 @@ void main() {
     expect(const ShellVisibility().allowsOrderPolling('ORD-1'), isTrue);
   });
 
-  test('chrome is hidden on buy and checkout routes', () {
+  test('chrome is hidden on focused purchase and top-up flows', () {
     expect(hideChromeForLocation('/app/packages/12/buy'), isTrue);
     expect(hideChromeForLocation('/app/checkout/review'), isTrue);
     expect(hideChromeForLocation('/app/checkout/recovery'), isTrue);
+    expect(hideChromeForLocation('/app/account/wallet/topup'), isTrue);
+    expect(hideChromeForLocation('/app/account/wallet'), isFalse);
+    expect(
+      hideChromeForLocation('/app/account/wallet/topups/TUP-ABC123'),
+      isFalse,
+    );
     expect(hideChromeForLocation('/app'), isFalse);
     expect(hideChromeForLocation('/app/orders/ORD-1'), isFalse);
   });

@@ -83,6 +83,7 @@ void main() {
     await tester.tap(find.byKey(const Key('wallet-add-funds')));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const Key('app-navigation-bar')), findsNothing);
     await tester.enterText(
       find.byKey(const Key('topup-amount-field')),
       '100.00',
@@ -133,6 +134,13 @@ void main() {
 
     expect(_key('wallet-topup-TUP-63C22699F0'), findsOneWidget);
     expect(_key('wallet-topup-TUP-0A8B2AF3B9'), findsOneWidget);
+    await tester.fling(
+      find.byKey(const Key('wallet-screen')),
+      const Offset(0, -900),
+      1800,
+    );
+    await tester.pumpAndSettle();
+    expect(_key('wallet-transactions-title'), findsOneWidget);
     expect(_key('wallet-tx-WTX-1A3DA54349'), findsOneWidget);
     expect(_key('wallet-tx-Reference pending'), findsOneWidget);
     expect(_key('wallet-topups-empty'), findsNothing);
@@ -226,6 +234,10 @@ void main() {
       isNull,
     );
 
+    await tester.enterText(
+      find.byKey(const Key('topup-amount-field')),
+      '10.00',
+    );
     wallet.paymentMethodsError = null;
     await _tapKey(tester, 'topup-retry-methods');
     expect(_key('topup-method-11'), findsOneWidget);
@@ -319,11 +331,78 @@ void main() {
       find.byKey(const Key('topup-amount-field')),
       '25.00',
     );
-    await _tapKey(tester, 'topup-method-2');
+    await tester.dragUntilVisible(
+      find.byKey(const Key('topup-method-2')),
+      find.byKey(const Key('topup-form-screen')),
+      const Offset(0, -80),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('topup-method-2')));
+    await tester.pumpAndSettle();
     await _tapKey(tester, 'topup-submit');
 
     expect(wallet.lastPaymentMethodId, 2);
     expect(wallet.lastAmount, '25.00');
+  });
+
+  testWidgets('wallet filters rejected requests and shows the safe reason', (
+    tester,
+  ) async {
+    const rejectedRef = 'TUP-REJECTED1';
+    final wallet =
+        FakeWalletRepository(
+            topups: TopupListPage.fromJson(
+              topupListPageJson(
+                items: [
+                  topupListItemJson(),
+                  topupListItemJson(
+                    publicRef: rejectedRef,
+                    status: 'rejected',
+                    pendingUntilAdminApproval: false,
+                    canRetry: true,
+                  ),
+                ],
+              ),
+            ),
+          )
+          ..details[rejectedRef] = TopupDetail.fromJson(
+            topupDetailJson(
+              publicRef: rejectedRef,
+              status: 'rejected',
+              pendingUntilAdminApproval: false,
+              canRetry: true,
+              customerSafeReason: 'Mismatched sender name',
+            ),
+          );
+    await _pumpAuthenticated(tester, wallet);
+    await _openWallet(tester);
+
+    await _tapKey(tester, 'wallet-filter-rejected');
+    expect(_key('wallet-topup-$rejectedRef'), findsOneWidget);
+    expect(_key('wallet-topup-TUP-ABC123'), findsNothing);
+
+    await _tapKey(tester, 'wallet-topup-$rejectedRef');
+    expect(find.text('Top-up rejected'), findsOneWidget);
+    expect(find.text('Mismatched sender name'), findsOneWidget);
+  });
+
+  testWidgets('add funds disables submit for a zero amount', (tester) async {
+    final wallet = FakeWalletRepository(
+      paymentMethods: [PaymentMethod.fromJson(paymentMethodJson())],
+    );
+    await _pumpAuthenticated(tester, wallet);
+    await _openWallet(tester);
+    await _tapKey(tester, 'wallet-add-funds');
+
+    await tester.enterText(find.byKey(const Key('topup-amount-field')), '0.00');
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('topup-submit')))
+          .onPressed,
+      isNull,
+    );
   });
 
   testWidgets('Arabic add-funds 404 is not package wording', (tester) async {

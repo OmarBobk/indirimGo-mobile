@@ -84,7 +84,8 @@ final shellVisibilityProvider =
 bool hideChromeForLocation(String location) {
   return location.contains('/buy') ||
       location.contains('/checkout/review') ||
-      location.contains('/checkout/recovery');
+      location.contains('/checkout/recovery') ||
+      location == '/app/account/wallet/topup';
 }
 
 bool isWideNavigationLayout(BoxConstraints constraints) =>

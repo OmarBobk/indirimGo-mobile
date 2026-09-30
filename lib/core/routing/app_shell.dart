@@ -61,7 +61,7 @@ class _AppShellState extends ConsumerState<AppShell>
     if (!mounted) {
       return;
     }
-    final location = GoRouterState.of(context).matchedLocation;
+    final location = GoRouterState.of(context).uri.path;
     ref
         .read(shellVisibilityProvider.notifier)
         .reportShell(
@@ -96,7 +96,7 @@ class _AppShellState extends ConsumerState<AppShell>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final location = GoRouterState.of(context).matchedLocation;
+    final location = GoRouterState.of(context).uri.path;
     final hideChrome = hideChromeForLocation(location);
     final destinations = [
       NavigationDestination(

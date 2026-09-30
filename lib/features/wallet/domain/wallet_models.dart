@@ -600,4 +600,11 @@ bool isValidEnteredAmount(String value) {
       RegExp(r'^\d+(\.\d{1,2})?$').hasMatch(value);
 }
 
+bool isPositiveEnteredAmount(String value) {
+  if (!isValidEnteredAmount(value)) {
+    return false;
+  }
+  return value.replaceAll('.', '').contains(RegExp('[1-9]'));
+}
+
 bool isMoneyAmount(String value) => _moneyAmountPattern.hasMatch(value);

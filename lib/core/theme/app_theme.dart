@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 abstract final class BrandColors {
-  static const yellow = Color(0xFFFFC400);
+  static const yellow = Color(0xFFF5BA13);
   static const yellowSoft = Color(0xFFFFE27A);
-  static const ink = Color(0xFF151515);
-  static const paper = Color(0xFFFFFBF1);
+  static const ink = Color(0xFF0F172A);
+  static const mutedSlate = Color(0xFF64748B);
+  static const paper = Color(0xFFF8FAFC);
   static const darkSurface = Color(0xFF202020);
   static const success = Color(0xFF16834B);
   static const warning = Color(0xFF9A6500);
@@ -145,7 +146,8 @@ abstract final class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        elevation: 0,
+        elevation: isDark ? 0 : 1,
+        shadowColor: const Color(0x140F172A),
         color: isDark ? const Color(0xFF222222) : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.card),
