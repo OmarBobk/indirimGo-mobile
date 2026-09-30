@@ -233,6 +233,17 @@ void main() {
       tester
           .widget<FilledButton>(find.byKey(const Key('topup-submit')))
           .onPressed,
+      isNull,
+    );
+    await tester.enterText(
+      find.byKey(const Key('topup-amount-field')),
+      '10.00',
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('topup-submit')))
+          .onPressed,
       isNotNull,
     );
   });
@@ -324,6 +335,66 @@ void main() {
 
     expect(wallet.lastPaymentMethodId, 2);
     expect(wallet.lastAmount, '25.00');
+  });
+
+  testWidgets('wallet filters rejected requests and shows the safe reason', (
+    tester,
+  ) async {
+    const rejectedRef = 'TUP-REJECTED1';
+    final wallet =
+        FakeWalletRepository(
+            topups: TopupListPage.fromJson(
+              topupListPageJson(
+                items: [
+                  topupListItemJson(),
+                  topupListItemJson(
+                    publicRef: rejectedRef,
+                    status: 'rejected',
+                    pendingUntilAdminApproval: false,
+                    canRetry: true,
+                  ),
+                ],
+              ),
+            ),
+          )
+          ..details[rejectedRef] = TopupDetail.fromJson(
+            topupDetailJson(
+              publicRef: rejectedRef,
+              status: 'rejected',
+              pendingUntilAdminApproval: false,
+              canRetry: true,
+              customerSafeReason: 'Mismatched sender name',
+            ),
+          );
+    await _pumpAuthenticated(tester, wallet);
+    await _openWallet(tester);
+
+    await _tapKey(tester, 'wallet-filter-rejected');
+    expect(_key('wallet-topup-$rejectedRef'), findsOneWidget);
+    expect(_key('wallet-topup-TUP-ABC123'), findsNothing);
+
+    await _tapKey(tester, 'wallet-topup-$rejectedRef');
+    expect(find.text('Top-up rejected'), findsOneWidget);
+    expect(find.text('Mismatched sender name'), findsOneWidget);
+  });
+
+  testWidgets('add funds disables submit for a zero amount', (tester) async {
+    final wallet = FakeWalletRepository(
+      paymentMethods: [PaymentMethod.fromJson(paymentMethodJson())],
+    );
+    await _pumpAuthenticated(tester, wallet);
+    await _openWallet(tester);
+    await _tapKey(tester, 'wallet-add-funds');
+
+    await tester.enterText(find.byKey(const Key('topup-amount-field')), '0.00');
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('topup-submit')))
+          .onPressed,
+      isNull,
+    );
   });
 
   testWidgets('Arabic add-funds 404 is not package wording', (tester) async {

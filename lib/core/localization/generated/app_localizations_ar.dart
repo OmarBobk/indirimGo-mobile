@@ -838,6 +838,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get walletTitle => 'المحفظة';
 
   @override
+  String get availableBalanceLabel => 'الرصيد المتاح';
+
+  @override
+  String get showBalanceAction => 'إظهار الرصيد';
+
+  @override
+  String get hideBalanceAction => 'إخفاء الرصيد';
+
+  @override
+  String get walletHistoryAction => 'السجل';
+
+  @override
   String get walletLoading => 'جارٍ تحميل المحفظة';
 
   @override
@@ -880,6 +892,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loadMoreTopups => 'تحميل المزيد من طلبات الشحن';
 
   @override
+  String get walletFilterAll => 'الكل';
+
+  @override
+  String get walletFilterPending => 'معلّق';
+
+  @override
+  String get walletFilterCompleted => 'مكتمل';
+
+  @override
+  String get walletFilterRejected => 'مرفوض';
+
+  @override
+  String walletTodayAt(String time) {
+    return 'اليوم، $time';
+  }
+
+  @override
   String get topupFormTitle => 'إضافة رصيد';
 
   @override
@@ -898,7 +927,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get topupCurrencyTry => 'TRY';
 
   @override
-  String get topupCurrencyHelp => 'أدخل المبلغ الذي سترسله. لا تحوّله بنفسك.';
+  String get topupCurrencyHelp =>
+      'أدخل المبلغ المرسل بدقة. لا حاجة إلى التحويل.';
 
   @override
   String get paymentMethodLabel => 'طريقة الدفع';
@@ -907,10 +937,31 @@ class AppLocalizationsAr extends AppLocalizations {
   String get paymentInstructionsTitle => 'تعليمات الدفع';
 
   @override
+  String get transferAccountLabel => 'حساب التحويل';
+
+  @override
+  String get copyAction => 'نسخ';
+
+  @override
+  String get copiedToClipboard => 'تم النسخ إلى الحافظة';
+
+  @override
   String get attachProofLabel => 'إرفاق إثبات (اختياري)';
 
   @override
   String get chooseProofAction => 'اختيار ملف';
+
+  @override
+  String get proofDropzoneTitle => 'رفع إثبات التحويل';
+
+  @override
+  String get proofDropzoneBody => 'JPG أو PNG أو WEBP أو PDF';
+
+  @override
+  String get takePhotoAction => 'التقاط صورة';
+
+  @override
+  String get chooseFromLibraryAction => 'اختيار من المكتبة';
 
   @override
   String get removeProofAction => 'إزالة الإثبات';
@@ -929,6 +980,10 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get topupPendingNotice =>
       'يبقى هذا الطلب معلّقاً حتى موافقة الموظفين. الإرسال لا يضيف رصيداً الآن.';
+
+  @override
+  String get topupVerificationNotice =>
+      'تتطلب التحويلات تحققاً يدوياً. سيُضاف الرصيد بعد الموافقة على إثبات الدفع.';
 
   @override
   String get recoveringTopup => 'جارٍ التحقق من طلب الشحن';
@@ -961,6 +1016,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get topupStatusCancelled => 'ملغى';
+
+  @override
+  String get topupRejectedTitle => 'رُفض طلب الشحن';
+
+  @override
+  String get topupRejectedReasonUnavailable =>
+      'لم يُذكر سبب إضافي. افتح الطلب للاطلاع على التفاصيل الكاملة.';
+
+  @override
+  String get viewTopupDetailsAction => 'عرض تفاصيل الطلب';
 
   @override
   String get topupHasProof => 'تم إرفاق إثبات';

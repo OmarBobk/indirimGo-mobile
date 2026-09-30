@@ -7,6 +7,7 @@ import 'package:indirimgo_mobile/core/routing/app_router.dart';
 import 'package:indirimgo_mobile/core/theme/app_theme.dart';
 import 'package:indirimgo_mobile/core/widgets/api_error_message.dart';
 import 'package:indirimgo_mobile/features/wallet/presentation/topup_form_controller.dart';
+import 'package:indirimgo_mobile/features/wallet/presentation/wallet_widgets.dart';
 
 class TopupFormScreen extends ConsumerStatefulWidget {
   const TopupFormScreen({super.key});
@@ -51,10 +52,19 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
     });
 
     return Scaffold(
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? null
+          : BrandColors.paper,
       appBar: AppBar(
         title: Text(l10n.topupFormTitle),
-        backgroundColor: BrandColors.yellow,
-        foregroundColor: BrandColors.ink,
+        centerTitle: false,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        leading: IconButton(
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: context.pop,
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
       ),
       body: SafeArea(
         child: ListView(
@@ -63,10 +73,37 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
             AppSpacing.md,
             AppSpacing.md,
             AppSpacing.md,
-            AppSpacing.xl,
+            AppSpacing.xl + 24,
           ),
           children: [
-            Text(l10n.topupPendingNotice),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.info_outline_rounded,
+                    color: Color(0xFFB45309),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.topupVerificationNotice,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF92400E),
+                        fontWeight: FontWeight.w600,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: AppSpacing.md),
             if (state.phase == TopupFormPhase.loadingMethods ||
                 state.phase == TopupFormPhase.recovering)
@@ -93,76 +130,133 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
               ),
               const SizedBox(height: AppSpacing.md),
             ],
-            TextField(
-              key: const Key('topup-amount-field'),
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-              ],
-              decoration: InputDecoration(
-                labelText: l10n.topupAmountLabel,
-                hintText: l10n.topupAmountHint,
-                errorText: state.amountError ? l10n.topupAmountRequired : null,
-              ),
-              enabled: !state.isBusy,
-              onChanged: controller.setAmount,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(l10n.topupCurrencyLabel),
-            const SizedBox(height: AppSpacing.xs),
-            SegmentedButton<String>(
-              segments: [
-                ButtonSegment(value: 'USD', label: Text(l10n.topupCurrencyUsd)),
-                ButtonSegment(
-                  value: 'TRY',
-                  label: Text(
-                    l10n.topupCurrencyTry,
-                    key: const Key('topup-currency-try'),
-                  ),
+            Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.topupAmountLabel,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                        SegmentedButton<String>(
+                          showSelectedIcon: false,
+                          style: const ButtonStyle(
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          segments: [
+                            ButtonSegment(
+                              value: 'USD',
+                              label: Text(l10n.topupCurrencyUsd),
+                            ),
+                            ButtonSegment(
+                              value: 'TRY',
+                              label: Text(
+                                l10n.topupCurrencyTry,
+                                key: const Key('topup-currency-try'),
+                              ),
+                            ),
+                          ],
+                          selected: {state.currency},
+                          onSelectionChanged: state.isBusy
+                              ? null
+                              : (values) =>
+                                    controller.setCurrency(values.first),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    TextField(
+                      key: const Key('topup-amount-field'),
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      textDirection: TextDirection.ltr,
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 38,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      decoration: InputDecoration(
+                        prefixText: state.currency == 'TRY' ? '₺ ' : r'$ ',
+                        hintText: l10n.topupAmountHint,
+                        errorText: state.amountError
+                            ? l10n.topupAmountRequired
+                            : null,
+                        filled: false,
+                        contentPadding: EdgeInsets.zero,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                      ),
+                      enabled: !state.isBusy,
+                      onChanged: controller.setAmount,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      l10n.topupCurrencyHelp,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: BrandColors.mutedSlate,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-              selected: {state.currency},
-              onSelectionChanged: state.isBusy
-                  ? null
-                  : (values) => controller.setCurrency(values.first),
+              ),
             ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(l10n.topupCurrencyHelp),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.lg),
             ..._paymentMethodBlock(context, l10n, state, controller),
-            const SizedBox(height: AppSpacing.md),
-            Text(l10n.attachProofLabel),
-            const SizedBox(height: AppSpacing.sm),
-            if (state.proof != null)
-              Text(l10n.proofSelectedLabel(state.proof!.filename)),
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: OutlinedButton(
-                key: const Key('topup-choose-proof'),
-                onPressed: state.isBusy ? null : controller.pickProof,
-                child: Text(l10n.chooseProofAction),
-              ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              l10n.attachProofLabel,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
-            if (state.proof != null)
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: TextButton(
-                  key: const Key('topup-remove-proof'),
-                  onPressed: state.isBusy
-                      ? null
-                      : () => controller.setProof(null),
-                  child: Text(l10n.removeProofAction),
-                ),
-              ),
+            const SizedBox(height: AppSpacing.sm),
+            FileUploadDropzone(
+              proof: state.proof,
+              enabled: !state.isBusy,
+              title: l10n.proofDropzoneTitle,
+              body: l10n.proofDropzoneBody,
+              takePhotoLabel: l10n.takePhotoAction,
+              chooseLibraryLabel: l10n.chooseFromLibraryAction,
+              removeTooltip: l10n.removeProofAction,
+              onTakePhoto: controller.pickProofFromCamera,
+              onChooseLibrary: controller.pickProof,
+              onRemove: () => controller.setProof(null),
+            ),
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+            top: BorderSide(color: Theme.of(context).dividerColor),
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x120F172A),
+              blurRadius: 18,
+              offset: Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          minimum: const EdgeInsetsDirectional.fromSTEB(
             AppSpacing.md,
             AppSpacing.sm,
             AppSpacing.md,
@@ -171,9 +265,22 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
           child: FilledButton(
             key: const Key('topup-submit'),
             onPressed: state.canSubmit ? controller.submit : null,
-            child: Text(
-              state.isBusy ? l10n.submittingTopup : l10n.submitTopupAction,
-            ),
+            child: state.isBusy
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: BrandColors.ink,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(l10n.submittingTopup),
+                    ],
+                  )
+                : Text(l10n.submitTopupAction),
           ),
         ),
       ),
@@ -235,24 +342,27 @@ class _TopupFormScreenState extends ConsumerState<TopupFormScreen> {
       return const [];
     }
     return [
-      Text(l10n.paymentMethodLabel),
+      Text(
+        l10n.paymentMethodLabel,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+      ),
       const SizedBox(height: AppSpacing.sm),
       for (final method in state.paymentMethods)
-        ListTile(
-          key: Key('topup-method-${method.id}'),
-          leading: Icon(
-            state.selectedPaymentMethodId == method.id
-                ? Icons.radio_button_checked
-                : Icons.radio_button_off,
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: BankOptionCard(
+            key: Key('topup-method-${method.id}'),
+            method: method,
+            selected: state.selectedPaymentMethodId == method.id,
+            enabled: !state.isBusy,
+            onTap: () => controller.selectPaymentMethod(method.id),
+            accountLabel: l10n.transferAccountLabel,
+            instructionsLabel: l10n.paymentInstructionsTitle,
+            copyTooltip: l10n.copyAction,
+            copiedMessage: l10n.copiedToClipboard,
           ),
-          title: Text(method.name),
-          subtitle: method.instructions == null
-              ? null
-              : Text(method.instructions!),
-          enabled: !state.isBusy,
-          onTap: state.isBusy
-              ? null
-              : () => controller.selectPaymentMethod(method.id),
         ),
       if (state.methodError)
         Text(

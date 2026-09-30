@@ -5,6 +5,17 @@ import '../../support/laravel_wallet_envelopes.dart';
 import '../../support/wallet_fixtures.dart';
 
 void main() {
+  test(
+    'positive entered amounts reject zero without floating point parsing',
+    () {
+      expect(isPositiveEnteredAmount('0'), isFalse);
+      expect(isPositiveEnteredAmount('0.00'), isFalse);
+      expect(isPositiveEnteredAmount('0.10'), isTrue);
+      expect(isPositiveEnteredAmount('10.00'), isTrue);
+      expect(isPositiveEnteredAmount('invalid'), isFalse);
+    },
+  );
+
   test('wallet summary keeps pending ref and money strings', () {
     final summary = WalletSummary.fromJson(
       walletSummaryJson(pendingTopupPublicRef: 'TUP-ABC123'),

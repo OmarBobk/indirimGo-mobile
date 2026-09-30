@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:indirimgo_mobile/core/errors/api_exception.dart';
 import 'package:indirimgo_mobile/core/storage/pending_checkout_store.dart';
 import 'package:indirimgo_mobile/core/storage/pending_topup_store.dart';
@@ -56,7 +57,10 @@ class TopupFormState {
       phase == TopupFormPhase.submitting || phase == TopupFormPhase.recovering;
 
   bool get canSubmit =>
-      phase == TopupFormPhase.ready && selectedMethod != null && !isBusy;
+      phase == TopupFormPhase.ready &&
+      isPositiveEnteredAmount(amount.trim()) &&
+      selectedMethod != null &&
+      !isBusy;
 
   PaymentMethod? get selectedMethod {
     final id = selectedPaymentMethodId;
@@ -81,6 +85,7 @@ class TopupFormController extends Notifier<TopupFormState> {
   WalletRepository get _repository => ref.read(walletRepositoryProvider);
   PendingTopupStore get _store => ref.read(pendingTopupStoreProvider);
 
+  final ImagePicker _imagePicker = ImagePicker();
   int _epoch = 0;
   CancelToken? _cancelToken;
   bool _disposed = false;
@@ -263,6 +268,31 @@ class TopupFormController extends Notifier<TopupFormState> {
     );
   }
 
+  Future<void> pickProofFromCamera() =>
+      _pickImageProof(source: ImageSource.camera);
+
+  Future<void> pickProofFromLibrary() =>
+      _pickImageProof(source: ImageSource.gallery);
+
+  Future<void> _pickImageProof({required ImageSource source}) async {
+    final file = await _imagePicker.pickImage(
+      source: source,
+      imageQuality: 88,
+      maxWidth: 1800,
+    );
+    if (file == null) {
+      return;
+    }
+    setProof(
+      SelectedTopupProof(
+        filename: file.name,
+        path: file.path,
+        bytes: await file.readAsBytes(),
+        mimeType: file.mimeType,
+      ),
+    );
+  }
+
   void setProof(SelectedTopupProof? proof) {
     state = TopupFormState(
       phase: state.phase,
@@ -290,7 +320,7 @@ class TopupFormController extends Notifier<TopupFormState> {
     }
     final amount = state.amount.trim();
     final methodId = state.selectedPaymentMethodId;
-    final amountValid = isValidEnteredAmount(amount);
+    final amountValid = isPositiveEnteredAmount(amount);
     final methodValid = methodId != null;
     if (!amountValid || !methodValid) {
       state = TopupFormState(
