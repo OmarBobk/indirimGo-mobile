@@ -134,8 +134,13 @@ void main() {
 
     expect(_key('wallet-topup-TUP-63C22699F0'), findsOneWidget);
     expect(_key('wallet-topup-TUP-0A8B2AF3B9'), findsOneWidget);
-    await tester.ensureVisible(_key('wallet-transactions-title'));
+    await tester.fling(
+      find.byKey(const Key('wallet-screen')),
+      const Offset(0, -900),
+      1800,
+    );
     await tester.pumpAndSettle();
+    expect(_key('wallet-transactions-title'), findsOneWidget);
     expect(_key('wallet-tx-WTX-1A3DA54349'), findsOneWidget);
     expect(_key('wallet-tx-Reference pending'), findsOneWidget);
     expect(_key('wallet-topups-empty'), findsNothing);
@@ -326,9 +331,10 @@ void main() {
       find.byKey(const Key('topup-amount-field')),
       '25.00',
     );
-    await tester.drag(
+    await tester.dragUntilVisible(
+      find.byKey(const Key('topup-method-2')),
       find.byKey(const Key('topup-form-screen')),
-      const Offset(0, -220),
+      const Offset(0, -80),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('topup-method-2')));
